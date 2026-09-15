@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "daily-test", "runs": [{"id": "eval-0-math-daily-test-with_skill", "prompt": "Create today's daily math test for my 7th grader.", "eval_id": 0, "outputs": [{"name": "daily-test-2026-05-23-math7.html", "type": "text", "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Daily Math Test \u2014 Grade 7 \u2014 May 23, 2026</title>\n<style>\n  * { box-sizing: border-box; margin: 0; padding: 0; }\n  body {\n    min-height: 100vh;\n    background: linear-gradient(135deg, #0a0a2e 0%, #1a0a4e 30%, #0d0d1a 70%, #000000 100%);\n    color: #e0e0ff;\n    font-family: 'Segoe UI', Arial, sans-serif;\n    font-size: 18px;\n  }\n  #app { max-width: 900px; margin: 0 auto; padding: 16px; }\n\n  /* HEADER */\n  #header {\n    display: flex; align-items: center; justify-content: space-between;\n    background: rgba(255,255,255,0.05);\n    border: 1px solid rgba(120,80,255,0.4);\n    border-radius: 16px;\n    padding: 12px 20px;\n    margin-bottom: 14px;\n    box-shadow: 0 0 24px rgba(120,80,255,0.2);\n    flex-wrap: wrap; gap: 8px;\n  }\n  #header h1 { font-size: 1.1rem; color: #b388ff; letter-spacing: 1px; }\n  #timer-wrap { display: flex; align-items: center; gap: 8px; }\n  #timer {\n    font-size: 1.6rem; font-weight: bold; color: #7efff5;\n    text-shadow: 0 0 12px #7efff5;\n    min-width: 72px; text-align: center;\n    transition: color 0.4s;\n  }\n  #timer.danger { color: #ff4444; text-shadow: 0 0 14px #ff4444; animation: pulse 1s infinite; }\n  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }\n  #add-time-btn {\n    background: rgba(126,255,245,0.15);\n    border: 1px solid #7efff5; color: #7efff5;\n    padding: 5px 12px; border-radius: 8px; cursor: pointer;\n    font-size: 0.85rem; transition: background 0.2s;\n  }\n  #add-time-btn:hover { background: rgba(126,255,245,0.3); }\n  #add-time-btn:disabled { opacity: 0.35; cursor: not-allowed; }\n  #xp-display { font-size: 0.85rem; color: #ffd700; }\n\n  /* PROGRESS BAR */\n  #progress-wrap { margin-bottom: 14px; }\n  #progress-label { font-size: 0.8rem; color: #aaa; margin-bottom: 4px; }\n  #progress-bar-bg {\n    background: rgba(255,255,255,0.1); border-radius: 8px; height: 10px; overflow: hidden;\n  }\n  #progress-bar-fill {\n    height: 100%;\n    background: linear-gradient(90deg, #7c3aed, #06b6d4);\n    border-radius: 8px;\n    transition: width 0.4s;\n    box-shadow: 0 0 8px #06b6d4;\n  }\n\n  /* MAIN LAYOUT */\n  #main { display: flex; gap: 14px; align-items: flex-start; }\n\n  /* MINI-MAP */\n  #minimap {\n    min-width: 130px; max-width: 140px;\n    background: rgba(255,255,255,0.04);\n    border: 1px solid rgba(120,80,255,0.3);\n    border-radius: 12px; padding: 12px;\n  }\n  #minimap h3 { font-size: 0.75rem; color: #b388ff; margin-bottom: 8px; letter-spacing: 1px; }\n  #minimap-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }\n  .mm-btn {\n    width: 26px; height: 26px; border-radius: 6px;\n    border: 1px solid rgba(255,255,255,0.2);\n    background: rgba(255,255,255,0.07);\n    color: #ccc; font-size: 0.7rem; font-weight: bold;\n    cursor: pointer; display: flex; align-items: center; justify-content: center;\n    transition: all 0.2s;\n  }\n  .mm-btn.current { border-color: #06b6d4; box-shadow: 0 0 6px #06b6d4; color: #06b6d4; }\n  .mm-btn.answered { background: rgba(34,197,94,0.3); border-color: #22c55e; color: #22c55e; }\n  .mm-btn.skipped { background: rgba(251,191,36,0.25); border-color: #fbbf24; color: #fbbf24; }\n\n  /* QUESTION CARD */\n  #question-panel { flex: 1; }\n  #question-card {\n    background: rgba(255,255,255,0.05);\n    border: 1px solid rgba(120,80,255,0.4);\n    border-left: 5px solid #7c3aed;\n    border-radius: 14px;\n    padding: 24px;\n    margin-bottom: 14px;\n    box-shadow: 0 4px 30px rgba(0,0,0,0.4);\n    transition: border-left-color 0.3s;\n  }\n  #question-card.easy { border-left-color: #22c55e; }\n  #question-card.medium { border-left-color: #06b6d4; }\n  #question-card.hard { border-left-color: #f97316; }\n  #q-number { font-size: 0.8rem; color: #888; margin-bottom: 8px; }\n  #q-topic { font-size: 0.75rem; color: #b388ff; margin-bottom: 10px; font-style: italic; }\n  #q-text { font-size: 1.15rem; line-height: 1.6; margin-bottom: 20px; }\n  .choice {\n    display: flex; align-items: center; gap: 12px;\n    background: rgba(255,255,255,0.05);\n    border: 2px solid rgba(255,255,255,0.1);\n    border-radius: 10px; padding: 12px 16px;\n    margin-bottom: 10px; cursor: pointer;\n    transition: all 0.2s;\n    font-size: 1rem;\n  }\n  .choice:hover { border-color: #7c3aed; background: rgba(124,58,237,0.15); }\n  .choice.selected {\n    border-color: #06b6d4;\n    background: rgba(6,182,212,0.2);\n    box-shadow: 0 0 10px rgba(6,182,212,0.3);\n  }\n  .choice-letter {\n    width: 30px; height: 30px; border-radius: 50%;\n    background: rgba(255,255,255,0.1);\n    display: flex; align-items: center; justify-content: center;\n    font-weight: bold; font-size: 0.9rem; flex-shrink: 0;\n  }\n  .choice.selected .choice-letter { background: #06b6d4; color: #000; }\n\n  /* NAV BUTTONS */\n  #nav-btns {\n    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;\n  }\n  .nav-btn {\n    padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer;\n    font-size: 0.95rem; font-weight: bold; transition: all 0.2s;\n  }\n  #prev-btn {\n    background: rgba(255,255,255,0.08); color: #ccc;\n    border: 1px solid rgba(255,255,255,0.2);\n  }\n  #prev-btn:hover { background: rgba(255,255,255,0.15); }\n  #skip-btn {\n    background: rgba(251,191,36,0.15); color: #fbbf24;\n    border: 1px solid #fbbf24;\n  }\n  #skip-btn:hover { background: rgba(251,191,36,0.3); }\n  #next-btn {\n    background: linear-gradient(90deg,#7c3aed,#06b6d4);\n    color: #fff; border: none;\n    box-shadow: 0 0 12px rgba(6,182,212,0.4);\n  }\n  #next-btn:hover { opacity: 0.85; }\n  #submit-btn {\n    background: linear-gradient(90deg,#f97316,#ef4444);\n    color: #fff; border: none; padding: 12px 28px;\n    border-radius: 12px; font-size: 1.1rem; font-weight: bold;\n    cursor: pointer; margin-left: auto;\n    box-shadow: 0 0 18px rgba(239,68,68,0.5);\n    display: none;\n  }\n  #submit-btn:hover { opacity: 0.85; transform: scale(1.03); }\n\n  /* RESULTS */\n  #results { display: none; }\n  #results-header {\n    text-align: center;\n    background: rgba(255,255,255,0.05);\n    border: 1px solid rgba(120,80,255,0.4);\n    border-radius: 16px; padding: 30px 20px; margin-bottom: 20px;\n  }\n  #score-display { font-size: 3rem; font-weight: bold; color: #7efff5; text-shadow: 0 0 20px #7efff5; }\n  #grade-display { font-size: 2rem; color: #ffd700; margin: 8px 0; }\n  #rating-msg { font-size: 1.1rem; margin: 10px 0; }\n  #time-used { color: #aaa; font-size: 0.9rem; }\n  #xp-earned { color: #ffd700; font-size: 1rem; margin-top: 8px; }\n\n  #breakdown { margin-bottom: 20px; }\n  #breakdown h2 { color: #b388ff; margin-bottom: 12px; }\n  .result-item {\n    background: rgba(255,255,255,0.04);\n    border-radius: 10px; padding: 14px; margin-bottom: 10px;\n    border-left: 5px solid #555;\n  }\n  .result-item.correct { border-left-color: #22c55e; }\n  .result-item.incorrect { border-left-color: #ef4444; }\n  .result-item .ri-header { display: flex; justify-content: space-between; margin-bottom: 6px; }\n  .ri-q { font-size: 0.85rem; color: #aaa; }\n  .ri-status { font-weight: bold; font-size: 0.85rem; }\n  .ri-status.correct { color: #22c55e; }\n  .ri-status.incorrect { color: #ef4444; }\n  .ri-text { margin-bottom: 6px; font-size: 0.95rem; }\n  .ri-answer { font-size: 0.85rem; color: #ccc; }\n  .ri-explanation { font-size: 0.82rem; color: #aaa; margin-top: 4px; font-style: italic; }\n\n  #leaderboard {\n    background: rgba(255,255,255,0.04);\n    border: 1px solid rgba(251,191,36,0.3);\n    border-radius: 12px; padding: 16px; margin-bottom: 20px;\n  }\n  #leaderboard h2 { color: #ffd700; margin-bottom: 10px; }\n  .lb-row {\n    display: flex; justify-content: space-between;\n    padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.07);\n    font-size: 0.88rem;\n  }\n  .lb-row.highlight { color: #ffd700; font-weight: bold; }\n  #retry-btn {\n    display: block; margin: 0 auto;\n    background: linear-gradient(90deg,#7c3aed,#06b6d4);\n    color: #fff; border: none; padding: 14px 36px;\n    border-radius: 12px; font-size: 1.1rem; font-weight: bold;\n    cursor: pointer; box-shadow: 0 0 18px rgba(124,58,237,0.5);\n  }\n  #retry-btn:hover { opacity: 0.85; }\n\n  /* CANVAS */\n  #confetti-canvas, #fireworks-canvas {\n    position: fixed; top: 0; left: 0; width: 100%; height: 100%;\n    pointer-events: none; z-index: 9999; display: none;\n  }\n\n  /* WEAK AREAS */\n  #weak-areas {\n    background: rgba(239,68,68,0.08);\n    border: 1px solid rgba(239,68,68,0.3);\n    border-radius: 12px; padding: 16px; margin-bottom: 20px;\n    display: none;\n  }\n  #weak-areas h2 { color: #f87171; margin-bottom: 8px; }\n  #weak-areas ul { padding-left: 18px; }\n  #weak-areas li { margin-bottom: 4px; font-size: 0.9rem; color: #ccc; }\n\n  @media (max-width: 600px) {\n    #main { flex-direction: column; }\n    #minimap { max-width: 100%; min-width: unset; }\n    #minimap-grid { grid-template-columns: repeat(10, 1fr); }\n  }\n</style>\n</head>\n<body>\n<canvas id=\"confetti-canvas\"></canvas>\n<canvas id=\"fireworks-canvas\"></canvas>\n\n<div id=\"app\">\n  <!-- HEADER -->\n  <div id=\"header\">\n    <h1>\ud83d\udcd0 Math Grade 7 \u2014 May 23, 2026</h1>\n    <div id=\"timer-wrap\">\n      <div id=\"timer\">25:00</div>\n      <button id=\"add-time-btn\" onclick=\"addTime()\">\u2795 Add 2 min</button>\n    </div>\n    <div id=\"xp-display\">\u2b50 Total XP: <span id=\"total-xp\">0</span></div>\n  </div>\n\n  <!-- PROGRESS -->\n  <div id=\"progress-wrap\">\n    <div id=\"progress-label\">Progress: <span id=\"answered-count\">0</span>/20 answered</div>\n    <div id=\"progress-bar-bg\"><div id=\"progress-bar-fill\" style=\"width:0%\"></div></div>\n  </div>\n\n  <!-- TEST SCREEN -->\n  <div id=\"test-screen\">\n    <div id=\"main\">\n      <!-- MINI-MAP -->\n      <div id=\"minimap\">\n        <h3>QUESTIONS</h3>\n        <div id=\"minimap-grid\"></div>\n      </div>\n      <!-- QUESTION PANEL -->\n      <div id=\"question-panel\">\n        <div id=\"question-card\">\n          <div id=\"q-number\">Question 1 of 20</div>\n          <div id=\"q-topic\"></div>\n          <div id=\"q-text\"></div>\n          <div id=\"choices\"></div>\n        </div>\n        <div id=\"nav-btns\">\n          <button class=\"nav-btn\" id=\"prev-btn\" onclick=\"goPrev()\">\u2b05 Previous</button>\n          <button class=\"nav-btn\" id=\"skip-btn\" onclick=\"goSkip()\">Skip \u23ed</button>\n          <button class=\"nav-btn\" id=\"next-btn\" onclick=\"goNext()\">Next \u27a1</button>\n          <button id=\"submit-btn\" onclick=\"trySubmit()\">\ud83c\udfaf Submit Test</button>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <!-- RESULTS SCREEN -->\n  <div id=\"results\">\n    <div id=\"results-header\">\n      <div id=\"score-display\"></div>\n      <div id=\"grade-display\"></div>\n      <div id=\"rating-msg\"></div>\n      <div id=\"time-used\"></div>\n      <div id=\"xp-earned\"></div>\n    </div>\n    <div id=\"weak-areas\"><h2>\ud83d\udcda Topics to Review</h2><ul id=\"weak-list\"></ul></div>\n    <div id=\"leaderboard\"><h2>\ud83c\udfc6 Top Scores</h2><div id=\"lb-rows\"></div></div>\n    <div id=\"breakdown\"><h2>\ud83d\udccb Question Breakdown</h2><div id=\"breakdown-list\"></div></div>\n    <button id=\"retry-btn\" onclick=\"location.reload()\">\ud83d\udd04 Try Again</button>\n  </div>\n</div>\n\n<script>\n// \u2500\u2500\u2500 QUESTIONS DATA \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst QUESTIONS = [\n  // EASY (1-6)\n  {\n    topic: \"Integers\",\n    difficulty: \"easy\",\n    text: \"What is the value of \u22128 + 15?\",\n    choices: [\"A. \u221223\", \"B. 7\", \"C. \u22127\", \"D. 23\"],\n    correct: 1,\n    explanation: \"Start at \u22128 and add 15: \u22128 + 15 = 7.\"\n  },\n  {\n    topic: \"Fractions\",\n    difficulty: \"easy\",\n    text: \"What is \u00bd + \u00bc?\",\n    choices: [\"A. 2/6\", \"B. 3/4\", \"C. 2/4\", \"D. 1/3\"],\n    correct: 1,\n    explanation: \"Convert to common denominator: 2/4 + 1/4 = 3/4.\"\n  },\n  {\n    topic: \"Percentages\",\n    difficulty: \"easy\",\n    text: \"What is 25% of 80?\",\n    choices: [\"A. 15\", \"B. 40\", \"C. 20\", \"D. 25\"],\n    correct: 2,\n    explanation: \"25% = 0.25; 0.25 \u00d7 80 = 20.\"\n  },\n  {\n    topic: \"Geometry\",\n    difficulty: \"easy\",\n    text: \"A rectangle has length 9 cm and width 4 cm. What is its perimeter?\",\n    choices: [\"A. 36 cm\", \"B. 13 cm\", \"C. 26 cm\", \"D. 18 cm\"],\n    correct: 2,\n    explanation: \"Perimeter = 2(l + w) = 2(9 + 4) = 2 \u00d7 13 = 26 cm.\"\n  },\n  {\n    topic: \"Order of Operations\",\n    difficulty: \"easy\",\n    text: \"What is 3 + 4 \u00d7 2?\",\n    choices: [\"A. 14\", \"B. 10\", \"C. 11\", \"D. 8\"],\n    correct: 2,\n    explanation: \"Multiplication first: 4 \u00d7 2 = 8, then 3 + 8 = 11.\"\n  },\n  {\n    topic: \"Decimals\",\n    difficulty: \"easy\",\n    text: \"What is 0.6 \u00d7 0.4?\",\n    choices: [\"A. 2.4\", \"B. 0.024\", \"C. 0.24\", \"D. 24\"],\n    correct: 2,\n    explanation: \"6 \u00d7 4 = 24; move decimal 2 places \u2192 0.24.\"\n  },\n  // MEDIUM (7-15)\n  {\n    topic: \"Ratios\",\n    difficulty: \"medium\",\n    text: \"A recipe calls for 3 cups of flour for every 2 cups of sugar. If you use 9 cups of flour, how many cups of sugar do you need?\",\n    choices: [\"A. 4\", \"B. 5\", \"C. 6\", \"D. 8\"],\n    correct: 2,\n    explanation: \"Ratio 3:2. Multiply by 3 to get 9:6. You need 6 cups of sugar.\"\n  },\n  {\n    topic: \"Basic Algebra\",\n    difficulty: \"medium\",\n    text: \"Solve for x:  2x + 7 = 19\",\n    choices: [\"A. x = 6\", \"B. x = 12\", \"C. x = 13\", \"D. x = 7\"],\n    correct: 0,\n    explanation: \"2x = 19 \u2212 7 = 12; x = 12 \u00f7 2 = 6.\"\n  },\n  {\n    topic: \"Statistics\",\n    difficulty: \"medium\",\n    text: \"The ages of five students are: 12, 14, 13, 14, 12. What is the mode?\",\n    choices: [\"A. 12 and 14\", \"B. 13\", \"C. 12\", \"D. 14\"],\n    correct: 0,\n    explanation: \"Both 12 and 14 appear twice \u2014 this data set is bimodal: mode = 12 and 14.\"\n  },\n  {\n    topic: \"Fractions\",\n    difficulty: \"medium\",\n    text: \"What is \u2157 \u00d7 10/3?\",\n    choices: [\"A. 1/2\", \"B. 2\", \"C. 18/15\", \"D. None of the above\"],\n    correct: 1,\n    explanation: \"(3 \u00d7 10) / (5 \u00d7 3) = 30/15 = 2.\"\n  },\n  {\n    topic: \"Percentages\",\n    difficulty: \"medium\",\n    text: \"A shirt originally costs $40. It is on sale for 15% off. What is the sale price?\",\n    choices: [\"A. $30.00\", \"B. $25.00\", \"C. $34.00\", \"D. $36.00\"],\n    correct: 2,\n    explanation: \"Discount = 15% \u00d7 $40 = $6. Sale price = $40 \u2212 $6 = $34.\"\n  },\n  {\n    topic: \"Geometry\",\n    difficulty: \"medium\",\n    text: \"What is the area of a triangle with base 10 cm and height 6 cm?\",\n    choices: [\"A. 60 cm\u00b2\", \"B. 30 cm\u00b2\", \"C. 16 cm\u00b2\", \"D. 32 cm\u00b2\"],\n    correct: 1,\n    explanation: \"Area = \u00bd \u00d7 base \u00d7 height = \u00bd \u00d7 10 \u00d7 6 = 30 cm\u00b2.\"\n  },\n  {\n    topic: \"Integers\",\n    difficulty: \"medium\",\n    text: \"What is (\u22123) \u00d7 (\u22124) \u2212 (\u22122)?\",\n    choices: [\"A. 10\", \"B. 14\", \"C. \u221214\", \"D. \u221210\"],\n    correct: 1,\n    explanation: \"(\u22123)(\u22124) = 12; 12 \u2212 (\u22122) = 12 + 2 = 14.\"\n  },\n  {\n    topic: \"Basic Algebra\",\n    difficulty: \"medium\",\n    text: \"If 5y \u2212 3 = 2y + 9, what is y?\",\n    choices: [\"A. y = 2\", \"B. y = 4\", \"C. y = 6\", \"D. y = 3\"],\n    correct: 1,\n    explanation: \"5y \u2212 2y = 9 + 3 \u2192 3y = 12 \u2192 y = 4.\"\n  },\n  {\n    topic: \"Decimals\",\n    difficulty: \"medium\",\n    text: \"Which of the following is equivalent to 0.125?\",\n    choices: [\"A. 1/4\", \"B. 1/8\", \"C. 1/6\", \"D. 3/25\"],\n    correct: 1,\n    explanation: \"1 \u00f7 8 = 0.125.\"\n  },\n  // HARD (16-20)\n  {\n    topic: \"Order of Operations\",\n    difficulty: \"hard\",\n    text: \"Evaluate:  4\u00b2 \u00f7 (3 + 1) \u00d7 2 \u2212 5\",\n    choices: [\"A. 3\", \"B. 8\", \"C. 16\", \"D. None of the above\"],\n    correct: 0,\n    explanation: \"4\u00b2 = 16; (3+1) = 4; 16 \u00f7 4 = 4; 4 \u00d7 2 = 8; 8 \u2212 5 = 3.\"\n  },\n  {\n    topic: \"Ratios & Proportions\",\n    difficulty: \"hard\",\n    text: \"A car travels 270 km in 3 hours. At the same speed, how long will it take to travel 405 km?\",\n    choices: [\"A. 3.5 hours\", \"B. 4 hours\", \"C. 4.5 hours\", \"D. 5 hours\"],\n    correct: 2,\n    explanation: \"Speed = 270/3 = 90 km/h. Time = 405 \u00f7 90 = 4.5 hours.\"\n  },\n  {\n    topic: \"Statistics\",\n    difficulty: \"hard\",\n    text: \"The mean of six numbers is 14. Five of the numbers are 10, 12, 15, 18, and 11. What is the sixth number?\",\n    choices: [\"A. 14\", \"B. 16\", \"C. 18\", \"D. 20\"],\n    correct: 0,\n    explanation: \"Total = 6 \u00d7 14 = 84. Known sum = 10+12+15+18+11 = 66. Sixth = 84\u221266 = 18... wait: 84\u221266 = 18. But let me recalc: 10+12=22+15=37+18=55+11=66. 84\u221266=18. Hmm, that's C. Actually: answer is 18.\"\n  },\n  {\n    topic: \"Geometry\",\n    difficulty: \"hard\",\n    text: \"A circle has a radius of 7 cm. What is its circumference? (Use \u03c0 \u2248 22/7)\",\n    choices: [\"A. 22 cm\", \"B. 44 cm\", \"C. 154 cm\", \"D. 49 cm\"],\n    correct: 1,\n    explanation: \"C = 2\u03c0r = 2 \u00d7 (22/7) \u00d7 7 = 2 \u00d7 22 = 44 cm.\"\n  },\n  {\n    topic: \"Basic Algebra\",\n    difficulty: \"hard\",\n    text: \"Maria is 3 years older than twice her brother's age. If Maria is 17, how old is her brother?\",\n    choices: [\"A. 5\", \"B. 6\", \"C. 7\", \"D. 8\"],\n    correct: 2,\n    explanation: \"Let b = brother's age. 2b + 3 = 17 \u2192 2b = 14 \u2192 b = 7.\"\n  }\n];\n\n// Fix Q18 (index 17) \u2014 recalculate: answer is index 2 (18)\nQUESTIONS[17].correct = 2;\nQUESTIONS[17].explanation = \"Total = 6 \u00d7 14 = 84. Sum of five = 10+12+15+18+11 = 66. Sixth number = 84 \u2212 66 = 18.\";\nQUESTIONS[17].choices = [\"A. 14\", \"B. 16\", \"C. 18\", \"D. 20\"];\n\n// \u2500\u2500\u2500 STATE \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nlet currentQ = 0;\nlet answers = new Array(20).fill(null);  // null=unanswered, -1=skipped, 0-3=chosen\nlet skipped = new Array(20).fill(false);\nlet timerSeconds = 25 * 60;\nlet timerInterval = null;\nlet addTimeUses = 0;\nconst MAX_ADD_TIME = 3;\nlet startTime = Date.now();\nlet submitted = false;\n\n// \u2500\u2500\u2500 INIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\ndocument.addEventListener('DOMContentLoaded', () => {\n  loadXP();\n  buildMinimap();\n  renderQuestion();\n  startTimer();\n});\n\nfunction loadXP() {\n  const xp = parseInt(localStorage.getItem('tutor_xp') || '0');\n  document.getElementById('total-xp').textContent = xp;\n}\n\nfunction buildMinimap() {\n  const grid = document.getElementById('minimap-grid');\n  grid.innerHTML = '';\n  for (let i = 0; i < 20; i++) {\n    const btn = document.createElement('button');\n    btn.className = 'mm-btn';\n    btn.id = 'mm-' + i;\n    btn.textContent = i + 1;\n    btn.onclick = () => jumpTo(i);\n    grid.appendChild(btn);\n  }\n  updateMinimap();\n}\n\nfunction updateMinimap() {\n  for (let i = 0; i < 20; i++) {\n    const btn = document.getElementById('mm-' + i);\n    btn.className = 'mm-btn';\n    if (i === currentQ) btn.classList.add('current');\n    else if (skipped[i]) btn.classList.add('skipped');\n    else if (answers[i] !== null) btn.classList.add('answered');\n  }\n}\n\nfunction jumpTo(idx) {\n  currentQ = idx;\n  renderQuestion();\n}\n\n// \u2500\u2500\u2500 RENDER QUESTION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction renderQuestion() {\n  const q = QUESTIONS[currentQ];\n  document.getElementById('q-number').textContent = `Question ${currentQ + 1} of 20`;\n  document.getElementById('q-topic').textContent = `\ud83d\udccc ${q.topic} \u00b7 ${capitalize(q.difficulty)}`;\n  document.getElementById('q-text').textContent = q.text;\n\n  const card = document.getElementById('question-card');\n  card.className = '';\n  card.classList.add(q.difficulty);\n\n  const choicesEl = document.getElementById('choices');\n  choicesEl.innerHTML = '';\n  q.choices.forEach((ch, idx) => {\n    const div = document.createElement('div');\n    div.className = 'choice' + (answers[currentQ] === idx ? ' selected' : '');\n    div.innerHTML = `<div class=\"choice-letter\">${['A','B','C','D'][idx]}</div><span>${ch.substring(3)}</span>`;\n    div.onclick = () => selectAnswer(idx);\n    choicesEl.appendChild(div);\n  });\n\n  document.getElementById('prev-btn').style.opacity = currentQ === 0 ? '0.4' : '1';\n  updateProgress();\n  updateMinimap();\n  checkSubmitVisibility();\n}\n\nfunction capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }\n\nfunction selectAnswer(idx) {\n  answers[currentQ] = idx;\n  skipped[currentQ] = false;\n  renderQuestion();\n}\n\nfunction updateProgress() {\n  const count = answers.filter(a => a !== null && !skipped[answers.indexOf(a)]).length;\n  // count answered (not null, not skipped-with-null)\n  let answered = 0;\n  for (let i = 0; i < 20; i++) {\n    if (answers[i] !== null) answered++;\n  }\n  document.getElementById('answered-count').textContent = answered;\n  document.getElementById('progress-bar-fill').style.width = (answered / 20 * 100) + '%';\n}\n\nfunction checkSubmitVisibility() {\n  let unanswered = 0;\n  for (let i = 0; i < 20; i++) {\n    if (answers[i] === null) unanswered++;\n  }\n  const btn = document.getElementById('submit-btn');\n  btn.style.display = unanswered === 0 ? 'block' : 'none';\n}\n\n// \u2500\u2500\u2500 NAVIGATION \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction goPrev() {\n  if (currentQ > 0) { currentQ--; renderQuestion(); }\n}\n\nfunction goNext() {\n  if (currentQ < 19) { currentQ++; renderQuestion(); }\n  else { trySubmit(); }\n}\n\nfunction goSkip() {\n  skipped[currentQ] = true;\n  if (answers[currentQ] === null) {\n    // keep null but mark skipped\n  }\n  // move to next unanswered\n  let next = currentQ + 1;\n  while (next < 20 && answers[next] !== null) next++;\n  if (next < 20) currentQ = next;\n  else currentQ = (currentQ + 1) % 20;\n  renderQuestion();\n  updateMinimap();\n}\n\n// \u2500\u2500\u2500 TIMER \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction startTimer() {\n  timerInterval = setInterval(() => {\n    timerSeconds--;\n    updateTimerDisplay();\n    if (timerSeconds <= 0) {\n      clearInterval(timerInterval);\n      submitTest();\n    }\n  }, 1000);\n}\n\nfunction updateTimerDisplay() {\n  const m = Math.floor(timerSeconds / 60);\n  const s = timerSeconds % 60;\n  const el = document.getElementById('timer');\n  el.textContent = `${m}:${s.toString().padStart(2,'0')}`;\n  if (timerSeconds < 300) el.classList.add('danger');\n  else el.classList.remove('danger');\n}\n\nfunction addTime() {\n  if (addTimeUses >= MAX_ADD_TIME) return;\n  timerSeconds += 120;\n  addTimeUses++;\n  updateTimerDisplay();\n  if (addTimeUses >= MAX_ADD_TIME) {\n    const btn = document.getElementById('add-time-btn');\n    btn.disabled = true;\n    btn.textContent = 'No more';\n  }\n}\n\n// \u2500\u2500\u2500 SUBMIT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction trySubmit() {\n  let unanswered = answers.filter(a => a === null).length;\n  if (unanswered > 0) {\n    if (confirm(`You have ${unanswered} unanswered question${unanswered>1?'s':''}. Submit anyway?`)) {\n      submitTest();\n    }\n  } else {\n    submitTest();\n  }\n}\n\nfunction submitTest() {\n  if (submitted) return;\n  submitted = true;\n  clearInterval(timerInterval);\n\n  const elapsed = Math.floor((Date.now() - startTime) / 1000);\n  const totalTime = 25 * 60 - timerSeconds + elapsed;\n  const timeTaken = 25 * 60 - timerSeconds;\n\n  // score\n  let correct = 0;\n  for (let i = 0; i < 20; i++) {\n    if (answers[i] === QUESTIONS[i].correct) correct++;\n  }\n  const pct = Math.round(correct / 20 * 100);\n\n  // grade\n  let grade, msg;\n  if (pct === 100) { grade = 'A+'; msg = '\ud83c\udf86 PERFECT SCORE! Absolutely brilliant! \ud83c\udf86'; }\n  else if (pct >= 90) { grade = 'A'; msg = '\ud83c\udf1f Outstanding! Almost perfect!'; }\n  else if (pct >= 80) { grade = 'B'; msg = '\ud83c\udf89 Great job! Keep it up!'; }\n  else if (pct >= 70) { grade = 'C'; msg = '\ud83d\udc4d Good work! Review your mistakes.'; }\n  else if (pct >= 60) { grade = 'D'; msg = '\ud83d\udcda Keep studying \u2014 you\\'re getting there!'; }\n  else { grade = 'F'; msg = '\ud83d\udcaa Don\\'t give up! Review the material and try again.'; }\n\n  // XP\n  let xpEarned = correct * 10;\n  if (pct >= 80) xpEarned += 50;\n  if (pct === 100) xpEarned += 100;\n  let totalXP = parseInt(localStorage.getItem('tutor_xp') || '0') + xpEarned;\n  localStorage.setItem('tutor_xp', totalXP);\n\n  // Leaderboard\n  const key = 'tutor_top_scores_math7';\n  let scores = JSON.parse(localStorage.getItem(key) || '[]');\n  const entry = { pct, date: '2026-05-23', time: formatTime(timeTaken) };\n  scores.push(entry);\n  scores.sort((a,b) => b.pct - a.pct);\n  scores = scores.slice(0, 10);\n  localStorage.setItem(key, JSON.stringify(scores));\n  const myRank = scores.findIndex(s => s.pct === pct && s.date === '2026-05-23' && s.time === entry.time);\n\n  // Show results\n  document.getElementById('test-screen').style.display = 'none';\n  document.getElementById('results').style.display = 'block';\n  document.getElementById('score-display').textContent = `${correct}/20 \u2014 ${pct}%`;\n  document.getElementById('grade-display').textContent = `Grade: ${grade}`;\n  document.getElementById('rating-msg').textContent = msg;\n  document.getElementById('time-used').textContent = `\u23f1 Time used: ${formatTime(timeTaken)}`;\n  document.getElementById('xp-earned').textContent = `\u2b50 XP earned: +${xpEarned}  |  Total XP: ${totalXP}`;\n\n  // Weak areas\n  const wrongTopics = {};\n  for (let i = 0; i < 20; i++) {\n    if (answers[i] !== QUESTIONS[i].correct) {\n      const t = QUESTIONS[i].topic;\n      wrongTopics[t] = (wrongTopics[t] || 0) + 1;\n    }\n  }\n  if (Object.keys(wrongTopics).length > 0) {\n    document.getElementById('weak-areas').style.display = 'block';\n    const list = document.getElementById('weak-list');\n    list.innerHTML = '';\n    Object.entries(wrongTopics).forEach(([t,n]) => {\n      const li = document.createElement('li');\n      li.textContent = `${t} \u2014 ${n} mistake${n>1?'s':''}`;\n      list.appendChild(li);\n    });\n  }\n\n  // Leaderboard render\n  const lbRows = document.getElementById('lb-rows');\n  lbRows.innerHTML = '';\n  scores.forEach((s, i) => {\n    const div = document.createElement('div');\n    div.className = 'lb-row' + (i === myRank ? ' highlight' : '');\n    div.innerHTML = `<span>#${i+1} ${i===myRank?'\ud83d\udc49':''} ${s.pct}%</span><span>${s.date}</span><span>${s.time}</span>`;\n    lbRows.appendChild(div);\n  });\n\n  // Breakdown\n  const blist = document.getElementById('breakdown-list');\n  blist.innerHTML = '';\n  QUESTIONS.forEach((q, i) => {\n    const isCorrect = answers[i] === q.correct;\n    const div = document.createElement('div');\n    div.className = 'result-item ' + (isCorrect ? 'correct' : 'incorrect');\n    const userAns = answers[i] !== null ? q.choices[answers[i]] : 'Not answered';\n    const correctAns = q.choices[q.correct];\n    div.innerHTML = `\n      <div class=\"ri-header\">\n        <span class=\"ri-q\">Q${i+1} \u00b7 ${q.topic}</span>\n        <span class=\"ri-status ${isCorrect?'correct':'incorrect'}\">${isCorrect ? '\u2705 Correct' : '\u274c Incorrect'}</span>\n      </div>\n      <div class=\"ri-text\">${q.text}</div>\n      <div class=\"ri-answer\">Your answer: ${userAns}<br>Correct answer: ${correctAns}</div>\n      <div class=\"ri-explanation\">${q.explanation}</div>\n    `;\n    blist.appendChild(div);\n  });\n\n  // Animations\n  if (pct >= 80) launchConfetti();\n  if (pct === 100) launchFireworks();\n}\n\nfunction formatTime(sec) {\n  const m = Math.floor(sec / 60);\n  const s = sec % 60;\n  return `${m}m ${s.toString().padStart(2,'0')}s`;\n}\n\n// \u2500\u2500\u2500 CONFETTI \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction launchConfetti() {\n  const canvas = document.getElementById('confetti-canvas');\n  canvas.style.display = 'block';\n  const ctx = canvas.getContext('2d');\n  canvas.width = window.innerWidth;\n  canvas.height = window.innerHeight;\n\n  const colors = ['#ff4e50','#fc913a','#f9d62e','#eae374','#e2f4c7','#b2f5ea','#7efff5','#b388ff','#ff80ab'];\n  const particles = [];\n  for (let i = 0; i < 180; i++) {\n    particles.push({\n      x: Math.random() * canvas.width,\n      y: -20 - Math.random() * 100,\n      vx: (Math.random() - 0.5) * 4,\n      vy: 2 + Math.random() * 4,\n      color: colors[Math.floor(Math.random() * colors.length)],\n      size: 6 + Math.random() * 8,\n      rotation: Math.random() * Math.PI * 2,\n      rotSpeed: (Math.random() - 0.5) * 0.2,\n      opacity: 1\n    });\n  }\n\n  let elapsed = 0;\n  function animate() {\n    ctx.clearRect(0, 0, canvas.width, canvas.height);\n    elapsed += 16;\n    const fade = elapsed > 3000 ? 1 - (elapsed - 3000) / 1000 : 1;\n    particles.forEach(p => {\n      p.x += p.vx;\n      p.y += p.vy;\n      p.vy += 0.1;\n      p.rotation += p.rotSpeed;\n      ctx.save();\n      ctx.globalAlpha = fade;\n      ctx.translate(p.x, p.y);\n      ctx.rotate(p.rotation);\n      ctx.fillStyle = p.color;\n      ctx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);\n      ctx.restore();\n    });\n    if (elapsed < 4000) requestAnimationFrame(animate);\n    else { canvas.style.display = 'none'; ctx.clearRect(0,0,canvas.width,canvas.height); }\n  }\n  requestAnimationFrame(animate);\n}\n\n// \u2500\u2500\u2500 FIREWORKS \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nfunction launchFireworks() {\n  const canvas = document.getElementById('fireworks-canvas');\n  canvas.style.display = 'block';\n  const ctx = canvas.getContext('2d');\n  canvas.width = window.innerWidth;\n  canvas.height = window.innerHeight;\n\n  const particles = [];\n  const colors = ['#ff4e50','#ffd700','#7efff5','#b388ff','#ff80ab','#fc913a'];\n\n  function burst(x, y) {\n    for (let i = 0; i < 60; i++) {\n      const angle = (Math.PI * 2 / 60) * i;\n      const speed = 2 + Math.random() * 5;\n      particles.push({\n        x, y,\n        vx: Math.cos(angle) * speed,\n        vy: Math.sin(angle) * speed,\n        color: colors[Math.floor(Math.random() * colors.length)],\n        life: 1.0,\n        size: 3 + Math.random() * 4\n      });\n    }\n  }\n\n  // multiple bursts\n  const points = [\n    [canvas.width*0.25, canvas.height*0.35],\n    [canvas.width*0.75, canvas.height*0.30],\n    [canvas.width*0.50, canvas.height*0.20],\n    [canvas.width*0.20, canvas.height*0.55],\n    [canvas.width*0.80, canvas.height*0.50],\n  ];\n  points.forEach((p, i) => setTimeout(() => burst(p[0], p[1]), i * 400));\n\n  let startTs = null;\n  function animate(ts) {\n    if (!startTs) startTs = ts;\n    ctx.fillStyle = 'rgba(0,0,0,0.12)';\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n    particles.forEach(p => {\n      p.x += p.vx;\n      p.y += p.vy;\n      p.vy += 0.08;\n      p.life -= 0.015;\n      ctx.save();\n      ctx.globalAlpha = Math.max(0, p.life);\n      ctx.fillStyle = p.color;\n      ctx.beginPath();\n      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n    });\n    // remove dead\n    for (let i = particles.length - 1; i >= 0; i--) {\n      if (particles[i].life <= 0) particles.splice(i, 1);\n    }\n    if (ts - startTs < 5000) requestAnimationFrame(animate);\n    else { canvas.style.display = 'none'; ctx.clearRect(0,0,canvas.width,canvas.height); }\n  }\n  requestAnimationFrame(animate);\n}\n</script>\n</body>\n</html>\n"}, {"name": "timing.json", "type": "text", "content": "{\"total_tokens\": 29399, \"duration_ms\": 178148, \"total_duration_seconds\": 178.1}\n"}], "grading": null}, {"id": "eval-0-math-daily-test-without_skill", "prompt": "Create today's daily math test for my 7th grader.", "eval_id": 0, "outputs": [{"name": "daily-test-2026-05-23-math7.html", "type": "text", "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>7th Grade Daily Math Test \u2013 May 23, 2026</title>\n  <style>\n    * { box-sizing: border-box; margin: 0; padding: 0; }\n\n    body {\n      font-family: 'Segoe UI', Arial, sans-serif;\n      background: #f0f4f8;\n      color: #1a202c;\n      padding: 24px;\n    }\n\n    .page {\n      max-width: 800px;\n      margin: 0 auto;\n      background: #fff;\n      border-radius: 12px;\n      box-shadow: 0 4px 20px rgba(0,0,0,0.1);\n      overflow: hidden;\n    }\n\n    header {\n      background: linear-gradient(135deg, #2563eb, #1e40af);\n      color: white;\n      padding: 28px 36px;\n    }\n\n    header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }\n    header p  { font-size: 0.95rem; opacity: 0.85; }\n\n    .meta-row {\n      display: flex; gap: 32px; margin-top: 16px; font-size: 0.88rem;\n    }\n    .meta-row span { opacity: 0.9; }\n\n    .student-info {\n      display: flex; gap: 24px; padding: 20px 36px;\n      border-bottom: 1px solid #e2e8f0; background: #f8fafc;\n      flex-wrap: wrap; align-items: center;\n    }\n\n    .field { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }\n    .field label { font-weight: 600; color: #475569; }\n    .field-line { border-bottom: 2px solid #94a3b8; min-width: 160px; height: 22px; }\n\n    .score-box {\n      margin-left: auto; background: #eff6ff; border: 2px solid #2563eb;\n      border-radius: 8px; padding: 8px 20px; text-align: center;\n    }\n    .score-box .lbl { font-size: 0.75rem; color: #2563eb; font-weight: 600; text-transform: uppercase; }\n    .score-box .val { font-size: 1.4rem; font-weight: 700; color: #1e40af; }\n\n    main { padding: 28px 36px; }\n\n    .section { margin-bottom: 36px; }\n\n    .section-header {\n      display: flex; align-items: center; gap: 10px; margin-bottom: 18px;\n    }\n    .section-badge {\n      background: #2563eb; color: white; font-size: 0.75rem; font-weight: 700;\n      padding: 3px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.05em;\n    }\n    .section-title { font-size: 1.05rem; font-weight: 700; color: #1e293b; }\n    .section-pts { margin-left: auto; font-size: 0.82rem; color: #64748b; font-weight: 500; }\n\n    .mc-question {\n      margin-bottom: 20px; padding: 16px; background: #f8fafc;\n      border-radius: 8px; border-left: 4px solid #2563eb;\n      transition: background 0.3s, border-color 0.3s;\n    }\n    .q-text { font-size: 0.97rem; font-weight: 500; margin-bottom: 12px; line-height: 1.5; }\n    .q-num  { font-weight: 700; color: #2563eb; }\n\n    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }\n    .option label {\n      display: flex; align-items: center; gap: 8px; font-size: 0.9rem;\n      cursor: pointer; padding: 6px 10px; border-radius: 6px;\n      border: 1px solid #e2e8f0; background: white; transition: all 0.15s;\n    }\n    .option label:hover { background: #eff6ff; border-color: #93c5fd; }\n    .option input[type=\"radio\"] { accent-color: #2563eb; }\n\n    .sa-question {\n      margin-bottom: 20px; padding: 16px; background: #f8fafc;\n      border-radius: 8px; border-left: 4px solid #7c3aed;\n    }\n    .wp-question {\n      margin-bottom: 20px; padding: 16px; background: #f8fafc;\n      border-radius: 8px; border-left: 4px solid #059669;\n    }\n\n    .answer-input {\n      width: 100%; border: none; border-bottom: 2px solid #94a3b8;\n      background: transparent; font-size: 1rem; padding: 4px 0;\n      margin-top: 10px; outline: none; color: #1a202c;\n    }\n    .answer-input:focus { border-bottom-color: #2563eb; }\n\n    .work-label { font-size: 0.78rem; color: #64748b; font-style: italic; margin-top: 8px; }\n    .work-textarea {\n      width: 100%; min-height: 72px; border: 1px dashed #94a3b8;\n      border-radius: 6px; background: #fafafa; padding: 8px;\n      font-size: 0.9rem; resize: vertical; outline: none; color: #1a202c; margin-top: 6px;\n    }\n    .work-textarea:focus { border-color: #2563eb; background: #eff6ff; }\n\n    .problem-box {\n      background: white; border: 1px solid #e2e8f0; border-radius: 6px;\n      padding: 12px; margin: 10px 0; font-size: 0.93rem; line-height: 1.6;\n    }\n\n    .divider { border: none; border-top: 2px dashed #e2e8f0; margin: 28px 0; }\n\n    .controls {\n      display: flex; gap: 12px; justify-content: flex-end;\n      padding: 20px 36px; background: #f8fafc; border-top: 1px solid #e2e8f0;\n    }\n    button {\n      padding: 10px 24px; border-radius: 8px; font-size: 0.95rem;\n      font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;\n    }\n    .btn-check { background: #2563eb; color: white; }\n    .btn-check:hover { background: #1d4ed8; }\n    .btn-reset { background: white; color: #475569; border: 1px solid #cbd5e1; }\n    .btn-reset:hover { background: #f1f5f9; }\n    .btn-print { background: #059669; color: white; }\n    .btn-print:hover { background: #047857; }\n\n    .feedback {\n      display: none; margin-top: 20px; padding: 20px 24px;\n      border-radius: 10px; font-size: 0.95rem; line-height: 1.6;\n    }\n    .feedback.show { display: block; }\n    .feedback.great  { background: #d1fae5; border: 2px solid #059669; color: #065f46; }\n    .feedback.good   { background: #fef9c3; border: 2px solid #ca8a04; color: #713f12; }\n    .feedback.retry  { background: #fee2e2; border: 2px solid #dc2626; color: #7f1d1d; }\n\n    .score-summary { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }\n\n    .topics-bar {\n      display: flex; flex-wrap: wrap; gap: 6px;\n      padding: 14px 36px; background: #eff6ff; border-bottom: 1px solid #bfdbfe;\n    }\n    .topic-chip {\n      background: #dbeafe; color: #1d4ed8; font-size: 0.75rem; font-weight: 600;\n      padding: 3px 10px; border-radius: 99px;\n    }\n\n    @media print {\n      body { background: white; padding: 0; }\n      .page { box-shadow: none; border-radius: 0; }\n      .controls, .feedback { display: none !important; }\n    }\n    @media (max-width: 600px) {\n      main, header, .controls, .topics-bar { padding-left: 16px; padding-right: 16px; }\n      .student-info { padding: 14px 16px; }\n      .options { grid-template-columns: 1fr; }\n      .meta-row { flex-direction: column; gap: 4px; }\n    }\n  </style>\n</head>\n<body>\n<div class=\"page\">\n\n  <header>\n    <h1>7th Grade Daily Math Test</h1>\n    <p>Practice &amp; Review \u2014 Key 7th Grade Standards</p>\n    <div class=\"meta-row\">\n      <span>Date: May 23, 2026</span>\n      <span>Time Limit: 20 minutes</span>\n      <span>Total: 25 points</span>\n    </div>\n  </header>\n\n  <div class=\"topics-bar\">\n    <span class=\"topic-chip\">Integers &amp; Rational Numbers</span>\n    <span class=\"topic-chip\">Ratios &amp; Proportions</span>\n    <span class=\"topic-chip\">Expressions &amp; Equations</span>\n    <span class=\"topic-chip\">Geometry</span>\n    <span class=\"topic-chip\">Statistics</span>\n  </div>\n\n  <div class=\"student-info\">\n    <div class=\"field\">\n      <label>Name:</label>\n      <div class=\"field-line\"></div>\n    </div>\n    <div class=\"field\">\n      <label>Period:</label>\n      <div class=\"field-line\" style=\"min-width:80px\"></div>\n    </div>\n    <div class=\"score-box\">\n      <div class=\"lbl\">Score</div>\n      <div class=\"val\" id=\"score-display\">&#8212; / 25</div>\n    </div>\n  </div>\n\n  <main>\n\n    <!-- SECTION 1: Multiple Choice -->\n    <div class=\"section\">\n      <div class=\"section-header\">\n        <span class=\"section-badge\">Section 1</span>\n        <span class=\"section-title\">Multiple Choice</span>\n        <span class=\"section-pts\">2 pts each &middot; 10 pts</span>\n      </div>\n\n      <div class=\"mc-question\" id=\"q1-block\">\n        <div class=\"q-text\"><span class=\"q-num\">1.</span> What is <strong>&#8722;3 + (&#8722;8)</strong>?</div>\n        <div class=\"options\">\n          <div class=\"option\"><label><input type=\"radio\" name=\"q1\" value=\"A\"> A)&nbsp;11</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q1\" value=\"B\"> B)&nbsp;&#8722;5</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q1\" value=\"C\"> C)&nbsp;5</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q1\" value=\"D\"> D)&nbsp;&#8722;11</label></div>\n        </div>\n      </div>\n\n      <div class=\"mc-question\" id=\"q2-block\">\n        <div class=\"q-text\"><span class=\"q-num\">2.</span> A recipe calls for 2&frac12; cups of flour for every 3 dozen cookies. How many cups are needed for <strong>9 dozen</strong> cookies?</div>\n        <div class=\"options\">\n          <div class=\"option\"><label><input type=\"radio\" name=\"q2\" value=\"A\"> A)&nbsp;5 cups</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q2\" value=\"B\"> B)&nbsp;6&frac12; cups</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q2\" value=\"C\"> C)&nbsp;7&frac12; cups</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q2\" value=\"D\"> D)&nbsp;8 cups</label></div>\n        </div>\n      </div>\n\n      <div class=\"mc-question\" id=\"q3-block\">\n        <div class=\"q-text\"><span class=\"q-num\">3.</span> Solve for <em>x</em>:&nbsp; <strong>3x &#8722; 7 = 14</strong></div>\n        <div class=\"options\">\n          <div class=\"option\"><label><input type=\"radio\" name=\"q3\" value=\"A\"> A)&nbsp;x = 3</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q3\" value=\"B\"> B)&nbsp;x = 7</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q3\" value=\"C\"> C)&nbsp;x = 21</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q3\" value=\"D\"> D)&nbsp;x = 2&frac13;</label></div>\n        </div>\n      </div>\n\n      <div class=\"mc-question\" id=\"q4-block\">\n        <div class=\"q-text\"><span class=\"q-num\">4.</span> A jacket originally costs <strong>$85</strong> and is on sale for <strong>30% off</strong>. What is the sale price?</div>\n        <div class=\"options\">\n          <div class=\"option\"><label><input type=\"radio\" name=\"q4\" value=\"A\"> A)&nbsp;$25.50</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q4\" value=\"B\"> B)&nbsp;$55.00</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q4\" value=\"C\"> C)&nbsp;$59.50</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q4\" value=\"D\"> D)&nbsp;$60.50</label></div>\n        </div>\n      </div>\n\n      <div class=\"mc-question\" id=\"q5-block\">\n        <div class=\"q-text\"><span class=\"q-num\">5.</span> Which expression is equivalent to <strong>&#8722;2(3x &#8722; 4) + 5x</strong>?</div>\n        <div class=\"options\">\n          <div class=\"option\"><label><input type=\"radio\" name=\"q5\" value=\"A\"> A)&nbsp;x + 8</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q5\" value=\"B\"> B)&nbsp;&#8722;x + 8</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q5\" value=\"C\"> C)&nbsp;x &#8722; 8</label></div>\n          <div class=\"option\"><label><input type=\"radio\" name=\"q5\" value=\"D\"> D)&nbsp;&#8722;x &#8722; 8</label></div>\n        </div>\n      </div>\n    </div>\n\n    <hr class=\"divider\">\n\n    <!-- SECTION 2: Short Answer -->\n    <div class=\"section\">\n      <div class=\"section-header\">\n        <span class=\"section-badge\" style=\"background:#7c3aed;\">Section 2</span>\n        <span class=\"section-title\">Short Answer</span>\n        <span class=\"section-pts\">2 pts each &middot; 10 pts</span>\n      </div>\n\n      <div class=\"sa-question\">\n        <div class=\"q-text\"><span class=\"q-num\">6.</span> Evaluate: &nbsp;<strong>|&#8722;15| + |&#8722;7| &#8722; |3|</strong></div>\n        <input class=\"answer-input\" id=\"q6-ans\" type=\"text\" placeholder=\"Answer:\">\n      </div>\n\n      <div class=\"sa-question\">\n        <div class=\"q-text\"><span class=\"q-num\">7.</span> Convert <strong>3/5</strong> to a percent and to a decimal.</div>\n        <input class=\"answer-input\" id=\"q7-ans\" type=\"text\" placeholder=\"Percent: ______   Decimal: ______\">\n      </div>\n\n      <div class=\"sa-question\">\n        <div class=\"q-text\"><span class=\"q-num\">8.</span> A triangle has a base of <strong>14 cm</strong> and a height of <strong>9 cm</strong>. What is its area?</div>\n        <div class=\"work-label\">Show your work:</div>\n        <textarea class=\"work-textarea\" placeholder=\"Work space\u2026\" rows=\"3\"></textarea>\n        <input class=\"answer-input\" id=\"q8-ans\" type=\"text\" placeholder=\"Area = ______\">\n      </div>\n\n      <div class=\"sa-question\">\n        <div class=\"q-text\"><span class=\"q-num\">9.</span> Multiply: &nbsp;<strong>(&#8722;3/4) &times; (&#8722;8/3)</strong></div>\n        <input class=\"answer-input\" id=\"q9-ans\" type=\"text\" placeholder=\"Answer:\">\n      </div>\n\n      <div class=\"sa-question\">\n        <div class=\"q-text\"><span class=\"q-num\">10.</span> Quiz scores: <strong>72, 85, 90, 68, 85, 77, 90, 85</strong>. Find the mean, median, and mode.</div>\n        <div class=\"work-label\">Show your work:</div>\n        <textarea class=\"work-textarea\" placeholder=\"Work space\u2026\" rows=\"3\"></textarea>\n        <input class=\"answer-input\" id=\"q10-ans\" type=\"text\" placeholder=\"Mean: ____   Median: ____   Mode: ____\">\n      </div>\n    </div>\n\n    <hr class=\"divider\">\n\n    <!-- SECTION 3: Word Problems -->\n    <div class=\"section\">\n      <div class=\"section-header\">\n        <span class=\"section-badge\" style=\"background:#059669;\">Section 3</span>\n        <span class=\"section-title\">Word Problems</span>\n        <span class=\"section-pts\">2.5 pts each &middot; 5 pts</span>\n      </div>\n\n      <div class=\"wp-question\">\n        <div class=\"q-text\"><span class=\"q-num\">11.</span> Set up and solve an equation. Show all work.</div>\n        <div class=\"problem-box\">\n          Marcus has $120 and saves $15 per week. Jada has $40 and saves $25 per week.\n          After how many weeks will they have the same amount of money?\n          How much will each person have at that point?\n        </div>\n        <div class=\"work-label\">Work:</div>\n        <textarea class=\"work-textarea\" placeholder=\"Write your equation and steps\u2026\" rows=\"5\"></textarea>\n        <input class=\"answer-input\" id=\"q11-ans\" type=\"text\" placeholder=\"Weeks: ____   Amount each: $____\">\n      </div>\n\n      <div class=\"wp-question\">\n        <div class=\"q-text\"><span class=\"q-num\">12.</span> Solve this multi-step problem. Show all work.</div>\n        <div class=\"problem-box\">\n          A map uses a scale of 1 inch = 25 miles. Two cities are 3.6 inches apart on the map.\n          A driver travels between those cities at an average speed of 60 miles per hour.\n          How long will the trip take? Give your answer in hours and minutes.\n        </div>\n        <div class=\"work-label\">Work:</div>\n        <textarea class=\"work-textarea\" placeholder=\"Write your steps\u2026\" rows=\"5\"></textarea>\n        <input class=\"answer-input\" id=\"q12-ans\" type=\"text\" placeholder=\"Time: ____ hours ____ minutes\">\n      </div>\n    </div>\n\n    <!-- Feedback -->\n    <div class=\"feedback\" id=\"feedback-box\">\n      <div class=\"score-summary\" id=\"fb-score\"></div>\n      <div id=\"fb-msg\"></div>\n      <div id=\"fb-key\" style=\"margin-top:14px; font-size:0.88rem; line-height:1.9;\"></div>\n    </div>\n\n  </main>\n\n  <div class=\"controls\">\n    <button class=\"btn-print\" onclick=\"window.print()\">Print</button>\n    <button class=\"btn-reset\" onclick=\"resetTest()\">Reset</button>\n    <button class=\"btn-check\" onclick=\"checkAnswers()\">Check Answers</button>\n  </div>\n</div>\n\n<script>\n  const MC_ANSWERS = { q1:'D', q2:'C', q3:'B', q4:'C', q5:'B' };\n\n  const ANSWER_KEY = [\n    { q:'6',  a:'|&#8722;15| + |&#8722;7| &#8722; |3| = 15 + 7 &#8722; 3 = <strong>19</strong>' },\n    { q:'7',  a:'<strong>60%</strong> and <strong>0.6</strong>' },\n    { q:'8',  a:'Area = &frac12; &times; 14 &times; 9 = <strong>63 cm&sup2;</strong>' },\n    { q:'9',  a:'(&#8722;3/4) &times; (&#8722;8/3) = +24/12 = <strong>2</strong>' },\n    { q:'10', a:'Mean: <strong>81.5</strong>, Median: <strong>85</strong>, Mode: <strong>85</strong>' },\n    { q:'11', a:'120 + 15w = 40 + 25w &rarr; 80 = 10w &rarr; <strong>w = 8 weeks; $240 each</strong>' },\n    { q:'12', a:'3.6 &times; 25 = 90 miles; 90 &divide; 60 = <strong>1 hour 30 minutes</strong>' }\n  ];\n\n  function checkAnswers() {\n    let correct = 0;\n    Object.entries(MC_ANSWERS).forEach(([name, ans]) => {\n      const sel = document.querySelector('input[name=\"' + name + '\"]:checked');\n      const blk = document.getElementById(name + '-block');\n      if (sel && sel.value === ans) {\n        correct += 2;\n        blk.style.cssText = 'background:#d1fae5;border-left-color:#059669;border-left-width:4px;border-radius:8px;padding:16px;margin-bottom:20px;';\n      } else {\n        blk.style.cssText = 'background:#fee2e2;border-left-color:#dc2626;border-left-width:4px;border-radius:8px;padding:16px;margin-bottom:20px;';\n      }\n    });\n\n    document.getElementById('score-display').textContent = correct + ' / 10 (MC)';\n\n    const keyHtml = ANSWER_KEY.map(item =>\n      '<div><strong>Q' + item.q + ':</strong> ' + item.a + '</div>'\n    ).join('');\n\n    document.getElementById('fb-key').innerHTML =\n      '<strong style=\"display:block;margin-bottom:6px;\">Answer Key (Sections 2 &amp; 3 \u2014 teacher-graded):</strong>' +\n      keyHtml;\n\n    const fb = document.getElementById('feedback-box');\n    document.getElementById('fb-score').textContent = 'Multiple Choice: ' + correct + ' / 10';\n\n    if (correct === 10) {\n      fb.className = 'feedback show great';\n      document.getElementById('fb-msg').textContent = 'Perfect score on multiple choice! Great work \u2014 review the answer key below with your teacher for Sections 2 and 3.';\n    } else if (correct >= 6) {\n      fb.className = 'feedback show good';\n      document.getElementById('fb-msg').textContent = 'Nice effort! Check any missed questions and review the answer key below.';\n    } else {\n      fb.className = 'feedback show retry';\n      document.getElementById('fb-msg').textContent = 'Keep practicing! Review the answer key carefully and ask your teacher about anything confusing.';\n    }\n\n    fb.scrollIntoView({ behavior: 'smooth', block: 'start' });\n  }\n\n  function resetTest() {\n    document.querySelectorAll('input[type=\"radio\"]').forEach(r => r.checked = false);\n    for (let i = 1; i <= 5; i++) {\n      const blk = document.getElementById('q' + i + '-block');\n      blk.removeAttribute('style');\n    }\n    document.querySelectorAll('.answer-input').forEach(el => el.value = '');\n    document.querySelectorAll('.work-textarea').forEach(el => el.value = '');\n    document.getElementById('feedback-box').className = 'feedback';\n    document.getElementById('score-display').textContent = '\u2014 / 25';\n    document.getElementById('fb-key').innerHTML = '';\n    window.scrollTo({ top: 0, behavior: 'smooth' });\n  }\n</script>\n</body>\n</html>\n"}, {"name": "timing.json", "type": "text", "content": "{\"total_tokens\": 29341, \"duration_ms\": 197685, \"total_duration_seconds\": 197.7}\n"}], "grading": null}, {"id": "eval-1-generate-math-test-with_skill", "prompt": "Generate a daily test \u2014 make it the math one.", "eval_id": 1, "outputs": [{"name": "daily-test-2026-05-23-math7.html", "type": "text", "content": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Daily Math Test \u2014 Grade 7 \u2014 May 23, 2026</title>\n<style>\n  * { box-sizing: border-box; margin: 0; padding: 0; }\n\n  body {\n    font-family: 'Segoe UI', system-ui, sans-serif;\n    background: linear-gradient(135deg, #0a0a1a 0%, #0d1b3e 40%, #1a0a2e 70%, #050510 100%);\n    min-height: 100vh;\n    color: #e0e8ff;\n    overflow-x: hidden;\n  }\n\n  canvas#confettiCanvas {\n    position: fixed; top: 0; left: 0;\n    width: 100%; height: 100%;\n    pointer-events: none;\n    z-index: 9999;\n    display: none;\n  }\n\n  canvas#fireworksCanvas {\n    position: fixed; top: 0; left: 0;\n    width: 100%; height: 100%;\n    pointer-events: none;\n    z-index: 9998;\n    display: none;\n  }\n\n  #app {\n    max-width: 960px;\n    margin: 0 auto;\n    padding: 16px;\n  }\n\n  #header {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    flex-wrap: wrap;\n    gap: 12px;\n    padding: 16px 20px;\n    background: rgba(255,255,255,0.05);\n    border: 1px solid rgba(100,150,255,0.2);\n    border-radius: 16px;\n    margin-bottom: 16px;\n    backdrop-filter: blur(10px);\n  }\n\n  #header h1 {\n    font-size: 1.2rem;\n    font-weight: 700;\n    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);\n    -webkit-background-clip: text;\n    -webkit-text-fill-color: transparent;\n    background-clip: text;\n  }\n\n  #timerBox { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }\n\n  #timerDisplay {\n    font-size: 1.6rem;\n    font-weight: 900;\n    font-variant-numeric: tabular-nums;\n    color: #60a5fa;\n    text-shadow: 0 0 20px rgba(96,165,250,0.6);\n    transition: color 0.3s;\n  }\n\n  #timerDisplay.urgent { color: #f87171; text-shadow: 0 0 20px rgba(248,113,113,0.8); }\n\n  #addTimeBtn {\n    background: linear-gradient(135deg, #1e40af, #7c3aed);\n    border: none; border-radius: 8px;\n    color: #fff; font-size: 0.8rem; font-weight: 600;\n    padding: 6px 12px; cursor: pointer;\n    transition: opacity 0.2s, transform 0.1s;\n  }\n  #addTimeBtn:hover { opacity: 0.85; transform: scale(1.04); }\n  #addTimeBtn:disabled { opacity: 0.4; cursor: not-allowed; }\n\n  #progressBar {\n    width: 100%; height: 8px;\n    background: rgba(255,255,255,0.1);\n    border-radius: 99px;\n    margin-bottom: 16px;\n    overflow: hidden;\n  }\n\n  #progressFill {\n    height: 100%;\n    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);\n    border-radius: 99px;\n    transition: width 0.4s ease;\n    width: 0%;\n  }\n\n  #mainLayout {\n    display: flex;\n    gap: 16px;\n    align-items: flex-start;\n  }\n\n  #miniMap {\n    width: 140px;\n    flex-shrink: 0;\n    background: rgba(255,255,255,0.04);\n    border: 1px solid rgba(100,150,255,0.15);\n    border-radius: 14px;\n    padding: 14px 10px;\n    position: sticky;\n    top: 16px;\n  }\n\n  #miniMap h3 {\n    font-size: 0.7rem;\n    text-transform: uppercase;\n    letter-spacing: 0.08em;\n    color: #94a3b8;\n    margin-bottom: 10px;\n    text-align: center;\n  }\n\n  #miniMapGrid {\n    display: grid;\n    grid-template-columns: repeat(4, 1fr);\n    gap: 5px;\n  }\n\n  .mmBtn {\n    aspect-ratio: 1;\n    border-radius: 6px;\n    border: 1px solid rgba(255,255,255,0.12);\n    background: rgba(255,255,255,0.06);\n    color: #94a3b8;\n    font-size: 0.65rem;\n    font-weight: 700;\n    cursor: pointer;\n    display: flex; align-items: center; justify-content: center;\n    transition: all 0.15s;\n    position: relative;\n  }\n  .mmBtn:hover { border-color: #60a5fa; color: #60a5fa; }\n  .mmBtn.current { background: rgba(96,165,250,0.25); border-color: #60a5fa; color: #60a5fa; }\n  .mmBtn.answered { background: rgba(52,211,153,0.15); border-color: #34d399; color: #34d399; }\n  .mmBtn.skipped { background: rgba(251,191,36,0.15); border-color: #fbbf24; color: #fbbf24; }\n  .skipDot {\n    position: absolute; top: 1px; right: 1px;\n    width: 5px; height: 5px;\n    background: #fbbf24; border-radius: 50%;\n  }\n\n  #questionArea { flex: 1; }\n\n  .questionCard {\n    background: rgba(255,255,255,0.04);\n    border: 1px solid rgba(100,150,255,0.15);\n    border-left: 5px solid #3b82f6;\n    border-radius: 16px;\n    padding: 28px 24px;\n    margin-bottom: 16px;\n  }\n\n  .questionCard.easy   { border-left-color: #34d399; }\n  .questionCard.medium { border-left-color: #60a5fa; }\n  .questionCard.hard   { border-left-color: #f472b6; }\n\n  .qMeta {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    margin-bottom: 18px;\n    flex-wrap: wrap;\n    gap: 8px;\n  }\n\n  .qNum { font-size: 0.85rem; color: #94a3b8; font-weight: 600; }\n\n  .qDiff {\n    font-size: 0.72rem;\n    padding: 3px 10px;\n    border-radius: 99px;\n    font-weight: 700;\n    text-transform: uppercase;\n    letter-spacing: 0.05em;\n  }\n  .diff-easy   { background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid #34d399; }\n  .diff-medium { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid #60a5fa; }\n  .diff-hard   { background: rgba(244,114,182,0.15); color: #f472b6; border: 1px solid #f472b6; }\n\n  .qTopic {\n    font-size: 0.72rem; color: #a78bfa; font-weight: 600;\n    padding: 3px 10px; border-radius: 99px;\n    background: rgba(167,139,250,0.1);\n    border: 1px solid rgba(167,139,250,0.3);\n  }\n\n  .qText {\n    font-size: 1.15rem;\n    line-height: 1.6;\n    color: #e2e8f0;\n    margin-bottom: 22px;\n    font-weight: 500;\n  }\n\n  .choices { display: flex; flex-direction: column; gap: 10px; }\n\n  .choiceBtn {\n    background: rgba(255,255,255,0.05);\n    border: 1.5px solid rgba(255,255,255,0.1);\n    border-radius: 12px;\n    padding: 14px 18px;\n    color: #cbd5e1;\n    font-size: 1rem;\n    text-align: left;\n    cursor: pointer;\n    transition: all 0.18s;\n    display: flex;\n    align-items: center;\n    gap: 12px;\n  }\n\n  .choiceBtn:hover {\n    background: rgba(96,165,250,0.12);\n    border-color: #60a5fa;\n    color: #e2e8f0;\n  }\n\n  .choiceBtn.selected {\n    background: rgba(96,165,250,0.2);\n    border-color: #60a5fa;\n    color: #fff;\n    box-shadow: 0 0 16px rgba(96,165,250,0.25);\n  }\n\n  .choiceLabel {\n    width: 28px; height: 28px;\n    border-radius: 50%;\n    background: rgba(255,255,255,0.08);\n    display: flex; align-items: center; justify-content: center;\n    font-weight: 700; font-size: 0.85rem;\n    flex-shrink: 0;\n    transition: background 0.18s;\n  }\n\n  .choiceBtn.selected .choiceLabel { background: #3b82f6; color: #fff; }\n\n  #navRow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }\n\n  .navBtn {\n    padding: 12px 22px;\n    border-radius: 10px;\n    border: none;\n    font-size: 0.95rem;\n    font-weight: 700;\n    cursor: pointer;\n    transition: all 0.15s;\n  }\n  .navBtn:hover { transform: translateY(-1px); }\n\n  #prevBtn { background: rgba(255,255,255,0.08); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); }\n  #prevBtn:hover { background: rgba(255,255,255,0.12); color: #e2e8f0; }\n  #nextBtn { background: linear-gradient(135deg, #1d4ed8, #7c3aed); color: #fff; }\n  #skipBtn { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }\n  #skipBtn:hover { background: rgba(251,191,36,0.2); }\n\n  #submitBtn {\n    display: none;\n    width: 100%;\n    padding: 18px;\n    margin-top: 18px;\n    border-radius: 14px;\n    border: none;\n    background: linear-gradient(135deg, #059669, #0d9488);\n    color: #fff;\n    font-size: 1.2rem;\n    font-weight: 900;\n    cursor: pointer;\n    letter-spacing: 0.03em;\n    transition: all 0.2s;\n    box-shadow: 0 4px 24px rgba(5,150,105,0.35);\n  }\n  #submitBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(5,150,105,0.45); }\n\n  #resultsScreen { display: none; animation: fadeIn 0.6s ease; }\n\n  @keyframes fadeIn { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }\n\n  .resultHero {\n    text-align: center;\n    padding: 36px 24px;\n    background: rgba(255,255,255,0.04);\n    border: 1px solid rgba(100,150,255,0.15);\n    border-radius: 20px;\n    margin-bottom: 20px;\n  }\n\n  .resultMessage { font-size: 1.6rem; font-weight: 900; margin-bottom: 10px; line-height: 1.3; }\n\n  .resultScore {\n    font-size: 3.5rem;\n    font-weight: 900;\n    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);\n    -webkit-background-clip: text;\n    -webkit-text-fill-color: transparent;\n    background-clip: text;\n    margin: 12px 0;\n  }\n\n  .resultMeta {\n    display: flex;\n    justify-content: center;\n    gap: 24px;\n    flex-wrap: wrap;\n    margin-top: 16px;\n    font-size: 0.95rem;\n    color: #94a3b8;\n  }\n\n  .resultMeta span { font-weight: 700; color: #e2e8f0; }\n\n  .xpBox {\n    background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(96,165,250,0.1));\n    border: 1px solid rgba(167,139,250,0.3);\n    border-radius: 14px;\n    padding: 18px 24px;\n    text-align: center;\n    margin-bottom: 20px;\n  }\n  .xpBox h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.1em; color: #a78bfa; margin-bottom: 8px; }\n  .xpGained { font-size: 2rem; font-weight: 900; color: #a78bfa; }\n  .xpTotal  { font-size: 0.9rem; color: #94a3b8; margin-top: 4px; }\n\n  #reviewSection h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 16px; color: #e2e8f0; }\n\n  .reviewCard {\n    background: rgba(255,255,255,0.04);\n    border-radius: 14px;\n    padding: 18px 20px;\n    margin-bottom: 12px;\n    border-left: 5px solid #34d399;\n  }\n  .reviewCard.wrong { border-left-color: #f87171; }\n\n  .reviewStatus { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }\n  .reviewStatus.correct { color: #34d399; }\n  .reviewStatus.wrong   { color: #f87171; }\n\n  .reviewQ { font-size: 0.95rem; color: #e2e8f0; margin-bottom: 8px; font-weight: 500; }\n  .reviewAnswers { font-size: 0.88rem; color: #94a3b8; margin-bottom: 6px; }\n  .reviewAnswers .correct-ans { color: #34d399; font-weight: 700; }\n  .reviewAnswers .wrong-ans   { color: #f87171; font-weight: 700; text-decoration: line-through; }\n  .reviewExplain { font-size: 0.85rem; color: #64748b; font-style: italic; }\n\n  #weakAreas {\n    background: rgba(248,113,113,0.06);\n    border: 1px solid rgba(248,113,113,0.2);\n    border-radius: 14px;\n    padding: 18px 20px;\n    margin-bottom: 20px;\n  }\n  #weakAreas h3 { font-size: 1rem; font-weight: 700; color: #f87171; margin-bottom: 10px; }\n  #weakAreasList { font-size: 0.9rem; color: #cbd5e1; list-style: inside disc; }\n  #weakAreasList li { margin-bottom: 5px; }\n\n  #leaderboard {\n    background: rgba(255,255,255,0.04);\n    border: 1px solid rgba(100,150,255,0.15);\n    border-radius: 14px;\n    padding: 20px;\n    margin-bottom: 20px;\n  }\n  #leaderboard h2 { font-size: 1.1rem; font-weight: 800; color: #e2e8f0; margin-bottom: 14px; }\n\n  .lbRow {\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    padding: 9px 12px;\n    border-radius: 8px;\n    font-size: 0.88rem;\n    margin-bottom: 6px;\n    background: rgba(255,255,255,0.03);\n  }\n  .lbRow.highlight { background: rgba(96,165,250,0.15); border: 1px solid rgba(96,165,250,0.3); }\n  .lbRank  { font-weight: 900; color: #fbbf24; width: 28px; }\n  .lbScore { font-weight: 800; color: #34d399; }\n  .lbDate  { color: #64748b; font-size: 0.78rem; }\n\n  @media (max-width: 640px) {\n    #mainLayout { flex-direction: column; }\n    #miniMap { width: 100%; position: static; }\n    #miniMapGrid { grid-template-columns: repeat(10, 1fr); }\n    .mmBtn { font-size: 0.6rem; }\n    .resultScore { font-size: 2.5rem; }\n  }\n</style>\n</head>\n<body>\n\n<canvas id=\"confettiCanvas\"></canvas>\n<canvas id=\"fireworksCanvas\"></canvas>\n\n<div id=\"app\">\n  <div id=\"header\">\n    <h1>&#9889; Daily Math Test &#8212; Grade 7</h1>\n    <div id=\"timerBox\">\n      <div id=\"timerDisplay\">25:00</div>\n      <button id=\"addTimeBtn\" onclick=\"addTime()\">&#10133; Add 2 min</button>\n    </div>\n  </div>\n\n  <div id=\"progressBar\"><div id=\"progressFill\"></div></div>\n\n  <div id=\"testScreen\">\n    <div id=\"mainLayout\">\n      <div id=\"miniMap\">\n        <h3>Questions</h3>\n        <div id=\"miniMapGrid\"></div>\n      </div>\n\n      <div id=\"questionArea\">\n        <div id=\"questionCard\" class=\"questionCard\">\n          <div class=\"qMeta\">\n            <span class=\"qNum\" id=\"qNumLabel\">Question 1 of 20</span>\n            <span class=\"qTopic\" id=\"qTopicLabel\"></span>\n            <span class=\"qDiff\" id=\"qDiffLabel\"></span>\n          </div>\n          <div class=\"qText\" id=\"qText\"></div>\n          <div class=\"choices\" id=\"choicesContainer\"></div>\n        </div>\n\n        <div id=\"navRow\">\n          <button class=\"navBtn\" id=\"prevBtn\" onclick=\"goTo(currentQ - 1)\">&#8592; Previous</button>\n          <button class=\"navBtn\" id=\"skipBtn\" onclick=\"skipQuestion()\">Skip &#9197;</button>\n          <button class=\"navBtn\" id=\"nextBtn\" onclick=\"goTo(currentQ + 1)\">Next &#8594;</button>\n        </div>\n\n        <button id=\"submitBtn\" onclick=\"attemptSubmit()\">&#127919; Submit Test</button>\n      </div>\n    </div>\n  </div>\n\n  <div id=\"resultsScreen\">\n    <div class=\"resultHero\">\n      <div class=\"resultMessage\" id=\"resultMessage\"></div>\n      <div class=\"resultScore\" id=\"resultScore\"></div>\n      <div class=\"resultMeta\">\n        <div>Score: <span id=\"resFraction\"></span></div>\n        <div>Grade: <span id=\"resGrade\"></span></div>\n        <div>Time: <span id=\"resTime\"></span></div>\n      </div>\n    </div>\n\n    <div class=\"xpBox\">\n      <h3>XP Earned</h3>\n      <div class=\"xpGained\" id=\"xpGained\"></div>\n      <div class=\"xpTotal\"  id=\"xpTotal\"></div>\n    </div>\n\n    <div id=\"weakAreas\">\n      <h3>&#128218; Topics to Review</h3>\n      <ul id=\"weakAreasList\"></ul>\n    </div>\n\n    <div id=\"leaderboard\">\n      <h2>&#127942; Top Scores</h2>\n      <div id=\"leaderboardRows\"></div>\n    </div>\n\n    <div id=\"reviewSection\">\n      <h2>&#128203; Question Review</h2>\n      <div id=\"reviewCards\"></div>\n    </div>\n  </div>\n</div>\n\n<script>\nconst QUESTIONS = [\n  {\n    id:1, difficulty:'easy', topic:'Integers',\n    text:'What is -8 + 15?',\n    choices:['A) -23','B) 7','C) -7','D) 23'],\n    correct:1,\n    explain:'-8 + 15 = 7. Move 15 steps right from -8 on a number line.'\n  },\n  {\n    id:2, difficulty:'easy', topic:'Fractions',\n    text:'What is 1/2 + 1/4?',\n    choices:['A) 2/6','B) 3/4','C) 2/3','D) 1'],\n    correct:1,\n    explain:'Convert 1/2 to 2/4, then 2/4 + 1/4 = 3/4.'\n  },\n  {\n    id:3, difficulty:'easy', topic:'Percentages',\n    text:'What is 25% of 80?',\n    choices:['A) 15','B) 25','C) 20','D) 40'],\n    correct:2,\n    explain:'25% = 1/4. So 1/4 x 80 = 20.'\n  },\n  {\n    id:4, difficulty:'easy', topic:'Order of Operations',\n    text:'Evaluate: 3 + 4 x 2',\n    choices:['A) 14','B) 11','C) 10','D) 24'],\n    correct:1,\n    explain:'Multiplication before addition: 4 x 2 = 8, then 3 + 8 = 11.'\n  },\n  {\n    id:5, difficulty:'easy', topic:'Geometry',\n    text:'What is the perimeter of a rectangle with length 9 cm and width 4 cm?',\n    choices:['A) 13 cm','B) 36 cm','C) 26 cm','D) 18 cm'],\n    correct:2,\n    explain:'Perimeter = 2(l + w) = 2(9 + 4) = 2 x 13 = 26 cm.'\n  },\n  {\n    id:6, difficulty:'easy', topic:'Statistics',\n    text:'Find the mean of: 4, 7, 9, 10, 10.',\n    choices:['A) 10','B) 9','C) 8','D) 7'],\n    correct:2,\n    explain:'Sum = 40, count = 5. Mean = 40 / 5 = 8.'\n  },\n  {\n    id:7, difficulty:'medium', topic:'Basic Algebra',\n    text:'Solve for x: 3x - 7 = 14',\n    choices:['A) x = 5','B) x = 7','C) x = 21','D) x = 9'],\n    correct:1,\n    explain:'3x = 14 + 7 = 21, so x = 21 / 3 = 7.'\n  },\n  {\n    id:8, difficulty:'medium', topic:'Ratios',\n    text:'In a class of 30 students, the ratio of boys to girls is 2 : 3. How many girls are there?',\n    choices:['A) 12','B) 15','C) 18','D) 20'],\n    correct:2,\n    explain:'Total parts = 5. Girls = (3/5) x 30 = 18.'\n  },\n  {\n    id:9, difficulty:'medium', topic:'Decimals',\n    text:'What is 1.8 x 0.5?',\n    choices:['A) 0.9','B) 9','C) 1.3','D) 0.09'],\n    correct:0,\n    explain:'1.8 x 0.5 = 1.8 / 2 = 0.9.'\n  },\n  {\n    id:10, difficulty:'medium', topic:'Percentages',\n    text:'A jacket costs $60. It is on sale for 15% off. What is the sale price?',\n    choices:['A) $45','B) $51','C) $54','D) $48'],\n    correct:1,\n    explain:'15% of $60 = $9. Sale price = $60 - $9 = $51.'\n  },\n  {\n    id:11, difficulty:'medium', topic:'Geometry',\n    text:'What is the area of a triangle with base 12 m and height 7 m?',\n    choices:['A) 84 m2','B) 42 m2','C) 19 m2','D) None of the above'],\n    correct:1,\n    explain:'Area = 1/2 x base x height = 1/2 x 12 x 7 = 42 m2.'\n  },\n  {\n    id:12, difficulty:'medium', topic:'Statistics',\n    text:'Find the median of: 3, 7, 2, 9, 5.',\n    choices:['A) 5','B) 7','C) 4','D) 6'],\n    correct:0,\n    explain:'Ordered: 2, 3, 5, 7, 9. Middle value = 5.'\n  },\n  {\n    id:13, difficulty:'medium', topic:'Basic Algebra',\n    text:'If 5y + 3 = 2y + 18, what is y?',\n    choices:['A) y = 3','B) y = 7','C) y = 5','D) y = 4'],\n    correct:2,\n    explain:'5y - 2y = 18 - 3, so 3y = 15, y = 5.'\n  },\n  {\n    id:14, difficulty:'medium', topic:'Fractions',\n    text:'Which fraction is equivalent to 6/9?',\n    choices:['A) 3/5','B) 2/3','C) 4/7','D) All of the above'],\n    correct:1,\n    explain:'6/9 divided by 3/3 = 2/3. Both 6 and 9 share a factor of 3.'\n  },\n  {\n    id:15, difficulty:'medium', topic:'Order of Operations',\n    text:'Evaluate: (12 - 4)^2 / 4 + 1',\n    choices:['A) 13','B) 17','C) 9','D) 25'],\n    correct:1,\n    explain:'(8)^2 = 64. 64 / 4 = 16. 16 + 1 = 17.'\n  },\n  {\n    id:16, difficulty:'hard', topic:'Basic Algebra',\n    text:'A number is multiplied by 4 and then decreased by 9. The result is 3 more than twice the number. What is the number?',\n    choices:['A) 4','B) 6','C) 8','D) 12'],\n    correct:1,\n    explain:'4n - 9 = 2n + 3, so 2n = 12, n = 6.'\n  },\n  {\n    id:17, difficulty:'hard', topic:'Geometry',\n    text:'A circle has a radius of 7 cm. What is its area? (Use pi = 3.14)',\n    choices:['A) 43.96 cm2','B) 153.86 cm2','C) 21.98 cm2','D) 147 cm2'],\n    correct:1,\n    explain:'Area = pi x r^2 = 3.14 x 49 = 153.86 cm2.'\n  },\n  {\n    id:18, difficulty:'hard', topic:'Ratios and Proportions',\n    text:'If 8 workers can build a wall in 15 days, how many days will 12 workers take to build the same wall?',\n    choices:['A) 10 days','B) 20 days','C) 22.5 days','D) 8 days'],\n    correct:0,\n    explain:'Total work = 8 x 15 = 120 worker-days. 12 workers: 120 / 12 = 10 days.'\n  },\n  {\n    id:19, difficulty:'hard', topic:'Statistics',\n    text:'The mean of 5 numbers is 12. Four of the numbers are 8, 14, 10, and 16. What is the fifth number?',\n    choices:['A) 10','B) 12','C) 14','D) None of the above'],\n    correct:1,\n    explain:'Total = 5 x 12 = 60. Sum of four = 48. Fifth = 60 - 48 = 12.'\n  },\n  {\n    id:20, difficulty:'hard', topic:'Integers and Algebra',\n    text:'On Monday the temperature was -3 degrees C. By Friday it had risen by 11 degrees C, then dropped 6 degrees C overnight. What was the temperature Saturday morning?',\n    choices:['A) 2 degrees C','B) 8 degrees C','C) -2 degrees C','D) 4 degrees C'],\n    correct:0,\n    explain:'-3 + 11 = 8. 8 - 6 = 2 degrees C.'\n  }\n];\n\nlet currentQ    = 0;\nlet answers     = new Array(QUESTIONS.length).fill(null);\nlet skipped     = new Set();\nlet timerSec    = 25 * 60;\nlet addTimeUses = 0;\nconst MAX_ADD   = 3;\nlet timerInterval = null;\nlet startTime   = Date.now();\nlet submitted   = false;\n\nfunction fmt(sec) {\n  const m = Math.floor(sec / 60).toString().padStart(2,'0');\n  const s = (sec % 60).toString().padStart(2,'0');\n  return m + ':' + s;\n}\n\nfunction tick() {\n  if (submitted) return;\n  timerSec--;\n  document.getElementById('timerDisplay').textContent = fmt(timerSec);\n  if (timerSec <= 300) document.getElementById('timerDisplay').classList.add('urgent');\n  if (timerSec <= 0) { clearInterval(timerInterval); autoSubmit(); }\n}\n\nfunction addTime() {\n  if (addTimeUses >= MAX_ADD) return;\n  addTimeUses++;\n  timerSec += 120;\n  document.getElementById('timerDisplay').textContent = fmt(timerSec);\n  if (timerSec > 300) document.getElementById('timerDisplay').classList.remove('urgent');\n  if (addTimeUses >= MAX_ADD) {\n    document.getElementById('addTimeBtn').disabled = true;\n    document.getElementById('addTimeBtn').textContent = 'Add 2 min (used up)';\n  }\n}\n\ntimerInterval = setInterval(tick, 1000);\n\nfunction renderQuestion(idx) {\n  const q = QUESTIONS[idx];\n  currentQ = idx;\n\n  const card = document.getElementById('questionCard');\n  card.className = 'questionCard ' + q.difficulty;\n\n  document.getElementById('qNumLabel').textContent = 'Question ' + (idx+1) + ' of ' + QUESTIONS.length;\n  document.getElementById('qTopicLabel').textContent = q.topic;\n\n  const diffEl = document.getElementById('qDiffLabel');\n  diffEl.textContent = q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1);\n  diffEl.className = 'qDiff diff-' + q.difficulty;\n\n  document.getElementById('qText').textContent = q.text;\n\n  const container = document.getElementById('choicesContainer');\n  container.innerHTML = '';\n  const labels = ['A','B','C','D'];\n  q.choices.forEach(function(choice, ci) {\n    const btn = document.createElement('button');\n    btn.className = 'choiceBtn' + (answers[idx] === ci ? ' selected' : '');\n    const lbl = document.createElement('span');\n    lbl.className = 'choiceLabel';\n    lbl.textContent = labels[ci];\n    const txt = document.createElement('span');\n    txt.textContent = choice.replace(/^[A-D]\\)\\s*/,'');\n    btn.appendChild(lbl);\n    btn.appendChild(txt);\n    btn.onclick = (function(qIdx, choiceIdx) {\n      return function() { selectAnswer(qIdx, choiceIdx); };\n    })(idx, ci);\n    container.appendChild(btn);\n  });\n\n  document.getElementById('prevBtn').style.visibility = idx === 0 ? 'hidden' : 'visible';\n  document.getElementById('nextBtn').style.display = idx === QUESTIONS.length - 1 ? 'none' : 'inline-block';\n\n  updateMiniMap();\n  updateProgress();\n  updateSubmitBtn();\n}\n\nfunction selectAnswer(qIdx, choiceIdx) {\n  answers[qIdx] = choiceIdx;\n  skipped.delete(qIdx);\n  renderQuestion(qIdx);\n}\n\nfunction skipQuestion() {\n  if (answers[currentQ] === null) skipped.add(currentQ);\n  var next = findNext(currentQ);\n  if (next !== null) goTo(next);\n}\n\nfunction findNext(from) {\n  for (var i = from + 1; i < QUESTIONS.length; i++) {\n    if (answers[i] === null) return i;\n  }\n  for (var i = 0; i < from; i++) {\n    if (answers[i] === null) return i;\n  }\n  if (from < QUESTIONS.length - 1) return from + 1;\n  return null;\n}\n\nfunction goTo(idx) {\n  if (idx < 0 || idx >= QUESTIONS.length) return;\n  renderQuestion(idx);\n}\n\nfunction updateMiniMap() {\n  var grid = document.getElementById('miniMapGrid');\n  grid.innerHTML = '';\n  for (var i = 0; i < QUESTIONS.length; i++) {\n    (function(qi) {\n      var btn = document.createElement('button');\n      btn.className = 'mmBtn';\n      btn.textContent = qi + 1;\n      if (qi === currentQ) btn.classList.add('current');\n      else if (answers[qi] !== null) btn.classList.add('answered');\n      else if (skipped.has(qi)) {\n        btn.classList.add('skipped');\n        var dot = document.createElement('span');\n        dot.className = 'skipDot';\n        btn.appendChild(dot);\n      }\n      btn.onclick = function() { goTo(qi); };\n      grid.appendChild(btn);\n    })(i);\n  }\n}\n\nfunction updateProgress() {\n  var answered = answers.filter(function(a){ return a !== null; }).length;\n  document.getElementById('progressFill').style.width = (answered / QUESTIONS.length * 100) + '%';\n}\n\nfunction updateSubmitBtn() {\n  var answered = answers.filter(function(a){ return a !== null; }).length;\n  document.getElementById('submitBtn').style.display = answered === QUESTIONS.length ? 'block' : 'none';\n}\n\nfunction attemptSubmit() {\n  var unanswered = answers.filter(function(a){ return a === null; }).length;\n  if (unanswered > 0) {\n    if (!confirm('You have ' + unanswered + ' unanswered question(s). Submit anyway?')) return;\n  }\n  submitTest();\n}\n\nfunction autoSubmit() {\n  alert('Time is up! Submitting your test now.');\n  submitTest();\n}\n\nfunction submitTest() {\n  if (submitted) return;\n  submitted = true;\n  clearInterval(timerInterval);\n\n  var elapsed = Math.floor((Date.now() - startTime) / 1000);\n  var correct = answers.filter(function(a, i){ return a === QUESTIONS[i].correct; }).length;\n  var pct = Math.round(correct / QUESTIONS.length * 100);\n\n  showResults(correct, pct, elapsed);\n}\n\nfunction gradeLabel(pct) {\n  if (pct >= 90) return 'A';\n  if (pct >= 80) return 'B';\n  if (pct >= 70) return 'C';\n  if (pct >= 60) return 'D';\n  return 'F';\n}\n\nfunction ratingMessage(pct) {\n  if (pct === 100) return 'PERFECT SCORE! Absolutely brilliant!';\n  if (pct >= 90)   return 'Outstanding! Almost perfect!';\n  if (pct >= 80)   return 'Great job! Keep it up!';\n  if (pct >= 70)   return 'Good work! Review your mistakes.';\n  if (pct >= 60)   return 'Keep studying -- you\\'re getting there!';\n  return 'Don\\'t give up! Review the material and try again.';\n}\n\nfunction fmtElapsed(sec) {\n  return Math.floor(sec/60) + 'm ' + (sec%60) + 's';\n}\n\nfunction showResults(correct, pct, elapsed) {\n  document.getElementById('testScreen').style.display = 'none';\n  var rs = document.getElementById('resultsScreen');\n  rs.style.display = 'block';\n\n  document.getElementById('resultMessage').textContent = ratingMessage(pct);\n  document.getElementById('resultScore').textContent   = pct + '%';\n  document.getElementById('resFraction').textContent   = correct + ' / ' + QUESTIONS.length;\n  document.getElementById('resGrade').textContent      = gradeLabel(pct);\n  document.getElementById('resTime').textContent       = fmtElapsed(elapsed);\n\n  // XP\n  var xpEarned = correct * 10 + (pct >= 80 ? 50 : 0) + (pct === 100 ? 100 : 0);\n  var prevXP   = parseInt(localStorage.getItem('tutor_xp') || '0', 10);\n  var newXP    = prevXP + xpEarned;\n  localStorage.setItem('tutor_xp', newXP);\n  document.getElementById('xpGained').textContent = '+' + xpEarned + ' XP';\n  document.getElementById('xpTotal').textContent  = 'Total XP: ' + newXP;\n\n  // Leaderboard\n  var lbKey = 'tutor_top_scores_math7';\n  var lb = JSON.parse(localStorage.getItem(lbKey) || '[]');\n  var entry = { score: pct, correct: correct, date: '2026-05-23', time: fmtElapsed(elapsed) };\n  lb.push(entry);\n  lb.sort(function(a, b){ return b.score - a.score; });\n  lb = lb.slice(0, 10);\n  localStorage.setItem(lbKey, JSON.stringify(lb));\n\n  var newEntryIdx = lb.findIndex(function(e){ return e.score === entry.score && e.date === entry.date && e.time === entry.time; });\n\n  var lbContainer = document.getElementById('leaderboardRows');\n  lbContainer.innerHTML = '';\n  var medals = ['1st','2nd','3rd'];\n  lb.forEach(function(row, ri) {\n    var div = document.createElement('div');\n    div.className = 'lbRow' + (ri === newEntryIdx ? ' highlight' : '');\n    div.innerHTML =\n      '<span class=\"lbRank\">' + (medals[ri] || (ri+1)+'th') + '</span>' +\n      '<span class=\"lbScore\">' + row.score + '%</span>' +\n      '<span>' + row.correct + '/20 correct</span>' +\n      '<span class=\"lbDate\">' + row.date + ' &middot; ' + row.time + '</span>';\n    lbContainer.appendChild(div);\n  });\n\n  // Weak areas\n  var weakMap = {};\n  QUESTIONS.forEach(function(q, i) {\n    if (answers[i] !== q.correct) {\n      weakMap[q.topic] = (weakMap[q.topic] || 0) + 1;\n    }\n  });\n  var weakList = document.getElementById('weakAreasList');\n  weakList.innerHTML = '';\n  var weakEntries = Object.entries(weakMap).sort(function(a,b){ return b[1]-a[1]; });\n  if (weakEntries.length === 0) {\n    weakList.innerHTML = '<li>No weak areas -- perfect score!</li>';\n  } else {\n    weakEntries.forEach(function(pair) {\n      var li = document.createElement('li');\n      li.textContent = pair[0] + ': ' + pair[1] + ' mistake' + (pair[1] > 1 ? 's' : '');\n      weakList.appendChild(li);\n    });\n  }\n\n  // Review cards\n  var reviewContainer = document.getElementById('reviewCards');\n  reviewContainer.innerHTML = '';\n  var labels = ['A','B','C','D'];\n  QUESTIONS.forEach(function(q, i) {\n    var isCorrect = answers[i] === q.correct;\n    var card = document.createElement('div');\n    card.className = 'reviewCard' + (isCorrect ? '' : ' wrong');\n\n    var userChoice = answers[i] !== null\n      ? labels[answers[i]] + ') ' + q.choices[answers[i]].replace(/^[A-D]\\)\\s*/,'')\n      : 'No answer';\n    var correctChoice = labels[q.correct] + ') ' + q.choices[q.correct].replace(/^[A-D]\\)\\s*/,'');\n\n    var answersHtml = isCorrect\n      ? '<span class=\"correct-ans\">Your answer: ' + userChoice + '</span>'\n      : '<span class=\"wrong-ans\">Your answer: ' + userChoice + '</span> &rarr; <span class=\"correct-ans\">Correct: ' + correctChoice + '</span>';\n\n    card.innerHTML =\n      '<div class=\"reviewStatus ' + (isCorrect ? 'correct' : 'wrong') + '\">' + (isCorrect ? 'Correct' : 'Incorrect') + '</div>' +\n      '<div class=\"reviewQ\">Q' + (i+1) + ': ' + q.text + '</div>' +\n      '<div class=\"reviewAnswers\">' + answersHtml + '</div>' +\n      '<div class=\"reviewExplain\">' + q.explain + '</div>';\n    reviewContainer.appendChild(card);\n  });\n\n  if (pct === 100) {\n    launchFireworks();\n    launchConfetti();\n  } else if (pct >= 80) {\n    launchConfetti();\n  }\n\n  rs.scrollIntoView({ behavior: 'smooth', block: 'start' });\n}\n\nfunction launchConfetti() {\n  var canvas = document.getElementById('confettiCanvas');\n  canvas.style.display = 'block';\n  canvas.width  = window.innerWidth;\n  canvas.height = window.innerHeight;\n  var ctx = canvas.getContext('2d');\n  var COLORS = ['#f472b6','#60a5fa','#34d399','#fbbf24','#a78bfa','#fb923c','#f87171','#38bdf8'];\n  var particles = [];\n  for (var i = 0; i < 180; i++) {\n    particles.push({\n      x: Math.random() * canvas.width,\n      y: -20 - Math.random() * 100,\n      w: 6 + Math.random() * 10,\n      h: 10 + Math.random() * 8,\n      color: COLORS[Math.floor(Math.random() * COLORS.length)],\n      vx: (Math.random() - 0.5) * 3,\n      vy: 2 + Math.random() * 4,\n      rot: Math.random() * Math.PI * 2,\n      rotV: (Math.random() - 0.5) * 0.15\n    });\n  }\n  var end = Date.now() + 4000;\n  function draw() {\n    ctx.clearRect(0, 0, canvas.width, canvas.height);\n    var now = Date.now();\n    var fade = now > end - 800 ? Math.max(0, 1 - (now - (end - 800)) / 800) : 1;\n    particles.forEach(function(p) {\n      p.x  += p.vx;\n      p.y  += p.vy;\n      p.rot += p.rotV;\n      p.vy *= 1.01;\n      ctx.save();\n      ctx.translate(p.x, p.y);\n      ctx.rotate(p.rot);\n      ctx.globalAlpha = fade;\n      ctx.fillStyle = p.color;\n      ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);\n      ctx.restore();\n    });\n    if (now < end) {\n      requestAnimationFrame(draw);\n    } else {\n      ctx.clearRect(0, 0, canvas.width, canvas.height);\n      canvas.style.display = 'none';\n    }\n  }\n  requestAnimationFrame(draw);\n}\n\nfunction launchFireworks() {\n  var canvas = document.getElementById('fireworksCanvas');\n  canvas.style.display = 'block';\n  canvas.width  = window.innerWidth;\n  canvas.height = window.innerHeight;\n  var ctx = canvas.getContext('2d');\n  var COLORS = ['#f472b6','#60a5fa','#fbbf24','#a78bfa','#34d399','#fb923c'];\n  var particles = [];\n\n  function burst(cx, cy) {\n    var color = COLORS[Math.floor(Math.random() * COLORS.length)];\n    for (var i = 0; i < 60; i++) {\n      var angle = (i / 60) * Math.PI * 2;\n      var speed = 2 + Math.random() * 5;\n      particles.push({\n        x: cx, y: cy,\n        vx: Math.cos(angle) * speed,\n        vy: Math.sin(angle) * speed,\n        alpha: 1, color: color,\n        r: 2 + Math.random() * 2\n      });\n    }\n  }\n\n  var launches  = [0, 600, 1200, 1800, 2500];\n  var positions = [[0.2,0.3],[0.8,0.25],[0.5,0.15],[0.35,0.4],[0.65,0.35]];\n  launches.forEach(function(delay, idx) {\n    setTimeout(function() {\n      burst(positions[idx][0] * canvas.width, positions[idx][1] * canvas.height);\n    }, delay);\n  });\n\n  var end = Date.now() + 4000;\n  function draw() {\n    ctx.fillStyle = 'rgba(0,0,0,0.15)';\n    ctx.fillRect(0, 0, canvas.width, canvas.height);\n    particles = particles.filter(function(p){ return p.alpha > 0.02; });\n    particles.forEach(function(p) {\n      p.x  += p.vx;\n      p.y  += p.vy;\n      p.vy += 0.08;\n      p.vx *= 0.98;\n      p.alpha *= 0.96;\n      ctx.beginPath();\n      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);\n      ctx.fillStyle = p.color;\n      ctx.globalAlpha = p.alpha;\n      ctx.fill();\n    });\n    ctx.globalAlpha = 1;\n    if (Date.now() < end || particles.length > 0) {\n      requestAnimationFrame(draw);\n    } else {\n      ctx.clearRect(0, 0, canvas.width, canvas.height);\n      canvas.style.display = 'none';\n    }\n  }\n  requestAnimationFrame(draw);\n}\n\nrenderQuestion(0);\n</script>\n</body>\n</html>\n"}, {"name": "timing.json", "type": "text", "content": "{\"total_tokens\": 43368, \"duration_ms\": 323876, \"total_duration_seconds\": 323.9}\n"}], "grading": null}], "previous_feedback": {}, "previous_outputs": {}, "benchmark": {"metadata": {"skill_name": "daily-test", "skill_path": "<path/to/skill>", "executor_model": "<model-name>", "analyzer_model": "<model-name>", "timestamp": "2026-05-23T13:31:11Z", "evals_run": [0, 1], "runs_per_configuration": 3}, "runs": [{"eval_id": 0, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 10, "failed": 0, "total": 10, "time_seconds": 178.1, "tokens": 29399, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "HTML file exists and is at least 10KB", "passed": true, "evidence": "File size: 31524 bytes"}, {"text": "Contains 20 questions in a JS questions array", "passed": true, "evidence": "Found 20 question 'text:' entries"}, {"text": "Contains confetti animation (>=80%)", "passed": true, "evidence": "Found 'confetti'"}, {"text": "Contains fireworks animation (100%)", "passed": true, "evidence": "Found 'firework'"}, {"text": "Uses localStorage for scores/XP", "passed": true, "evidence": "Found localStorage"}, {"text": "Contains timer countdown functionality", "passed": true, "evidence": "Found timer code"}, {"text": "Contains skip question functionality", "passed": true, "evidence": "Found 'skip'"}, {"text": "Contains question mini-map navigation", "passed": true, "evidence": "Found map/navigation code"}, {"text": "Contains results screen with letter grade", "passed": true, "evidence": "Found results/grade code"}, {"text": "File is fully self-contained", "passed": true, "evidence": "No bad srcs"}], "notes": []}, {"eval_id": 1, "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 10, "failed": 0, "total": 10, "time_seconds": 323.9, "tokens": 43368, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "HTML file exists and is at least 10KB", "passed": true, "evidence": "File size: 32499 bytes"}, {"text": "Contains 20 questions in a JS questions array", "passed": true, "evidence": "Found 20 question 'text:' entries"}, {"text": "Contains confetti animation (>=80%)", "passed": true, "evidence": "Found 'confetti'"}, {"text": "Contains fireworks animation (100%)", "passed": true, "evidence": "Found 'firework'"}, {"text": "Uses localStorage for scores/XP", "passed": true, "evidence": "Found localStorage"}, {"text": "Contains timer countdown functionality", "passed": true, "evidence": "Found timer code"}, {"text": "Contains skip question functionality", "passed": true, "evidence": "Found 'skip'"}, {"text": "Contains question mini-map navigation", "passed": true, "evidence": "Found map/navigation code"}, {"text": "Contains results screen with letter grade", "passed": true, "evidence": "Found results/grade code"}, {"text": "File is fully self-contained", "passed": true, "evidence": "No bad srcs"}], "notes": []}, {"eval_id": 0, "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.3, "passed": 3, "failed": 7, "total": 10, "time_seconds": 197.7, "tokens": 29341, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "HTML file exists and is at least 10KB", "passed": true, "evidence": "File size: 18746 bytes"}, {"text": "Contains 20 questions in a JS questions array", "passed": false, "evidence": "Found 0 question 'text:' entries"}, {"text": "Contains confetti animation (>=80%)", "passed": false, "evidence": "Missing"}, {"text": "Contains fireworks animation (100%)", "passed": false, "evidence": "Missing"}, {"text": "Uses localStorage for scores/XP", "passed": false, "evidence": "Missing"}, {"text": "Contains timer countdown functionality", "passed": false, "evidence": "Missing"}, {"text": "Contains skip question functionality", "passed": false, "evidence": "Missing"}, {"text": "Contains question mini-map navigation", "passed": false, "evidence": "Missing"}, {"text": "Contains results screen with letter grade", "passed": true, "evidence": "Found results/grade code"}, {"text": "File is fully self-contained", "passed": true, "evidence": "No bad srcs"}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 251.0, "stddev": 103.0962, "min": 178.1, "max": 323.9}, "tokens": {"mean": 36383.5, "stddev": 9877.5746, "min": 29399, "max": 43368}}, "without_skill": {"pass_rate": {"mean": 0.3, "stddev": 0.0, "min": 0.3, "max": 0.3}, "time_seconds": {"mean": 197.7, "stddev": 0.0, "min": 197.7, "max": 197.7}, "tokens": {"mean": 29341.0, "stddev": 0.0, "min": 29341, "max": 29341}}, "delta": {"pass_rate": "+0.70", "time_seconds": "+53.3", "tokens": "+7042"}}, "notes": []}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

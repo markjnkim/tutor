@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📐 Shape Quest — Geometry from the Ground Up</title>
+<style>
+:root{
+  --ink:#22303a; --paper:#fbfdfe; --card:#ffffff;
+  --deep:#2f5d7c; --deep2:#1f4459; --sky:#bfe3f2; --mist:#eaf4fa;
+  --sun:#f0b429; --coral:#e2725b; --moss:#5c9367; --line:#3c6e8f;
+  --shadow:rgba(47,93,124,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Trebuchet MS",Verdana,sans-serif;
+  background:linear-gradient(180deg,#e3f1f8 0%,var(--paper) 45%);
+  min-height:100vh;color:var(--ink)}
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 70px}
+.screen{display:none}.screen.on{display:block}
+h1{color:var(--deep2);text-align:center;font-size:1.9rem;margin-bottom:4px}
+h2{color:var(--deep2);font-size:1.15rem;margin-bottom:10px}
+.sub{text-align:center;color:#63798a;margin-bottom:20px}
+.panel{background:var(--card);border-radius:20px;padding:22px;box-shadow:0 4px 16px var(--shadow);margin-bottom:16px}
+button{font-family:inherit;font-size:1rem;font-weight:bold;border:none;border-radius:14px;
+  padding:12px 22px;cursor:pointer;transition:transform .1s,box-shadow .1s}
+button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 4px 10px rgba(0,0,0,.14)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.b-main{background:var(--deep);color:#fff}
+.b-soft{background:#e6eef3;color:var(--ink)}
+.b-warn{background:var(--coral);color:#fff}
+.b-sm{padding:8px 15px;font-size:.85rem}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+input[type=text]{font-family:inherit;font-size:1.1rem;padding:12px 16px;
+  border:2px solid #c9dfeb;border-radius:14px;width:100%;outline:none}
+input[type=text]:focus{border-color:var(--deep)}
+.note{font-size:.78rem;color:#8fa3b0;text-align:center;margin-top:10px}
+.mid{text-align:center}
+/* top bar */
+.topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:var(--card);border-radius:18px;padding:12px 16px;margin-bottom:16px;
+  box-shadow:0 3px 12px var(--shadow);padding-left:64px}
+.brand{font-weight:bold;color:var(--deep2)}
+.brand small{display:block;font-size:.7rem;color:#8fa3b0;font-weight:normal}
+.spacer{flex:1}
+.pill{background:var(--mist);border-radius:999px;padding:6px 14px;font-size:.85rem;font-weight:bold;color:var(--deep2)}
+#who{font-size:.75rem;color:var(--deep);font-weight:bold}
+/* login */
+#login{position:fixed;inset:0;z-index:200;background:linear-gradient(180deg,#dceef7,var(--paper));
+  display:flex;align-items:center;justify-content:center;padding:20px}
+#loginbox{background:var(--card);border:2px solid var(--sky);border-radius:22px;padding:34px 30px;
+  max-width:420px;width:100%;text-align:center;box-shadow:0 8px 26px var(--shadow)}
+#chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.chip{background:var(--mist);border:2px solid var(--sky);color:var(--deep2);border-radius:999px;
+  padding:7px 15px;font-size:.85rem;cursor:pointer}
+.chip:hover{background:var(--deep);color:#fff}
+/* map */
+.unithead{font-weight:bold;color:var(--deep2);margin:18px 0 8px;font-size:.95rem;
+  border-bottom:2px solid var(--sky);padding-bottom:5px}
+.mapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}
+.node{background:var(--card);border:2px solid #dbe9f1;border-radius:16px;padding:13px;
+  cursor:pointer;transition:transform .1s}
+.node:hover{transform:translateY(-3px)}
+.node .nico{font-size:1.6rem}
+.node .nname{font-weight:bold;font-size:.9rem;margin-top:4px}
+.node .nscore{font-size:.72rem;color:#8fa3b0;margin-top:3px}
+.node.done{border-color:var(--moss);background:#f2f9f4}
+.node.now{border-color:var(--sun);box-shadow:0 0 0 3px rgba(240,180,41,.18)}
+.node.locked{opacity:.45;cursor:not-allowed;background:#f4f7f9}
+/* lesson */
+.stepcard{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 3px 14px var(--shadow)}
+.bigidea{background:var(--mist);border-left:5px solid var(--deep);border-radius:10px;
+  padding:12px 16px;margin-bottom:16px;line-height:1.5;font-size:.95rem}
+.figure{background:#f7fbfd;border:1px solid #e0eef5;border-radius:14px;padding:10px;margin:14px 0}
+.figure svg{width:100%;height:auto;display:block;max-height:230px}
+.steptitle{font-weight:bold;color:var(--deep2);font-size:1.05rem;margin-bottom:8px}
+.steptext{line-height:1.6}
+.dots{display:flex;gap:6px;justify-content:center;margin:16px 0 4px}
+.dot{width:9px;height:9px;border-radius:50%;background:#d5e5ee}
+.dot.on{background:var(--deep)}
+/* svg diagram styling — diagrams inherit the theme */
+.ln{stroke:var(--line);stroke-width:2.5;fill:none;stroke-linecap:round}
+.ln2{stroke:var(--coral);stroke-width:2.5;fill:none;stroke-linecap:round}
+.arc{stroke:var(--sun);stroke-width:2.5;fill:none}
+.sq{stroke:var(--sun);stroke-width:2.5;fill:none}
+.zig{stroke:var(--moss);stroke-width:2;fill:none;stroke-dasharray:5 4}
+.pt{fill:var(--deep2)}
+.pt.hi{fill:var(--coral)}
+.fill{fill:var(--line)}
+.shp{fill:rgba(191,227,242,.45);stroke:var(--line);stroke-width:2.5}
+.ghost{fill:none;stroke:#c2d6e0;stroke-width:2;stroke-dasharray:5 4}
+.grid line{stroke:#cfe2ed;stroke-width:1}
+.axis{stroke:var(--deep2);stroke-width:2}
+text.lbl{fill:var(--deep2);font-size:14px;font-weight:bold;font-family:"Trebuchet MS",sans-serif}
+text.lbl.hi{fill:var(--coral)}
+text.dim{fill:#7d94a3;font-size:12px;font-family:"Trebuchet MS",sans-serif}
+/* quiz */
+.qtext{font-size:1.1rem;font-weight:bold;margin-bottom:12px;line-height:1.45}
+.choices label{display:flex;align-items:center;gap:11px;background:#f6fafc;border:2px solid #e2eef4;
+  border-radius:14px;padding:12px 15px;margin-bottom:9px;cursor:pointer;font-size:1rem}
+.choices label:hover{border-color:var(--deep)}
+.choices input{accent-color:var(--deep);width:19px;height:19px}
+.choices label.right{background:#eaf7ee;border-color:var(--moss);font-weight:bold}
+.choices label.wrong{background:#fdeeeb;border-color:var(--coral)}
+.choices label.off{pointer-events:none}
+.why{display:none;background:#fff8e6;border-left:5px solid var(--sun);border-radius:10px;
+  padding:12px 15px;margin:10px 0;line-height:1.5}
+.why.on{display:block}
+.bar{height:9px;background:#e2eef4;border-radius:999px;overflow:hidden;margin-bottom:14px}
+.bar > div{height:100%;background:var(--deep);transition:width .4s}
+/* result */
+.bigscore{font-size:2.8rem;font-weight:bold;text-align:center;color:var(--deep2)}
+.cheer{font-size:3.4rem;text-align:center;margin:8px 0}
+.cheer.pop{animation:pop .7s}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #e6eef3}
+th{color:var(--deep2)}
+.hist-check{width:18px;height:18px;accent-color:var(--coral);cursor:pointer}
+.rev-btn{background:var(--deep);color:#fff;border-radius:9px;padding:5px 11px;font-size:.78rem;border:none;cursor:pointer}
+.sel-bar{display:none;align-items:center;gap:10px;flex-wrap:wrap;background:#fdeeeb;
+  border:2px solid var(--coral);border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.sel-bar.on{display:flex}
+.sel-bar .cnt{font-weight:bold;color:var(--coral)}
+.rev-item{border:2px solid #e6eef3;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.rev-empty{text-align:center;color:#8fa3b0;padding:18px}
+select.pick{font-family:inherit;font-size:.95rem;padding:10px 12px;border:2px solid #c9dfeb;
+  border-radius:12px;width:100%;margin-bottom:12px;background:#fff;color:var(--ink)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center}
+.modal-back.on{display:flex}
+.modal{background:#fff;border-radius:18px;padding:26px;max-width:420px;text-align:center}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+
+<!-- LOGIN -->
+<div id="login">
+  <div id="loginbox">
+    <div style="font-size:3rem">📐</div>
+    <h2 style="margin:8px 0 4px">Shape Quest</h2>
+    <p style="color:#63798a;font-size:.9rem;margin-bottom:18px">Geometry from the very beginning. Who's exploring?</p>
+    <input type="text" id="nameIn" placeholder="Type your name…" maxlength="20" autocomplete="off">
+    <button class="b-main" style="width:100%;margin-top:14px" onclick="login()">Start exploring 🧭</button>
+    <div id="chips"></div>
+    <p class="note">Progress is saved on this computer.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">📐 Shape Quest<small>Geometry, step by step · <span id="who"></span></small></div>
+    <div class="spacer"></div>
+    <div class="pill">⭐ <span id="stars">0</span></div>
+    <div class="pill">📘 <span id="doneN">0</span>/<span id="totalN">12</span></div>
+    <button class="b-soft b-sm" onclick="go('map')">🗺️ Map</button>
+  </div>
+
+  <!-- MAP -->
+  <div id="s-map" class="screen on">
+    <h1>Your Geometry Path</h1>
+    <p class="sub">Twelve stops from a single point all the way to writing a proof.</p>
+    <div id="mapBody"></div>
+    <div class="row">
+      <button class="b-soft" onclick="go('progress')">📊 My Progress</button>
+      <button class="b-soft" onclick="switchUser()">👋 Switch learner</button>
+    </div>
+  </div>
+
+  <!-- LESSON -->
+  <div id="s-lesson" class="screen">
+    <div class="bar"><div id="lsBar" style="width:0%"></div></div>
+    <h2 id="lsName"></h2>
+    <div class="bigidea" id="lsBig"></div>
+    <div class="stepcard">
+      <div class="figure" id="lsFig"></div>
+      <div class="steptitle" id="lsTitle"></div>
+      <div class="steptext" id="lsText"></div>
+      <div class="dots" id="lsDots"></div>
+    </div>
+    <div class="row">
+      <button class="b-soft" id="lsPrev" onclick="stepPrev()">⬅️ Back</button>
+      <button class="b-main" id="lsNext" onclick="stepNext()">Next ➡️</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="s-quiz" class="screen">
+    <div class="bar"><div id="qzBar" style="width:0%"></div></div>
+    <h2 id="qzName"></h2>
+    <div class="stepcard">
+      <div class="figure" id="qzFig"></div>
+      <div class="qtext" id="qzQ"></div>
+      <form class="choices" id="qzChoices"></form>
+      <div class="why" id="qzWhy"></div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="b-main" id="qzCheck" onclick="checkAnswer()" disabled>Check ✔️</button>
+        <button class="b-main" id="qzNext" onclick="quizNext()" style="display:none">Next ➡️</button>
+        <button class="b-main" id="qzDone" onclick="finishLesson()" style="display:none">Finish 🏁</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="s-result" class="screen">
+    <div class="panel mid">
+      <div class="cheer" id="rArt">🎉</div>
+      <div class="bigscore" id="rScore"></div>
+      <h2 id="rTitle" style="margin-top:10px"></h2>
+      <p id="rMsg" style="line-height:1.55;margin-top:8px"></p>
+    </div>
+    <div class="panel" id="rReviewWrap">
+      <h2>📚 Worth another look</h2>
+      <div id="rReview"></div>
+    </div>
+    <div class="row">
+      <button class="b-main" onclick="go('map')">Back to the map 🗺️</button>
+      <button class="b-soft" onclick="retryLesson()">Try this stop again 🔁</button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="s-progress" class="screen">
+    <h1>📊 Progress</h1>
+    <div class="panel">
+      <h2>Lesson scores</h2>
+      <table id="progTable"><thead><tr><th>Stop</th><th>Lesson</th><th>Best score</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="panel">
+      <h2>🔍 Review past mistakes</h2>
+      <p style="font-size:.82rem;color:#8fa3b0;margin-bottom:10px">
+        Every practice question missed, with the diagram and the explanation. Pick an attempt to look back at.</p>
+      <select id="reviewPick" class="pick" onchange="renderPastReview()"></select>
+      <div id="pastReview"></div>
+    </div>
+    <div class="panel">
+      <h2>📜 Attempt history</h2>
+      <div class="sel-bar" id="selBar">
+        <span class="cnt" id="selCount">0 selected</span>
+        <button class="b-warn b-sm" onclick="confirmDeleteSelected()">🗑️ Delete selected</button>
+        <button class="b-soft b-sm" onclick="clearSelection()">Clear</button>
+      </div>
+      <table id="histTable"><thead><tr><th style="width:30px"></th><th>Date</th><th>Lesson</th><th>Score</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="row">
+      <button class="b-main" onclick="go('map')">⬅️ Back</button>
+      <button class="b-warn" onclick="askDelete()">🗑️ Delete ALL my progress</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="delModal">
+  <div class="modal">
+    <div style="font-size:2.6rem">📐❓</div>
+    <h2 id="delText">Delete progress?</h2>
+    <p id="delBody" style="margin:10px 0 18px;font-size:.9rem;color:#666">Your data moves to the deleted-data archive, not erased.</p>
+    <div class="row">
+      <button class="b-soft" onclick="closeDel()">Cancel</button>
+      <button class="b-warn" onclick="doDelete()">Yes, delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="tutor-store.js"></script>
+<script src="tutor-nav.js"></script>
+<script>
+/* ================= CURRICULUM ================= */
+__CURRICULUM__
+
+const TOTAL = CURRICULUM.length;
+const APP_ID = 'geometry';
+const PASS = 0.75;                     /* 3 of 4 to clear a stop */
+
+let currentUser = null;
+let S = { done:[], stars:0, scores:{} };
+let L = { idx:0, step:0 };
+let Q = { i:0, right:0, results:[] };
+
+function myApp(){ return TutorStore.app(currentUser, APP_ID); }
+function save(){
+  if(!currentUser) return;
+  TutorStore.setAppField(currentUser, APP_ID, 'progress', S);
+  TutorStore.setAppField(currentUser, APP_ID, 'best', Math.round(S.done.length/TOTAL*100));
+}
+function esc(s){ const d=document.createElement('div'); d.textContent=String(s==null?'':s); return d.innerHTML; }
+
+/* ================= SCREENS ================= */
+function go(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+screen).classList.add('on');
+  window.scrollTo(0,0);
+  if(screen==='map') drawMap();
+  if(screen==='progress') drawProgress();
+}
+function syncTop(){
+  document.getElementById('stars').textContent = S.stars;
+  document.getElementById('doneN').textContent = S.done.length;
+  document.getElementById('totalN').textContent = TOTAL;
+}
+
+/* ================= LOGIN ================= */
+function renderChips(){
+  const box = document.getElementById('chips');
+  const users = TutorStore.users();
+  box.innerHTML = users.length ? "<span style='width:100%;font-size:.78rem;color:#8fa3b0'>Or tap your name:</span>" : '';
+  users.forEach(u=>{
+    const c=document.createElement('span');
+    c.className='chip'; c.textContent='📐 '+u.displayName;
+    c.onclick=()=>{ document.getElementById('nameIn').value=u.displayName; login(); };
+    box.appendChild(c);
+  });
+}
+function login(){
+  const typed = document.getElementById('nameIn').value.trim();
+  if(!typed){ document.getElementById('nameIn').focus(); return; }
+  currentUser = TutorStore.login(typed).displayName;
+  const saved = myApp().progress;
+  S = saved ? {done:saved.done||[], stars:saved.stars||0, scores:saved.scores||{}}
+            : {done:[], stars:0, scores:{}};
+  document.getElementById('who').textContent = '👤 '+currentUser;
+  document.getElementById('login').style.display='none';
+  if(window.TutorNav) TutorNav.setUser(currentUser);
+  syncTop(); go('map');
+}
+function switchUser(){ currentUser=null; document.getElementById('nameIn').value='';
+  renderChips(); document.getElementById('login').style.display='flex'; }
+
+/* ================= MAP ================= */
+function drawMap(){
+  syncTop();
+  const host = document.getElementById('mapBody');
+  let html=''; let unit=null;
+  CURRICULUM.forEach((les,i)=>{
+    if(les.unit!==unit){
+      if(unit!==null) html += '</div>';
+      unit=les.unit;
+      html += `<div class="unithead">${esc(unit)}</div><div class="mapgrid">`;
+    }
+    const done = S.done.includes(les.id);
+    const open = i===0 || S.done.includes(CURRICULUM[i-1].id) || done;
+    const cls  = done ? 'done' : (open ? 'now' : 'locked');
+    const sc   = S.scores[les.id];
+    html += `<div class="node ${cls}" ${open?`onclick="openLesson(${i})" tabindex="0"`:''}>
+      <div class="nico">${done?'✅':(open?les.icon:'🔒')}</div>
+      <div class="nname">${esc(les.name)}</div>
+      <div class="nscore">${sc!=null?('best '+sc+'%'):(open?'ready':'locked')}</div></div>`;
+  });
+  html += '</div>';
+  host.innerHTML = html;
+}
+
+/* ================= LESSON ================= */
+function openLesson(i){
+  L={idx:i, step:0};
+  const les=CURRICULUM[i];
+  document.getElementById('lsName').textContent = les.icon+' '+les.name;
+  document.getElementById('lsBig').innerHTML = '<b>Big idea:</b> '+les.big;
+  drawStep(); go('lesson');
+}
+function drawStep(){
+  const les=CURRICULUM[L.idx], st=les.steps[L.step];
+  document.getElementById('lsFig').innerHTML = st.svg || '';
+  document.getElementById('lsFig').style.display = st.svg ? '' : 'none';
+  document.getElementById('lsTitle').textContent = st.title;
+  document.getElementById('lsText').innerHTML = st.text;
+  document.getElementById('lsBar').style.width = ((L.step+1)/les.steps.length*100)+'%';
+  document.getElementById('lsDots').innerHTML =
+    les.steps.map((_,i)=>`<span class="dot ${i===L.step?'on':''}"></span>`).join('');
+  document.getElementById('lsPrev').disabled = L.step===0;
+  document.getElementById('lsNext').textContent =
+    L.step===les.steps.length-1 ? 'Practice time ✏️' : 'Next ➡️';
+}
+function stepPrev(){ if(L.step>0){ L.step--; drawStep(); } }
+function stepNext(){
+  const les=CURRICULUM[L.idx];
+  if(L.step < les.steps.length-1){ L.step++; drawStep(); }
+  else startQuiz();
+}
+
+/* ================= QUIZ ================= */
+function startQuiz(){
+  Q={i:0, right:0, results:[]};
+  document.getElementById('qzName').textContent = CURRICULUM[L.idx].name+' — practice';
+  drawQuestion(); go('quiz');
+}
+function drawQuestion(){
+  const les=CURRICULUM[L.idx], q=les.quiz[Q.i];
+  document.getElementById('qzFig').innerHTML = q.svg || '';
+  document.getElementById('qzFig').style.display = q.svg ? '' : 'none';
+  document.getElementById('qzQ').textContent = q.q;
+  const form=document.getElementById('qzChoices');
+  form.innerHTML='';
+  q.choices.forEach((c,i)=>{
+    const lab=document.createElement('label');
+    lab.innerHTML=`<input type="radio" name="ch" value="${i}"><span>${esc(c)}</span>`;
+    lab.querySelector('input').addEventListener('change',()=>{
+      document.getElementById('qzCheck').disabled=false;
+    });
+    form.appendChild(lab);
+  });
+  document.getElementById('qzWhy').classList.remove('on');
+  document.getElementById('qzCheck').style.display=''; document.getElementById('qzCheck').disabled=true;
+  document.getElementById('qzNext').style.display='none';
+  document.getElementById('qzDone').style.display='none';
+  document.getElementById('qzBar').style.width=(Q.i/les.quiz.length*100)+'%';
+}
+function checkAnswer(){
+  const les=CURRICULUM[L.idx], q=les.quiz[Q.i];
+  const sel=document.querySelector('input[name=ch]:checked');
+  if(!sel) return;
+  const pick=parseInt(sel.value), ok = pick===q.answer;
+  if(ok) Q.right++;
+  Q.results.push({q:q.q, picked:q.choices[pick], correct:q.choices[q.answer], ok, why:q.why, svg:q.svg||''});
+  document.querySelectorAll('#qzChoices label').forEach((l,i)=>{
+    l.classList.add('off');
+    if(i===q.answer) l.classList.add('right');
+    if(i===pick && !ok) l.classList.add('wrong');
+  });
+  const why=document.getElementById('qzWhy');
+  why.innerHTML = (ok?'✅ ':'💡 ')+q.why;
+  why.classList.add('on');
+  document.getElementById('qzCheck').style.display='none';
+  const last = Q.i===les.quiz.length-1;
+  document.getElementById(last?'qzDone':'qzNext').style.display='';
+  document.getElementById('qzBar').style.width=((Q.i+1)/les.quiz.length*100)+'%';
+}
+function quizNext(){ Q.i++; drawQuestion(); }
+
+/* ================= FINISH ================= */
+function finishLesson(){
+  const les=CURRICULUM[L.idx];
+  const total=les.quiz.length, pct=Math.round(Q.right/total*100);
+  const passed = Q.right/total >= PASS;
+  const first = !S.done.includes(les.id);
+
+  if(passed && first){ S.done.push(les.id); S.stars += 3; }
+  else if(passed){ S.stars += 1; }
+  S.scores[les.id] = Math.max(S.scores[les.id]||0, pct);
+  save(); syncTop();
+
+  TutorStore.saveResult(currentUser, APP_ID, {
+    app:APP_ID, subject:'Geometry', gradeLevel:null,
+    date:new Date().toISOString(),
+    player:currentUser, playerKey:TutorStore.keyOf(currentUser),
+    lessonId:les.id, lessonName:les.name, unit:les.unit,
+    score:Q.right, total, pct, win:passed, perfect:Q.right===total,
+    firstCompletion: passed && first,
+    lessonsComplete:S.done.length, lessonsTotal:TOTAL,
+    answers:Q.results.map(r=>({question:r.q, picked:r.picked, correct:r.correct,
+                               wasCorrect:r.ok, explain:r.why}))
+  });
+
+  const allDone = S.done.length>=TOTAL;
+  document.getElementById('rScore').textContent = `${Q.right} / ${total}  (${pct}%)`;
+  const art=document.getElementById('rArt');
+  art.classList.remove('pop'); void art.offsetWidth; art.classList.add('pop');
+
+  if(Q.right===total){
+    art.textContent='🌟📐🌟';
+    document.getElementById('rTitle').textContent = allDone ? 'Every stop complete!' : 'Perfect!';
+    document.getElementById('rMsg').textContent = allDone
+      ? 'You went from a single point all the way to writing a proof. That is the whole foundation of geometry.'
+      : 'Not a single slip. The next stop is unlocked.';
+    fireworks(); setTimeout(confetti, 900);
+  } else if(passed){
+    art.textContent='🎉';
+    document.getElementById('rTitle').textContent='Stop cleared!';
+    document.getElementById('rMsg').textContent='Nicely done — the next stop is open. Look over the ones you missed below.';
+    confetti();
+  } else {
+    art.textContent='🤔';
+    document.getElementById('rTitle').textContent='Not quite yet';
+    document.getElementById('rMsg').textContent=
+      `You need ${Math.ceil(total*PASS)} of ${total} to clear this stop. Read the review below, then try again — the lesson is always there to revisit.`;
+  }
+
+  const miss=Q.results.filter(r=>!r.ok);
+  const wrap=document.getElementById('rReviewWrap');
+  const host=document.getElementById('rReview');
+  if(!miss.length){ wrap.style.display='none'; }
+  else {
+    wrap.style.display='';
+    host.innerHTML = miss.map((r,n)=>`
+      <div style="border:2px solid #e6eef3;border-radius:14px;padding:14px;margin-bottom:11px">
+        <div style="font-weight:bold;margin-bottom:8px">${n+1}. ${esc(r.q)}</div>
+        ${r.svg?`<div class="figure">${r.svg}</div>`:''}
+        <div style="color:var(--coral);font-size:.9rem">❌ You chose: ${esc(r.picked)}</div>
+        <div style="color:var(--moss);font-size:.9rem;margin-top:3px">✅ Correct: <b>${esc(r.correct)}</b></div>
+        <div class="why on" style="margin-top:9px">💡 ${r.why}</div>
+      </div>`).join('');
+  }
+  go('result');
+}
+function retryLesson(){ openLesson(L.idx); }
+
+/* ================= PROGRESS ================= */
+function drawProgress(){
+  const tb=document.querySelector('#progTable tbody');
+  tb.innerHTML = CURRICULUM.map((les,i)=>{
+    const sc=S.scores[les.id];
+    return `<tr><td>${i+1}</td><td>${les.icon} ${esc(les.name)}</td>
+      <td>${sc!=null?sc+'%':'—'}</td></tr>`;
+  }).join('');
+
+  const hist=[...(myApp().history||[])].reverse();
+  const hb=document.querySelector('#histTable tbody');
+  hb.innerHTML = hist.length ? hist.map(h=>{
+    const wrong=(h.answers||[]).filter(a=>!a.wasCorrect).length;
+    return `<tr>
+      <td><input type="checkbox" class="hist-check" data-date="${esc(h.date)}"
+                 onchange="syncSelection()" aria-label="select this attempt"></td>
+      <td>${new Date(h.date).toLocaleDateString()}<br><span style="font-size:.72rem;color:#8fa3b0">${new Date(h.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></td>
+      <td>${esc(h.lessonName||'')}</td>
+      <td>${h.score}/${h.total} (${h.pct}%)</td>
+      <td>${wrong?`<button class="rev-btn" onclick="reviewAttempt('${esc(h.date)}')">Review ${wrong}</button>`:''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan=5>No attempts yet!</td></tr>';
+
+  buildReviewPicker();
+  syncSelection();
+}
+
+/* ================= REVIEW PAST MISTAKES ================= */
+function buildReviewPicker(){
+  const sel=document.getElementById('reviewPick');
+  const hist=[...(myApp().history||[])].reverse()
+    .filter(h=>(h.answers||[]).some(a=>!a.wasCorrect));
+  if(!hist.length){
+    sel.innerHTML="<option value=''>No mistakes recorded yet 🎉</option>";
+    document.getElementById('pastReview').innerHTML=
+      "<p class='rev-empty'>Nothing to review — every practice question so far has been correct!</p>";
+    return;
+  }
+  sel.innerHTML = hist.map(h=>{
+    const n=h.answers.filter(a=>!a.wasCorrect).length;
+    return `<option value="${esc(h.date)}">${new Date(h.date).toLocaleString()} — ${esc(h.lessonName||'')}, ${h.pct}% · ${n} to review</option>`;
+  }).join('');
+  renderPastReview();
+}
+function renderPastReview(){ renderReviewFor(document.getElementById('reviewPick').value); }
+function reviewAttempt(date){
+  const sel=document.getElementById('reviewPick');
+  if([...sel.options].some(o=>o.value===date)) sel.value=date;
+  renderReviewFor(date);
+  document.getElementById('pastReview').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function renderReviewFor(date){
+  const host=document.getElementById('pastReview');
+  const rec=(myApp().history||[]).find(h=>h.date===date);
+  if(!rec){ host.innerHTML="<p class='rev-empty'>Pick an attempt above.</p>"; return; }
+  const missed=(rec.answers||[]).filter(a=>!a.wasCorrect);
+  if(!missed.length){ host.innerHTML="<p class='rev-empty'>🌟 Nothing wrong in that attempt!</p>"; return; }
+  // pull the diagram back out of the curriculum by matching the question text
+  const les=CURRICULUM.find(l=>l.id===rec.lessonId);
+  host.innerHTML = missed.map((r,n)=>{
+    const q = les && les.quiz.find(x=>x.q===r.question);
+    return `<div class="rev-item">
+      <div style="font-weight:bold;margin-bottom:8px;line-height:1.4">${n+1}. ${esc(r.question)}</div>
+      ${q && q.svg ? `<div class="figure">${q.svg}</div>` : ''}
+      <div style="color:var(--coral);font-size:.9rem">❌ Chose: ${esc(r.picked)}</div>
+      <div style="color:var(--moss);font-size:.9rem;margin-top:3px">✅ Correct: <b>${esc(r.correct)}</b></div>
+      <div class="why on" style="margin-top:9px">💡 ${r.explain||''}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ================= SELECTIVE DELETE ================= */
+function selectedDates(){
+  return [...document.querySelectorAll('.hist-check:checked')].map(c=>c.dataset.date);
+}
+function syncSelection(){
+  const n=selectedDates().length;
+  document.getElementById('selBar').classList.toggle('on', n>0);
+  document.getElementById('selCount').textContent=n+' attempt'+(n===1?'':'s')+' selected';
+}
+function clearSelection(){
+  document.querySelectorAll('.hist-check').forEach(c=>c.checked=false);
+  syncSelection();
+}
+function confirmDeleteSelected(){
+  const n=selectedDates().length;
+  if(!n) return;
+  pendingDelete='selected';
+  document.getElementById('delText').textContent=`Delete ${n} selected attempt${n===1?'':'s'}?`;
+  document.getElementById('delBody').textContent=
+    'Only these attempts are removed. Lesson unlocks and the rest of the history stay as they are.';
+  document.getElementById('delModal').classList.add('on');
+}
+let pendingDelete='all';
+function askDelete(){
+  pendingDelete='all';
+  document.getElementById('delText').textContent=`Delete ALL geometry progress for ${currentUser}?`;
+  document.getElementById('delBody').textContent=
+    'Every attempt and all lesson unlocks are removed. Your data moves to the deleted-data archive, not erased.';
+  document.getElementById('delModal').classList.add('on');
+}
+function closeDel(){ document.getElementById('delModal').classList.remove('on'); }
+function doDelete(){
+  if(pendingDelete==='selected'){
+    TutorStore.deleteResults(currentUser, APP_ID, selectedDates());   // archives first
+    closeDel();
+    drawProgress();          // stay on the page; only some rows went
+    return;
+  }
+  TutorStore.deleteUser(currentUser, APP_ID);
+  closeDel(); switchUser();
+}
+
+/* ================= FX ================= */
+const fx=document.getElementById('fx'), ctx=fx.getContext('2d');
+let parts=[], running=false, fxT=null;
+function sizeFx(){ fx.width=innerWidth; fx.height=innerHeight; }
+addEventListener('resize', sizeFx); sizeFx();
+const COLORS=['#e2725b','#f0b429','#5c9367','#2f5d7c','#9b59b6','#1abc9c'];
+function confetti(){
+  for(let i=0;i<200;i++) parts.push({t:'c',x:Math.random()*fx.width,y:-20-Math.random()*fx.height*0.5,
+    vx:(Math.random()-.5)*2.2,vy:2+Math.random()*3.4,size:6+Math.random()*6,
+    color:COLORS[Math.floor(Math.random()*COLORS.length)],rot:Math.random()*Math.PI,vr:(Math.random()-.5)*.24,life:99999});
+  run(6000);
+}
+function fireworks(){
+  let n=0;
+  const iv=setInterval(()=>{
+    const cx=fx.width*(.15+Math.random()*.7), cy=fx.height*(.15+Math.random()*.4);
+    const col=COLORS[Math.floor(Math.random()*COLORS.length)];
+    for(let i=0;i<64;i++){ const a=Math.PI*2*i/64, sp=2+Math.random()*3.6;
+      parts.push({t:'f',x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,size:2.4+Math.random()*2,color:col,life:60+Math.random()*28}); }
+    if(++n>=7) clearInterval(iv);
+  },430);
+  run(7500);
+}
+function run(ms){ if(fxT) clearTimeout(fxT); fxT=setTimeout(()=>{parts=[];},ms);
+  if(!running){ running=true; requestAnimationFrame(tick); } }
+function tick(){
+  ctx.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.life>0 && p.y<fx.height+30);
+  parts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.life--;
+    if(p.t==='c'){ p.vy+=.03; p.rot+=p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle=p.color; ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2); ctx.restore();
+    } else { p.vy+=.05; ctx.globalAlpha=Math.max(p.life/88,0);
+      ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,7); ctx.fill(); ctx.globalAlpha=1; }
+  });
+  if(parts.length) requestAnimationFrame(tick);
+  else { running=false; ctx.clearRect(0,0,fx.width,fx.height); }
+}
+
+/* ================= INIT ================= */
+if(window.TutorNav) TutorNav.init({app:APP_ID});
+renderChips();
+document.getElementById('nameIn').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+document.getElementById('nameIn').focus();
+document.getElementById('totalN').textContent = TOTAL;
+</script>
+</body>
+</html>

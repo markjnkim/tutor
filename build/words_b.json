@@ -1,0 +1,842 @@
+[
+{
+"w": "their",
+"p": "homophone",
+"d": "easy",
+"s": "The students brought their notebooks to class.",
+"def": "Belonging to them. Not 'there' and not 'they're'."
+},
+{
+"w": "there",
+"p": "homophone",
+"d": "easy",
+"s": "Put the box over there by the door.",
+"def": "In that place. Not 'their' and not 'they're'."
+},
+{
+"w": "weather",
+"p": "homophone",
+"d": "easy",
+"s": "The weather turned cold and rainy.",
+"def": "The condition of the air outside. Not 'whether'."
+},
+{
+"w": "whether",
+"p": "homophone",
+"d": "easy",
+"s": "I cannot decide whether to go or stay.",
+"def": "A word showing a choice between options. Not 'weather'."
+},
+{
+"w": "principal",
+"p": "homophone",
+"d": "easy",
+"s": "The principal of our school gave a speech.",
+"def": "The head of a school. Not 'principle'."
+},
+{
+"w": "peace",
+"p": "homophone",
+"d": "easy",
+"s": "The two countries signed a treaty of peace.",
+"def": "Freedom from war or noise. Not 'piece'."
+},
+{
+"w": "shield",
+"p": "ie-ei",
+"d": "easy",
+"s": "The knight raised his shield to block the blow.",
+"def": "A broad piece of armor held to protect the body."
+},
+{
+"w": "aloud",
+"p": "homophone",
+"d": "easy",
+"s": "Please read the poem aloud to the class.",
+"def": "Out loud, so others can hear. Not 'allowed'."
+},
+{
+"w": "principle",
+"p": "homophone",
+"d": "medium",
+"s": "Honesty is an important principle to live by.",
+"def": "A basic rule or belief. Not 'principal'."
+},
+{
+"w": "allowed",
+"p": "homophone",
+"d": "medium",
+"s": "We are allowed to eat lunch outside.",
+"def": "Permitted. Not 'aloud'."
+},
+{
+"w": "capital",
+"p": "homophone",
+"d": "medium",
+"s": "Paris is the capital of France.",
+"def": "A city where a government sits. Not 'capitol'."
+},
+{
+"w": "stationary",
+"p": "homophone",
+"d": "medium",
+"s": "The parked car stayed stationary.",
+"def": "Not moving. Not 'stationery'."
+},
+{
+"w": "stationery",
+"p": "homophone",
+"d": "medium",
+"s": "She bought stationery to write letters.",
+"def": "Paper and envelopes for writing. Not 'stationary'."
+},
+{
+"w": "complement",
+"p": "homophone",
+"d": "medium",
+"s": "The red scarf is a complement to her coat.",
+"def": "Something that completes or goes well with. Not 'compliment'."
+},
+{
+"w": "compliment",
+"p": "homophone",
+"d": "medium",
+"s": "He gave her a kind compliment about her drawing.",
+"def": "A polite expression of praise. Not 'complement'."
+},
+{
+"w": "desert",
+"p": "homophone",
+"d": "medium",
+"s": "Camels can cross the hot desert.",
+"def": "A dry sandy region. Not 'dessert', the sweet treat."
+},
+{
+"w": "conscious",
+"p": "homophone",
+"d": "hard",
+"s": "She was conscious of the noise behind her.",
+"def": "Awake and aware. Not 'conscience'."
+},
+{
+"w": "discreet",
+"p": "homophone",
+"d": "hard",
+"s": "He was discreet about the surprise party.",
+"def": "Careful not to reveal something. Not 'discrete'."
+},
+{
+"w": "discrete",
+"p": "homophone",
+"d": "hard",
+"s": "The data came in discrete groups.",
+"def": "Separate and distinct. Not 'discreet'."
+},
+{
+"w": "altar",
+"p": "homophone",
+"d": "hard",
+"s": "Flowers were placed on the altar.",
+"def": "A raised table used in ceremonies. Not 'alter'."
+},
+{
+"w": "alter",
+"p": "homophone",
+"d": "hard",
+"s": "We may alter the plan if it rains.",
+"def": "To change something. Not 'altar'."
+},
+{
+"w": "cite",
+"p": "homophone",
+"d": "hard",
+"s": "Remember to cite the book you used.",
+"def": "To quote or name a source. Not 'site' or 'sight'."
+},
+{
+"w": "elicit",
+"p": "homophone",
+"d": "hard",
+"s": "The question will elicit a thoughtful answer.",
+"def": "To draw out a response. Not 'illicit'."
+},
+{
+"w": "affect",
+"p": "homophone",
+"d": "hard",
+"s": "Rain will affect our picnic plans.",
+"def": "To influence something. Usually a verb, unlike 'effect'."
+},
+{
+"w": "unhappy",
+"p": "prefix",
+"d": "easy",
+"s": "He was unhappy about losing the game.",
+"def": "Not happy."
+},
+{
+"w": "rewrite",
+"p": "prefix",
+"d": "easy",
+"s": "Please rewrite the messy paragraph.",
+"def": "To write again."
+},
+{
+"w": "preview",
+"p": "prefix",
+"d": "easy",
+"s": "We watched a preview of the movie.",
+"def": "A look at something before it is shown fully."
+},
+{
+"w": "disagree",
+"p": "prefix",
+"d": "easy",
+"s": "They politely disagree about the answer.",
+"def": "To have a different opinion."
+},
+{
+"w": "midnight",
+"p": "prefix",
+"d": "easy",
+"s": "The clock struck midnight.",
+"def": "Twelve o'clock at night."
+},
+{
+"w": "nonsense",
+"p": "prefix",
+"d": "easy",
+"s": "His silly story was complete nonsense.",
+"def": "Words or ideas that make no sense."
+},
+{
+"w": "unable",
+"p": "prefix",
+"d": "easy",
+"s": "She was unable to reach the top shelf.",
+"def": "Not able to do something."
+},
+{
+"w": "subway",
+"p": "prefix",
+"d": "easy",
+"s": "We rode the subway across the city.",
+"def": "An underground train."
+},
+{
+"w": "international",
+"p": "prefix",
+"d": "medium",
+"s": "The international contest had teams from ten countries.",
+"def": "Between or among different nations."
+},
+{
+"w": "misunderstand",
+"p": "prefix",
+"d": "medium",
+"s": "Do not misunderstand what I meant.",
+"def": "To fail to understand correctly."
+},
+{
+"w": "transport",
+"p": "prefix",
+"d": "medium",
+"s": "Trucks transport goods across the country.",
+"def": "To carry something from one place to another."
+},
+{
+"w": "submarine",
+"p": "prefix",
+"d": "medium",
+"s": "The submarine dove beneath the waves.",
+"def": "A ship that travels underwater."
+},
+{
+"w": "overestimate",
+"p": "prefix",
+"d": "medium",
+"s": "Do not overestimate how much time is left.",
+"def": "To guess that something is larger than it is."
+},
+{
+"w": "antifreeze",
+"p": "prefix",
+"d": "medium",
+"s": "Dad poured antifreeze into the car.",
+"def": "A liquid that keeps something from freezing."
+},
+{
+"w": "multiply",
+"p": "prefix",
+"d": "medium",
+"s": "Multiply seven by eight to get the answer.",
+"def": "To increase a number a certain number of times."
+},
+{
+"w": "impossible",
+"p": "prefix",
+"d": "medium",
+"s": "Climbing that wall seemed impossible.",
+"def": "Not able to happen or be done."
+},
+{
+"w": "circumference",
+"p": "prefix",
+"d": "hard",
+"s": "Measure the circumference of the circle.",
+"def": "The distance around a circle."
+},
+{
+"w": "extraordinary",
+"p": "prefix",
+"d": "hard",
+"s": "Her memory for names is extraordinary.",
+"def": "Very unusual or remarkable."
+},
+{
+"w": "hemisphere",
+"p": "prefix",
+"d": "hard",
+"s": "Australia is in the southern hemisphere.",
+"def": "One half of the earth or of a sphere."
+},
+{
+"w": "contradict",
+"p": "prefix",
+"d": "hard",
+"s": "The two reports contradict each other.",
+"def": "To say the opposite of something."
+},
+{
+"w": "unnecessary",
+"p": "prefix",
+"d": "hard",
+"s": "Bringing an umbrella was unnecessary.",
+"def": "Not needed."
+},
+{
+"w": "interrupt",
+"p": "prefix",
+"d": "hard",
+"s": "Try not to interrupt while she is speaking.",
+"def": "To break into someone's speech or action."
+},
+{
+"w": "microscopic",
+"p": "prefix",
+"d": "hard",
+"s": "The microscopic creatures live in pond water.",
+"def": "So small it can only be seen with a microscope."
+},
+{
+"w": "transparent",
+"p": "prefix",
+"d": "hard",
+"s": "The window glass is completely transparent.",
+"def": "Clear enough to see through."
+},
+{
+"w": "careful",
+"p": "suffix",
+"d": "easy",
+"s": "Be careful crossing the street.",
+"def": "Taking care to avoid mistakes or danger."
+},
+{
+"w": "kindness",
+"p": "suffix",
+"d": "easy",
+"s": "Her kindness made everyone feel welcome.",
+"def": "The quality of being kind."
+},
+{
+"w": "quickly",
+"p": "suffix",
+"d": "easy",
+"s": "He quickly finished his homework.",
+"def": "In a fast way."
+},
+{
+"w": "useless",
+"p": "suffix",
+"d": "easy",
+"s": "A broken pencil is useless.",
+"def": "Having no use at all."
+},
+{
+"w": "friendly",
+"p": "suffix",
+"d": "easy",
+"s": "The friendly dog wagged its tail.",
+"def": "Kind and pleasant to others."
+},
+{
+"w": "enjoyment",
+"p": "suffix",
+"d": "easy",
+"s": "She reads for pure enjoyment.",
+"def": "The feeling of enjoying something."
+},
+{
+"w": "famous",
+"p": "suffix",
+"d": "easy",
+"s": "That painter is famous around the world.",
+"def": "Known by many people."
+},
+{
+"w": "darkness",
+"p": "suffix",
+"d": "easy",
+"s": "The darkness of the cave surprised them.",
+"def": "The state of having no light."
+},
+{
+"w": "comfortable",
+"p": "suffix",
+"d": "medium",
+"s": "This chair is very comfortable.",
+"def": "Pleasant and easy to be in."
+},
+{
+"w": "responsible",
+"p": "suffix",
+"d": "medium",
+"s": "She is responsible for feeding the cat.",
+"def": "Having a duty to take care of something."
+},
+{
+"w": "dangerous",
+"p": "suffix",
+"d": "medium",
+"s": "Thin ice is dangerous to walk on.",
+"def": "Likely to cause harm."
+},
+{
+"w": "valuable",
+"p": "suffix",
+"d": "medium",
+"s": "That old coin is quite valuable.",
+"def": "Worth a lot of money or importance."
+},
+{
+"w": "terrible",
+"p": "suffix",
+"d": "medium",
+"s": "The storm caused terrible damage.",
+"def": "Very bad or awful."
+},
+{
+"w": "curious",
+"p": "suffix",
+"d": "medium",
+"s": "The curious kitten explored the box.",
+"def": "Eager to learn or know something."
+},
+{
+"w": "peaceful",
+"p": "suffix",
+"d": "medium",
+"s": "The lake was quiet and peaceful.",
+"def": "Calm and free from noise or trouble."
+},
+{
+"w": "treatment",
+"p": "suffix",
+"d": "medium",
+"s": "The doctor explained the treatment.",
+"def": "The care given to help someone get better."
+},
+{
+"w": "irresistible",
+"p": "suffix",
+"d": "hard",
+"s": "The smell of fresh bread was irresistible.",
+"def": "Too tempting to refuse."
+},
+{
+"w": "knowledgeable",
+"p": "suffix",
+"d": "hard",
+"s": "Our guide was knowledgeable about birds.",
+"def": "Knowing a lot about a subject."
+},
+{
+"w": "mysterious",
+"p": "suffix",
+"d": "hard",
+"s": "A mysterious light appeared in the sky.",
+"def": "Strange and hard to explain."
+},
+{
+"w": "perishable",
+"p": "suffix",
+"d": "hard",
+"s": "Milk is a perishable food.",
+"def": "Likely to spoil or go bad quickly."
+},
+{
+"w": "conscientious",
+"p": "suffix",
+"d": "hard",
+"s": "He is a conscientious student who checks his work.",
+"def": "Careful and thorough in doing what is right."
+},
+{
+"w": "advantageous",
+"p": "suffix",
+"d": "hard",
+"s": "Studying early is advantageous before a test.",
+"def": "Giving a benefit or helpful edge."
+},
+{
+"w": "noticeable",
+"p": "suffix",
+"d": "hard",
+"s": "There was a noticeable change in her tone.",
+"def": "Easy to see or notice."
+},
+{
+"w": "tremendous",
+"p": "suffix",
+"d": "hard",
+"s": "They made a tremendous effort to finish.",
+"def": "Very great in size or amount."
+},
+{
+"w": "believe",
+"p": "ie-ei",
+"d": "easy",
+"s": "I believe you told the truth.",
+"def": "To accept that something is true."
+},
+{
+"w": "friend",
+"p": "ie-ei",
+"d": "easy",
+"s": "My best friend lives next door.",
+"def": "A person you like and trust."
+},
+{
+"w": "piece",
+"p": "ie-ei",
+"d": "easy",
+"s": "He saved one piece of cake for later.",
+"def": "A part broken or cut from something."
+},
+{
+"w": "field",
+"p": "ie-ei",
+"d": "easy",
+"s": "The horses ran across the open field.",
+"def": "An open area of land."
+},
+{
+"w": "chief",
+"p": "ie-ei",
+"d": "easy",
+"s": "The fire chief spoke to our class.",
+"def": "The leader of a group."
+},
+{
+"w": "eight",
+"p": "ie-ei",
+"d": "easy",
+"s": "There are eight crayons in the box.",
+"def": "The number after seven."
+},
+{
+"w": "niece",
+"p": "ie-ei",
+"d": "easy",
+"s": "My niece just turned six years old.",
+"def": "The daughter of your brother or sister."
+},
+{
+"w": "thief",
+"p": "ie-ei",
+"d": "easy",
+"s": "The thief was caught by the police.",
+"def": "A person who steals."
+},
+{
+"w": "receive",
+"p": "ie-ei",
+"d": "medium",
+"s": "Did you receive my letter?",
+"def": "To get something that is given or sent."
+},
+{
+"w": "ceiling",
+"p": "ie-ei",
+"d": "medium",
+"s": "A spider crawled across the ceiling.",
+"def": "The upper surface inside a room."
+},
+{
+"w": "neighbor",
+"p": "ie-ei",
+"d": "medium",
+"s": "Our neighbor waters our plants.",
+"def": "A person who lives next to you."
+},
+{
+"w": "achieve",
+"p": "ie-ei",
+"d": "medium",
+"s": "She worked hard to achieve her goal.",
+"def": "To succeed in doing something."
+},
+{
+"w": "weird",
+"p": "ie-ei",
+"d": "medium",
+"s": "That was a weird dream last night.",
+"def": "Strange or unusual."
+},
+{
+"w": "height",
+"p": "ie-ei",
+"d": "medium",
+"s": "Measure the height of the doorway.",
+"def": "How tall something is."
+},
+{
+"w": "deceive",
+"p": "ie-ei",
+"d": "medium",
+"s": "Do not let the trick deceive you.",
+"def": "To make someone believe something untrue."
+},
+{
+"w": "foreign",
+"p": "ie-ei",
+"d": "medium",
+"s": "She is learning a foreign language.",
+"def": "From another country."
+},
+{
+"w": "perceive",
+"p": "ie-ei",
+"d": "hard",
+"s": "Can you perceive the faint sound?",
+"def": "To become aware of through the senses."
+},
+{
+"w": "efficient",
+"p": "ie-ei",
+"d": "hard",
+"s": "The new method is more efficient.",
+"def": "Working well without wasting time or effort."
+},
+{
+"w": "sufficient",
+"p": "ie-ei",
+"d": "hard",
+"s": "We have sufficient supplies for the trip.",
+"def": "Enough for what is needed."
+},
+{
+"w": "counterfeit",
+"p": "ie-ei",
+"d": "hard",
+"s": "The bank spotted the counterfeit bill.",
+"def": "A fake copy made to fool people."
+},
+{
+"w": "seize",
+"p": "ie-ei",
+"d": "hard",
+"s": "The eagle will seize the fish in its claws.",
+"def": "To grab something suddenly and firmly."
+},
+{
+"w": "leisure",
+"p": "ie-ei",
+"d": "hard",
+"s": "He reads during his leisure time.",
+"def": "Free time when you can relax."
+},
+{
+"w": "mischief",
+"p": "ie-ei",
+"d": "hard",
+"s": "The kittens got into mischief again.",
+"def": "Playful behavior that causes small trouble."
+},
+{
+"w": "protein",
+"p": "ie-ei",
+"d": "hard",
+"s": "Beans are a good source of protein.",
+"def": "A nutrient the body needs to grow."
+},
+{
+"w": "because",
+"p": "tricky",
+"d": "easy",
+"s": "We stayed inside because it rained.",
+"def": "For the reason that."
+},
+{
+"w": "February",
+"p": "tricky",
+"d": "easy",
+"s": "February is the shortest month.",
+"def": "The second month of the year."
+},
+{
+"w": "Wednesday",
+"p": "tricky",
+"d": "easy",
+"s": "We have music class on Wednesday.",
+"def": "The day between Tuesday and Thursday."
+},
+{
+"w": "favorite",
+"p": "tricky",
+"d": "easy",
+"s": "Blue is her favorite color.",
+"def": "The one you like best."
+},
+{
+"w": "different",
+"p": "tricky",
+"d": "easy",
+"s": "These two shells are different sizes.",
+"def": "Not the same."
+},
+{
+"w": "probably",
+"p": "tricky",
+"d": "easy",
+"s": "It will probably snow tonight.",
+"def": "Most likely."
+},
+{
+"w": "library",
+"p": "tricky",
+"d": "easy",
+"s": "She borrowed three books from the library.",
+"def": "A place where books are kept for borrowing."
+},
+{
+"w": "answer",
+"p": "tricky",
+"d": "easy",
+"s": "Write your answer on the line.",
+"def": "A reply or solution."
+},
+{
+"w": "separate",
+"p": "tricky",
+"d": "medium",
+"s": "Please separate the red beads from the blue ones.",
+"def": "To divide or keep apart."
+},
+{
+"w": "definitely",
+"p": "tricky",
+"d": "medium",
+"s": "I will definitely be at the game.",
+"def": "Without any doubt."
+},
+{
+"w": "restaurant",
+"p": "tricky",
+"d": "medium",
+"s": "We ate dinner at a new restaurant.",
+"def": "A place where meals are served."
+},
+{
+"w": "calendar",
+"p": "tricky",
+"d": "medium",
+"s": "Mark the date on the calendar.",
+"def": "A chart showing the days of the year."
+},
+{
+"w": "government",
+"p": "tricky",
+"d": "medium",
+"s": "The government passed a new law.",
+"def": "The group that runs a country or state."
+},
+{
+"w": "familiar",
+"p": "tricky",
+"d": "medium",
+"s": "That song sounds familiar to me.",
+"def": "Well known or often seen before."
+},
+{
+"w": "temperature",
+"p": "tricky",
+"d": "medium",
+"s": "The temperature dropped below freezing.",
+"def": "A measure of how hot or cold something is."
+},
+{
+"w": "experience",
+"p": "tricky",
+"d": "medium",
+"s": "Camping was a new experience for him.",
+"def": "Something you have done or lived through."
+},
+{
+"w": "rhythmically",
+"p": "tricky",
+"d": "hard",
+"s": "The waves rolled in rhythmically.",
+"def": "In a regular repeating pattern."
+},
+{
+"w": "bureaucracy",
+"p": "tricky",
+"d": "hard",
+"s": "The permit was delayed by bureaucracy.",
+"def": "A system of many official rules and offices."
+},
+{
+"w": "questionnaire",
+"p": "tricky",
+"d": "hard",
+"s": "Each student filled out a questionnaire.",
+"def": "A written list of questions to answer."
+},
+{
+"w": "maintenance",
+"p": "tricky",
+"d": "hard",
+"s": "The bridge requires yearly maintenance.",
+"def": "The work of keeping something in good condition."
+},
+{
+"w": "acknowledge",
+"p": "tricky",
+"d": "hard",
+"s": "Please acknowledge that you received the message.",
+"def": "To admit or confirm something is true."
+},
+{
+"w": "vacuum",
+"p": "tricky",
+"d": "hard",
+"s": "He used a vacuum to clean the rug.",
+"def": "A space with no air, or a machine that sucks up dirt."
+},
+{
+"w": "privilege",
+"p": "tricky",
+"d": "hard",
+"s": "Driving a car is a privilege, not a right.",
+"def": "A special right or advantage."
+},
+{
+"w": "guarantee",
+"p": "tricky",
+"d": "hard",
+"s": "The store offers a guarantee on the bike.",
+"def": "A promise that something will work or be done."
+}
+]

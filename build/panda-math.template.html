@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐼 Panda Math Quest — Grade 5-6 Assessment</title>
+<style>
+:root{
+  --green:#4a8f3c; --green-dark:#2e6323; --green-light:#e8f5e0;
+  --cream:#fdf9ef; --brown:#7a5c3e; --red:#e05252; --red-light:#fdeaea;
+  --yellow:#f5c542; --blue:#4a7fb5; --ink:#2d2a26;
+  --ok-green:#dff3d6; --card:#ffffff;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:"Trebuchet MS","Comic Sans MS",Verdana,sans-serif;
+  background:linear-gradient(180deg,#eaf6e2 0%,var(--cream) 40%);
+  min-height:100vh; color:var(--ink);
+}
+.screen{display:none; max-width:820px; margin:0 auto; padding:24px 16px 60px;}
+.screen.active{display:block;}
+h1{color:var(--green-dark); text-align:center; font-size:2rem; margin-bottom:4px;}
+.subtitle{text-align:center; color:var(--brown); margin-bottom:24px;}
+.card{background:var(--card); border-radius:20px; padding:24px; box-shadow:0 4px 14px rgba(60,90,40,.12); margin-bottom:18px;}
+button{
+  font-family:inherit; font-size:1rem; font-weight:bold; border:none; border-radius:14px;
+  padding:12px 22px; cursor:pointer; transition:transform .1s, box-shadow .1s;
+}
+button:hover{transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.15);}
+button:disabled{opacity:.45; cursor:not-allowed; transform:none; box-shadow:none;}
+.btn-primary{background:var(--green); color:#fff;}
+.btn-secondary{background:#e9e4d8; color:var(--ink);}
+.btn-danger{background:var(--red); color:#fff;}
+.btn-small{padding:7px 14px; font-size:.85rem;}
+input[type=text]{
+  font-family:inherit; font-size:1.1rem; padding:12px 16px; border:2px solid #cfe3c2;
+  border-radius:14px; width:100%; outline:none;
+}
+input[type=text]:focus{border-color:var(--green);}
+.big-panda{font-size:4.5rem; text-align:center; display:block; animation:bob 2.5s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.user-chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+.chip{background:var(--green-light); border:2px solid var(--green); color:var(--green-dark);
+  border-radius:999px; padding:8px 18px; font-weight:bold; cursor:pointer;}
+.chip:hover{background:var(--green); color:#fff;}
+
+.grade-row{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 4px;}
+.grade-card{flex:1 1 62px; min-width:62px; border:3px solid #ddd; border-radius:14px;
+  padding:10px 4px; text-align:center; cursor:pointer; background:#fff;}
+.grade-card.selected{border-color:var(--green); background:var(--green-light);}
+.grade-card.disabled{opacity:.4; cursor:not-allowed; background:#f4f2ec;}
+.grade-card .g-num{font-weight:bold; font-size:1.15rem;}
+.grade-card .g-lbl{font-size:.62rem; color:#888;}
+/* setup */
+.diff-row{display:flex; gap:12px; margin:10px 0 4px;}
+.diff-card{flex:1; border:3px solid #ddd; border-radius:16px; padding:14px 8px; text-align:center; cursor:pointer; background:#fff;}
+.diff-card.selected{border-color:var(--green); background:var(--green-light);}
+.diff-card .d-emoji{font-size:1.8rem;}
+.diff-card .d-name{font-weight:bold; margin:4px 0;}
+.diff-card .d-desc{font-size:.75rem; color:#777;}
+.toggle-row{display:flex; align-items:center; justify-content:space-between; margin-top:16px;}
+.switch{position:relative; width:58px; height:30px;}
+.switch input{opacity:0; width:0; height:0;}
+.slider{position:absolute; inset:0; background:#ccc; border-radius:999px; transition:.25s; cursor:pointer;}
+.slider:before{content:""; position:absolute; height:24px; width:24px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.25s;}
+.switch input:checked + .slider{background:var(--green);}
+.switch input:checked + .slider:before{transform:translateX(28px);}
+/* quiz */
+.quiz-header{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;}
+.q-count{font-weight:bold; color:var(--green-dark);}
+.timer-box{background:#fff; border:2px solid var(--yellow); border-radius:12px; padding:6px 12px; font-weight:bold; display:flex; align-items:center; gap:8px;}
+.timer-box.warn{border-color:var(--red); color:var(--red); animation:pulse 1s infinite;}
+@keyframes pulse{50%{opacity:.55}}
+.panda-track{position:relative; height:86px; background:linear-gradient(180deg,#d8eec9,#c2e2ad);
+  border-radius:16px; margin-bottom:16px; overflow:hidden; border:2px solid #a9cf92;}
+.track-ground{position:absolute; bottom:0; width:100%; height:14px; background:#8fbc74;}
+#pandaWalker{position:absolute; bottom:8px; left:0; font-size:2.6rem; transition:left .7s cubic-bezier(.34,1.56,.64,1); z-index:2;}
+#pandaWalker.hop{animation:hop .6s;}
+@keyframes hop{30%{transform:translateY(-22px) rotate(-6deg)}60%{transform:translateY(0)}80%{transform:translateY(-8px)}}
+#pandaWalker.sad{animation:shake .5s;}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+#mealSpot{position:absolute; bottom:8px; right:10px; font-size:2.4rem;}
+#bonusSpot{position:absolute; bottom:46px; right:12px; font-size:1.6rem; opacity:0; transition:opacity .5s;}
+.steps-label{position:absolute; top:6px; left:10px; font-size:.75rem; color:var(--green-dark); font-weight:bold;}
+.topic-badge{display:inline-block; background:var(--blue); color:#fff; font-size:.75rem; font-weight:bold;
+  border-radius:999px; padding:4px 12px; margin-bottom:10px;}
+.question-text{font-size:1.25rem; font-weight:bold; margin-bottom:16px; line-height:1.45;}
+.choices label{
+  display:flex; align-items:center; gap:12px; background:#f7f4ec; border:2px solid #e5e0d2;
+  border-radius:14px; padding:12px 16px; margin-bottom:10px; cursor:pointer; font-size:1.05rem;
+}
+.choices label:hover{border-color:var(--green);}
+.choices input{accent-color:var(--green); width:20px; height:20px;}
+.choices label.correct{background:var(--ok-green); border-color:var(--green); font-weight:bold;}
+.choices label.wrong{background:var(--red-light); border-color:var(--red);}
+.choices label.disabled{pointer-events:none;}
+.explain-box{display:none; background:#fff8dc; border-left:5px solid var(--yellow); border-radius:10px; padding:12px 16px; margin:10px 0; line-height:1.5;}
+.explain-box.show{display:block; animation:fadein .4s;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px)}}
+.feedback-banner{display:none; text-align:center; font-size:1.3rem; font-weight:bold; margin-bottom:8px;}
+.quiz-buttons{display:flex; gap:10px; justify-content:flex-end; margin-top:6px;}
+/* results */
+.eat-scene{position:relative; height:120px; background:linear-gradient(180deg,#d8eec9,#c2e2ad);
+  border-radius:16px; border:2px solid #a9cf92; overflow:hidden; margin-bottom:14px;}
+.scene-ground{position:absolute; bottom:0; width:100%; height:16px; background:#8fbc74;}
+#eatPanda{position:absolute; bottom:12px; left:10px; font-size:3.4rem; z-index:2;}
+#eatPanda.chomp{animation:chompA .3s;}
+@keyframes chompA{50%{transform:rotate(-14deg) scale(1.18)}}
+#eatBamboo{position:absolute; bottom:12px; right:26px; font-size:3.2rem; transition:opacity .3s;}
+#eatCake{position:absolute; bottom:12px; right:80px; font-size:2.6rem; opacity:0; transition:opacity .5s;}
+#chompBubble{position:absolute; top:8px; left:50%; background:#fff; border:2px solid var(--green);
+  border-radius:999px; padding:4px 12px; font-weight:bold; font-size:.85rem; color:var(--green-dark);
+  opacity:0; transition:opacity .15s; z-index:3; white-space:nowrap;}
+.review-item{border:2px solid #eee3cf; border-radius:14px; padding:14px 16px; margin-bottom:12px;}
+.review-q{font-weight:bold; margin-bottom:8px; line-height:1.4;}
+.review-your{color:var(--red); font-size:.92rem; margin-bottom:4px;}
+.review-correct{color:var(--green-dark); font-size:.92rem; margin-bottom:8px;}
+.score-big{font-size:3.2rem; font-weight:bold; text-align:center; color:var(--green-dark);}
+.result-panda{font-size:5rem; text-align:center; margin:10px 0;}
+.result-msg{text-align:center; font-size:1.25rem; font-weight:bold; margin-bottom:14px;}
+.eat-anim{animation:eat 1s ease-in-out 3;}
+@keyframes eat{25%{transform:rotate(-10deg) scale(1.08)}75%{transform:rotate(10deg) scale(1.08)}}
+.best-banner{display:none; text-align:center; background:var(--yellow); color:#6b4e00; font-weight:bold;
+  border-radius:999px; padding:8px 20px; margin:0 auto 14px; width:fit-content; animation:popbest .8s;}
+@keyframes popbest{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+/* mastery bars */
+.bar-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+.bar-label{width:150px; font-size:.9rem; font-weight:bold;}
+.bar-outer{flex:1; height:22px; background:#eee7d8; border-radius:999px; overflow:hidden;}
+.bar-inner{height:100%; border-radius:999px; transition:width .8s; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-size:.72rem; color:#fff; font-weight:bold; min-width:34px;}
+.bar-excel{background:var(--green);} .bar-ok{background:var(--yellow);} .bar-need{background:var(--red);} .bar-none{background:#c9c2b2;}
+.bar-tag{width:110px; font-size:.8rem; font-weight:bold; text-align:right;}
+table{width:100%; border-collapse:collapse; font-size:.9rem;}
+th,td{padding:8px 10px; text-align:left; border-bottom:1px solid #eee3cf;}
+th{color:var(--green-dark);}
+.medal{font-size:1.1rem;}
+h2{color:var(--green-dark); margin-bottom:12px; font-size:1.2rem;}
+.center{text-align:center;}
+.row-buttons{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
+#fxCanvas{position:fixed; inset:0; pointer-events:none; z-index:50;}
+.modal-back{display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:60; align-items:center; justify-content:center;}
+.modal-back.show{display:flex;}
+.modal{background:#fff; border-radius:18px; padding:26px; max-width:420px; text-align:center;}
+.small-note{font-size:.78rem; color:#8a8371; text-align:center; margin-top:10px;}
+</style>
+</head>
+<body>
+<canvas id="fxCanvas"></canvas>
+
+<!-- ============ LOGIN ============ -->
+<div class="screen active" id="scr-login">
+  <span class="big-panda">🐼</span>
+  <h1>Panda Math Quest</h1>
+  <p class="subtitle">Grade 5–6 Math Assessment · Help the hungry panda reach his bamboo!</p>
+  <div class="card">
+    <h2>Who's playing today?</h2>
+    <input type="text" id="nameInput" placeholder="Type your name…" maxlength="20">
+    <div class="row-buttons"><button class="btn-primary" onclick="login()">Let's Go! 🎋</button></div>
+    <div class="user-chips" id="userChips"></div>
+  </div>
+  <p class="small-note">Progress is saved on this computer for each name.</p>
+</div>
+
+<!-- ============ SETUP ============ -->
+<div class="screen" id="scr-setup">
+  <span class="big-panda">🐼</span>
+  <h1 id="helloName">Hi!</h1>
+  <p class="subtitle">Pick your challenge — 25 questions. Get 80% to feed the panda! 🎋<br>100% earns a special bonus treat… 🎂</p>
+  <div class="card">
+    <h2>Grade level</h2>
+    <div class="grade-row" id="gradeRow"></div>
+    <p class="small-note" id="gradeNote" style="text-align:left"></p>
+    <h2 style="margin-top:18px">Difficulty <span style="font-weight:normal;font-size:.8rem;color:#777">— within that grade</span></h2>
+
+    <div class="diff-row">
+      <div class="diff-card" data-diff="easy" onclick="pickDiff('easy')">
+        <div class="d-emoji">🌱</div><div class="d-name">Easy</div><div class="d-desc">Grade 5 · 40 min timer</div>
+      </div>
+      <div class="diff-card selected" data-diff="medium" onclick="pickDiff('medium')">
+        <div class="d-emoji">🎋</div><div class="d-name">Medium</div><div class="d-desc">Grade 5–6 · 25 min timer</div>
+      </div>
+      <div class="diff-card" data-diff="hard" onclick="pickDiff('hard')">
+        <div class="d-emoji">🔥</div><div class="d-name">Hard</div><div class="d-desc">Grade 6+ · 15 min timer</div>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <div><strong>⏱️ Timer</strong> <span style="font-size:.85rem;color:#777">(you can add time during the test)</span></div>
+      <label class="switch"><input type="checkbox" id="timerToggle" checked><span class="slider"></span></label>
+    </div>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" style="font-size:1.2rem" onclick="startTest()">Start the Quest! 🚀</button>
+    <button class="btn-secondary" onclick="showDashboard()">📊 My Progress</button>
+    <button class="btn-secondary" onclick="switchUser()">👋 Switch player</button>
+  </div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div class="screen" id="scr-quiz">
+  <div class="quiz-header">
+    <span class="q-count" id="qCount">Question 1 of 25</span>
+    <span class="q-count" id="scoreCount">✅ 0 correct</span>
+    <div class="timer-box" id="timerBox" style="display:none">
+      <span id="timerText">25:00</span>
+      <button class="btn-secondary btn-small" onclick="addTime()">+5 min</button>
+    </div>
+  </div>
+  <div class="panda-track">
+    <span class="steps-label" id="stepsLabel">🎋 20 correct answers to reach the bamboo!</span>
+    <span id="pandaWalker">🐼</span>
+    <span id="mealSpot">🎋</span>
+    <span id="bonusSpot">🎂✨</span>
+    <div class="track-ground"></div>
+  </div>
+  <div class="card">
+    <span class="topic-badge" id="topicBadge">Fractions</span>
+    <div class="question-text" id="questionText"></div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <form class="choices" id="choicesForm"></form>
+    <div class="quiz-buttons">
+      <button class="btn-secondary" id="skipBtn" onclick="skipQuestion()">Skip ⏭️</button>
+      <button class="btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>Check Answer ✔️</button>
+      <button class="btn-primary" id="nextBtn" onclick="nextQuestion()" style="display:none">Next ➡️</button>
+      <button class="btn-primary" id="finishBtn" onclick="finishTest()" style="display:none">Finish &amp; See Results 🏁</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RESULTS ============ -->
+<div class="screen" id="scr-results">
+  <h1>Quest Complete!</h1>
+  <div class="best-banner" id="bestBanner">🌟 NEW PERSONAL BEST! 🌟</div>
+  <div class="card center">
+    <div class="eat-scene" id="eatScene">
+      <span id="chompBubble">CHOMP!</span>
+      <span id="eatPanda">🐼</span>
+      <span id="eatBamboo">🎋</span>
+      <span id="eatCake">🎂</span>
+      <div class="scene-ground"></div>
+    </div>
+    <div class="score-big" id="scoreBig">0 / 25</div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+  <div class="card" id="reviewCard">
+    <h2>📚 Review — let's learn these!</h2>
+    <div id="reviewList"></div>
+  </div>
+  <div class="card">
+    <h2>📈 This test by topic</h2>
+    <div id="testTopicBars"></div>
+  </div>
+  <div class="card">
+    <h2>🧠 Overall mastery</h2>
+    <div id="masteryBars"></div>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" onclick="showSetup()">Play Again 🔁</button>
+    <button class="btn-secondary" onclick="showDashboard()">📊 Full Progress</button>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="screen" id="scr-dash">
+  <h1 id="dashTitle">📊 Progress</h1>
+  <div class="card">
+    <h2>🧠 Mastery by topic</h2>
+    <div id="dashMastery"></div>
+    <p class="small-note">🌟 Excels ≥ 85% · 👍 Doing OK 60–84% · 💪 Needs practice &lt; 60%</p>
+  </div>
+  <div class="card">
+    <h2>🏆 Top scores (all players)</h2>
+    <table id="topScoresTable"><thead><tr><th></th><th>Player</th><th>Score</th><th>Level</th><th>Date</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="card">
+    <h2>🔍 Review past mistakes</h2>
+    <p class="small-note" style="text-align:left;margin-top:0">
+      Every question she got wrong or skipped, with the explanation. Pick a test to look back at.</p>
+    <select id="reviewPick" onchange="renderPastReview()" style="font-family:inherit;font-size:.95rem;
+      padding:10px 12px;border:2px solid #cfe3c2;border-radius:12px;width:100%;margin-bottom:12px"></select>
+    <div id="pastReview"></div>
+  </div>
+  <div class="card">
+    <h2>📜 Test history</h2>
+    <div class="sel-bar" id="selBar">
+      <span class="cnt" id="selCount">0 selected</span>
+      <button class="btn-danger btn-small" onclick="confirmDeleteSelected()">🗑️ Delete selected</button>
+      <button class="btn-secondary btn-small" onclick="clearSelection()">Clear</button>
+    </div>
+    <table id="historyTable"><thead><tr><th style="width:30px"></th><th>Date</th><th>Level</th><th>Score</th><th>Result</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" onclick="showSetup()">⬅️ Back</button>
+    <button class="btn-danger" onclick="confirmDelete()">🗑️ Delete ALL my progress</button>
+    <button class="btn-secondary" onclick="showArchive()">🗂️ Deleted data page</button>
+  </div>
+</div>
+
+<!-- ============ ARCHIVE ============ -->
+<div class="screen" id="scr-archive">
+  <h1>🗂️ Deleted Data</h1>
+  <p class="subtitle">Removed player records are kept here for reference — nothing is lost silently.</p>
+  <div id="archiveList"></div>
+  <div class="row-buttons"><button class="btn-primary" onclick="showDashboard()">⬅️ Back</button></div>
+</div>
+
+<!-- delete confirm modal -->
+<div class="modal-back" id="deleteModal">
+  <div class="modal">
+    <div style="font-size:3rem">🐼❓</div>
+    <h2 id="deleteModalText">Delete progress?</h2>
+    <p id="deleteModalBody" style="margin:10px 0 18px; font-size:.9rem; color:#666">Your data will be moved to the Deleted Data page, not erased.</p>
+    <div class="row-buttons">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" onclick="doDelete()">Yes, delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="tutor-store.js"></script>
+<script src="tutor-nav.js"></script>
+<script>
+/* ================= QUESTION BANK ================= */
+const QUESTION_BANK = __QUESTIONS__;
+
+const TOPIC_NAMES = {
+  /* grade 2 */ addsub:"Adding & Subtracting", place:"Place Value", money:"Money",
+  time:"Telling Time", shapes:"Shapes", patterns:"Number Patterns",
+  /* grade 3-4 */ multdiv:"Multiplication & Division", rounding:"Rounding & Estimating",
+  factors:"Factors & Multiples",
+  /* fractions & decimals */ fractions:"Fractions", decimals:"Decimals",
+  /* grade 5 */ orderops:"Order of Operations", coordinates:"Coordinate Grid",
+  /* grade 6 */ ratios:"Ratios & Rates", percent:"Percents", integers:"Positive & Negative Numbers",
+  expressions:"Expressions & Equations", statistics:"Mean, Median & Range",
+  /* grade 7 */ proportions:"Proportions", equations:"Solving Equations", probability:"Probability",
+  /* grade 8 */ linear:"Linear Functions", systems:"Systems of Equations",
+  exponents:"Exponents & Scientific Notation", pythagorean:"Pythagorean Theorem",
+  transformations:"Transformations",
+  /* grade 8 bridge to geometry */ transversals:"Parallel Lines & Transversals",
+  radicals:"Square Roots & Radicals", coordgeo:"Distance & Midpoint",
+  /* grade 9 algebra I */ inequalities:"Inequalities", factoring:"Factoring",
+  quadratics:"Quadratic Equations", functions:"Functions",
+  /* shared */ geometry:"Geometry", wordprob:"Word Problems"
+};
+const TIMER_MIN = {easy:40, medium:25, hard:15};
+/* Grades with question banks. 9-12 appear in the picker but are disabled
+   until content exists for them. */
+const GRADES_AVAILABLE = [...new Set(QUESTION_BANK.map(q => q.grade))].sort((a,b)=>a-b);
+const ALL_GRADES = [2,3,4,5,6,7,8,9,10,11,12];
+const WIN_COUNT = 20, TOTAL = 25;
+
+/* ================= STORAGE (shared TutorStore, case-insensitive) ================= */
+const APP_ID = "panda-math";
+let currentUser = null;   // display name; lookups are case-insensitive
+let session = null;
+function myApp(){ return TutorStore.app(currentUser, APP_ID); }
+
+/* ================= SCREENS ================= */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+/* ================= LOGIN ================= */
+function renderChips(){
+  const box = document.getElementById("userChips");
+  const users = TutorStore.users();
+  box.innerHTML = users.length ? "<span style='width:100%;font-size:.85rem;color:#777'>Or tap your name:</span>" : "";
+  users.forEach(u=>{
+    const c = document.createElement("span");
+    c.className = "chip"; c.textContent = "🐾 " + u.displayName;
+    c.onclick = ()=>{ document.getElementById("nameInput").value = u.displayName; login(); };
+    box.appendChild(c);
+  });
+}
+function login(){
+  const typed = document.getElementById("nameInput").value.trim();
+  if(!typed){ document.getElementById("nameInput").focus(); return; }
+  // Case-insensitive: "robin" logs into the same account as "Robin".
+  const returning = TutorStore.exists(typed);
+  const u = TutorStore.login(typed);
+  currentUser = u.displayName;
+  const note = returning && TutorStore.keyOf(typed) === TutorStore.keyOf(currentUser) && typed !== currentUser
+    ? ` (welcome back, ${currentUser}!)` : "";
+  document.getElementById("helloName").textContent = "Hi, " + currentUser + "! 🎉";
+  const saved = myApp().lastGrade;
+  chosenGrade = GRADES_AVAILABLE.includes(saved) ? saved
+              : (GRADES_AVAILABLE.includes(5) ? 5 : GRADES_AVAILABLE[0]);
+  renderGrades();
+  if(window.TutorNav) TutorNav.setUser(currentUser);
+  show("scr-setup");
+}
+function switchUser(){ currentUser = null; document.getElementById("nameInput").value=""; renderChips(); show("scr-login"); }
+function showSetup(){ stopTimer(); show("scr-setup"); }
+
+/* ================= SETUP ================= */
+let chosenDiff = "medium";
+let chosenGrade = 5;
+
+function renderGrades(){
+  const row = document.getElementById("gradeRow");
+  row.innerHTML = "";
+  ALL_GRADES.forEach(g=>{
+    const has = GRADES_AVAILABLE.includes(g);
+    const card = document.createElement("div");
+    card.className = "grade-card" + (has ? "" : " disabled") + (g === chosenGrade ? " selected" : "");
+    card.dataset.grade = g;
+    card.innerHTML = `<div class="g-num">${g}</div><div class="g-lbl">${has ? "grade" : "soon"}</div>`;
+    if(has) card.onclick = ()=>pickGrade(g);
+    row.appendChild(card);
+  });
+  updateGradeNote();
+}
+function pickGrade(g){
+  if(!GRADES_AVAILABLE.includes(g)) return;
+  chosenGrade = g;
+  document.querySelectorAll("#gradeRow .grade-card").forEach(c=>
+    c.classList.toggle("selected", Number(c.dataset.grade) === g));
+  updateGradeNote();
+  try{ TutorStore.setAppField(currentUser, APP_ID, "lastGrade", g); }catch(e){}
+}
+function updateGradeNote(){
+  const tops = [...new Set(QUESTION_BANK.filter(q=>q.grade===chosenGrade).map(q=>q.topic))];
+  document.getElementById("gradeNote").textContent =
+    `Grade ${chosenGrade} covers: ${tops.map(t=>TOPIC_NAMES[t]||t).join(", ")}.`;
+}
+function pickDiff(d){
+  chosenDiff = d;
+  document.querySelectorAll(".diff-card").forEach(c=>c.classList.toggle("selected", c.dataset.diff===d));
+}
+
+/* ================= TEST BUILD ================= */
+function buildTest(diff, grade){
+  const inGrade = QUESTION_BANK.filter(q=>q.grade===grade);
+  let pool = inGrade.filter(q=>q.diff===diff);
+  if(pool.length < TOTAL){
+    // Not enough at this exact level — top up from the rest of the grade
+    // rather than repeating questions or failing.
+    const rest = shuffle(inGrade.filter(q=>q.diff!==diff));
+    pool = pool.concat(rest.slice(0, TOTAL - pool.length));
+  }
+  const byTopic = {};
+  pool.forEach(q=>{ (byTopic[q.topic] = byTopic[q.topic]||[]).push(q); });
+  Object.values(byTopic).forEach(a=>shuffle(a));
+  const topics = shuffle(Object.keys(byTopic));
+  const picked = [];
+  let i = 0;
+  while(picked.length < TOTAL){
+    const t = topics[i % topics.length];
+    if(byTopic[t].length) picked.push(byTopic[t].pop());
+    i++;
+    if(i > 500) break;
+  }
+  return shuffle(picked).slice(0, TOTAL);
+}
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ================= QUIZ FLOW ================= */
+function startTest(){
+  session = {
+    diff: chosenDiff,
+    timed: document.getElementById("timerToggle").checked,
+    questions: buildTest(chosenDiff, chosenGrade),
+    grade: chosenGrade,
+    idx: 0, correct: 0, answered: 0,
+    results: [],   // full per-question metadata, see submitAnswer()
+    startedAt: Date.now(), qStart: Date.now(),
+    timeLeft: TIMER_MIN[chosenDiff]*60, timerId: null
+  };
+  document.getElementById("timerBox").style.display = session.timed ? "flex" : "none";
+  document.getElementById("bonusSpot").style.opacity = 0;
+  if(session.timed) startTimer();
+  movePanda();
+  renderQuestion();
+  show("scr-quiz");
+}
+function renderQuestion(){
+  const q = session.questions[session.idx];
+  document.getElementById("qCount").textContent = `Question ${session.idx+1} of ${TOTAL}`;
+  document.getElementById("scoreCount").textContent = `✅ ${session.correct} correct`;
+  document.getElementById("topicBadge").textContent = TOPIC_NAMES[q.topic];
+  document.getElementById("questionText").textContent = q.q;
+  const form = document.getElementById("choicesForm");
+  form.innerHTML = "";
+  q.choices.forEach((c, i)=>{
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="radio" name="choice" value="${i}"> <span>${escapeHtml(c)}</span>`;
+    label.querySelector("input").addEventListener("change", ()=>{ document.getElementById("submitBtn").disabled = false; });
+    form.appendChild(label);
+  });
+  document.getElementById("feedbackBanner").style.display = "none";
+  document.getElementById("submitBtn").style.display = ""; document.getElementById("submitBtn").disabled = true;
+  document.getElementById("skipBtn").style.display = "";
+  document.getElementById("nextBtn").style.display = "none";
+  document.getElementById("finishBtn").style.display = "none";
+  session.qStart = Date.now();
+}
+/* One question's full metadata record. */
+function makeRecord(q, pick, right, skipped){
+  return {
+    qId: q.id, topic: q.topic, topicName: TOPIC_NAMES[q.topic], difficulty: q.diff,
+    order: session.idx + 1, question: q.q, choices: q.choices.slice(),
+    correctIndex: q.answer, correctAnswer: q.choices[q.answer],
+    picked: pick, pickedAnswer: pick === null ? null : q.choices[pick],
+    correct: right, skipped: skipped,
+    seconds: Math.round((Date.now() - session.qStart) / 1000),
+    explain: q.explain
+  };
+}
+function escapeHtml(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+function submitAnswer(){
+  const sel = document.querySelector("input[name=choice]:checked");
+  if(!sel) return;
+  const q = session.questions[session.idx];
+  const pick = parseInt(sel.value);
+  const right = pick === q.answer;
+  session.results.push(makeRecord(q, pick, right, false));
+  session.answered++;
+  const labels = document.querySelectorAll("#choicesForm label");
+  labels.forEach((l,i)=>{
+    l.classList.add("disabled");
+    if(i===q.answer) l.classList.add("correct");
+    if(i===pick && !right) l.classList.add("wrong");
+  });
+  const banner = document.getElementById("feedbackBanner");
+  banner.style.display = "block";
+  const panda = document.getElementById("pandaWalker");
+  if(right){
+    session.correct++;
+    banner.textContent = pick3(["🎉 Yes! The panda scooches forward!","✨ Correct! Munch-step!","🐾 Right on! One step closer!"]);
+    banner.style.color = "var(--green-dark)";
+    panda.classList.remove("hop"); void panda.offsetWidth; panda.classList.add("hop");
+    movePanda();
+  } else {
+    banner.textContent = pick3(["😢 Not quite — the panda waits…","🙈 Oops! You'll see the explanation at the end.","💭 Almost! We'll review this one after the test."]);
+    banner.style.color = "var(--red)";
+    panda.classList.remove("sad"); void panda.offsetWidth; panda.classList.add("sad");
+  }
+  document.getElementById("scoreCount").textContent = `✅ ${session.correct} correct`;
+  afterAnswerButtons();
+}
+function pick3(a){ return a[Math.floor(Math.random()*a.length)]; }
+function skipQuestion(){
+  const q = session.questions[session.idx];
+  session.results.push(makeRecord(q, null, false, true));
+  const labels = document.querySelectorAll("#choicesForm label");
+  labels.forEach((l,i)=>{ l.classList.add("disabled"); if(i===q.answer) l.classList.add("correct"); });
+  const banner = document.getElementById("feedbackBanner");
+  banner.style.display = "block"; banner.style.color = "var(--blue)";
+  banner.textContent = "⏭️ Skipped — the correct answer is highlighted. We'll review it at the end.";
+  afterAnswerButtons();
+}
+function afterAnswerButtons(){
+  document.getElementById("submitBtn").style.display = "none";
+  document.getElementById("skipBtn").style.display = "none";
+  const last = session.idx === TOTAL - 1;
+  document.getElementById(last ? "finishBtn" : "nextBtn").style.display = "";
+}
+function nextQuestion(){ session.idx++; renderQuestion(); }
+
+function movePanda(){
+  const track = document.querySelector(".panda-track");
+  const panda = document.getElementById("pandaWalker");
+  const max = track.clientWidth - 110;
+  const frac = Math.min(session.correct / WIN_COUNT, 1);
+  panda.style.left = (frac * max) + "px";
+  if(session.correct >= WIN_COUNT) document.getElementById("stepsLabel").textContent = "🎋 The panda made it! Keep going for the bonus treat! 🎂";
+  else document.getElementById("stepsLabel").textContent = `🎋 ${WIN_COUNT - session.correct} more correct answer${WIN_COUNT-session.correct===1?"":"s"} to reach the bamboo!`;
+  if(session.correct === TOTAL) document.getElementById("bonusSpot").style.opacity = 1;
+}
+
+/* ================= TIMER ================= */
+function startTimer(){
+  renderTimer();
+  session.timerId = setInterval(()=>{
+    session.timeLeft--;
+    renderTimer();
+    if(session.timeLeft <= 0){ stopTimer(); timeUp(); }
+  }, 1000);
+}
+function stopTimer(){ if(session && session.timerId){ clearInterval(session.timerId); session.timerId = null; } }
+function renderTimer(){
+  const m = Math.floor(session.timeLeft/60), s = session.timeLeft%60;
+  document.getElementById("timerText").textContent = `${m}:${String(s).padStart(2,"0")}`;
+  document.getElementById("timerBox").classList.toggle("warn", session.timeLeft <= 120);
+}
+function addTime(){ session.timeLeft += 300; renderTimer(); }
+function timeUp(){
+  while(session.results.length < TOTAL){
+    session.idx = session.results.length;
+    session.results.push(makeRecord(session.questions[session.idx], null, false, true));
+  }
+  alert("⏰ Time's up! Let's see how the panda did…");
+  finishTest();
+}
+
+/* ================= FINISH & RESULTS ================= */
+function finishTest(){
+  stopTimer();
+  while(session.results.length < TOTAL){
+    session.idx = session.results.length;
+    session.results.push(makeRecord(session.questions[session.idx], null, false, true));
+  }
+  const correct = session.results.filter(r=>r.correct).length;
+  const pct = Math.round(correct/TOTAL*100);
+  const win = pct >= 80, perfect = correct === TOTAL;
+  const topics = {};
+  session.results.forEach(r=>{
+    const t = topics[r.topic] = topics[r.topic] || {c:0,t:0};
+    t.t++; if(r.correct) t.c++;
+  });
+  const prevBest = myApp().best || 0;
+  const rec = {
+    /* ---- test metadata ---- */
+    app: APP_ID, subject: "Math", gradeLevel: String(session.grade),
+    date: new Date().toISOString(),
+    player: currentUser, playerKey: TutorStore.keyOf(currentUser),
+    difficulty: session.diff, timed: session.timed,
+    timeLimitSec: session.timed ? TIMER_MIN[session.diff]*60 : null,
+    timeTakenSec: Math.round((Date.now() - session.startedAt)/1000),
+    score: correct, total: TOTAL, pct, win, perfect,
+    skippedCount: session.results.filter(r=>r.skipped).length,
+    topics,                       /* per-topic tallies */
+    answers: session.results      /* full per-question detail */
+  };
+  TutorStore.saveResult(currentUser, APP_ID, rec);
+  const u = {history: myApp().history, best: myApp().best};
+
+  document.getElementById("scoreBig").textContent = `${correct} / ${TOTAL}  (${pct}%)`;
+  const msg = document.getElementById("resultMsg");
+  if(perfect){
+    msg.textContent = "PERFECT SCORE! The panda devours the bamboo AND earns the special bonus cake! 🎆";
+    launchFireworks(); setTimeout(launchConfetti, 1200);
+  } else if(win){
+    msg.textContent = "You did it! Watch the panda enjoy his bamboo feast! 🎊 (Get 100% for a bonus treat…)";
+    launchConfetti();
+  } else {
+    msg.textContent = `So close! The panda needs ${WIN_COUNT} correct (80%) to eat. Review your missed questions below and try again!`;
+  }
+  const bb = document.getElementById("bestBanner");
+  bb.style.display = (pct > prevBest && u.history.length > 1) ? "block" : "none";
+
+  buildReview();
+  playEatAnimation(win, perfect);
+  renderBars("testTopicBars", topics, true);
+  renderBars("masteryBars", aggregateTopics(u), false);
+  show("scr-results");
+}
+
+function buildReview(){
+  const missed = session.results.filter(r=>!r.correct);
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+  if(!missed.length){
+    list.innerHTML = "<p style='font-size:1rem'>🌟 Nothing to review — every answer was correct! Amazing!</p>";
+    return;
+  }
+  missed.forEach((r,n)=>{
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-q">${n+1}. ${escapeHtml(r.question)} <span class="topic-badge" style="float:right">${r.topicName}</span></div>
+      <div class="review-your">${r.skipped ? "⏭️ You skipped this one" : "❌ Your answer: " + escapeHtml(r.pickedAnswer)}</div>
+      <div class="review-correct">✅ Correct answer: <strong>${escapeHtml(r.correctAnswer)}</strong></div>
+      <div class="explain-box show">💡 ${escapeHtml(r.explain)}</div>`;
+    list.appendChild(div);
+  });
+}
+
+/* ================= PANDA EATING ANIMATION ================= */
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+let eatToken = 0;
+async function playEatAnimation(win, perfect){
+  const my = ++eatToken;
+  const panda = document.getElementById("eatPanda");
+  const bamboo = document.getElementById("eatBamboo");
+  const cake = document.getElementById("eatCake");
+  const bubble = document.getElementById("chompBubble");
+  const scene = document.getElementById("eatScene");
+  panda.style.transition = "none"; panda.style.left = "10px";
+  panda.textContent = "🐼"; panda.classList.remove("chomp");
+  bamboo.textContent = "🎋"; bamboo.style.opacity = 1;
+  cake.style.opacity = 0; bubble.style.opacity = 0;
+  void panda.offsetWidth;
+  if(!win){
+    bubble.textContent = "💭 I'll feast next time!";
+    bubble.style.left = "20px"; bubble.style.opacity = 1;
+    return;
+  }
+  await sleep(500); if(my!==eatToken) return;
+  const target = Math.max(scene.clientWidth - 150, 120);
+  panda.style.transition = "left 1.5s ease-in-out";
+  panda.style.left = target + "px";
+  await sleep(1650); if(my!==eatToken) return;
+  const stages = ["🎋","🎍","🌿","🍃",""];
+  bubble.style.left = Math.max(target - 40, 60) + "px";
+  for(let i=1;i<stages.length;i++){
+    bubble.textContent = "CHOMP!"; bubble.style.opacity = 1;
+    panda.classList.add("chomp");
+    await sleep(330); if(my!==eatToken) return;
+    bamboo.textContent = stages[i];
+    panda.classList.remove("chomp"); bubble.style.opacity = 0;
+    await sleep(300); if(my!==eatToken) return;
+  }
+  panda.textContent = "🐼💚";
+  if(perfect){
+    await sleep(450); if(my!==eatToken) return;
+    cake.style.opacity = 1;
+    bubble.textContent = "BONUS TREAT!"; bubble.style.opacity = 1;
+    await sleep(800); if(my!==eatToken) return;
+    for(let i=0;i<2;i++){
+      bubble.textContent = "NOM NOM!"; bubble.style.opacity = 1;
+      panda.classList.add("chomp");
+      await sleep(330); if(my!==eatToken) return;
+      panda.classList.remove("chomp"); bubble.style.opacity = 0;
+      await sleep(260); if(my!==eatToken) return;
+    }
+    cake.style.opacity = 0;
+    panda.textContent = "🐼✨🎂✨";
+  }
+}
+
+function aggregateTopics(u){
+  const agg = {};
+  u.history.forEach(h=>{
+    Object.entries(h.topics).forEach(([t,v])=>{
+      const a = agg[t] = agg[t] || {c:0,t:0};
+      a.c += v.c; a.t += v.t;
+    });
+  });
+  return agg;
+}
+function masteryClass(pct){
+  if(pct >= 85) return ["bar-excel","🌟 Excels"];
+  if(pct >= 60) return ["bar-ok","👍 Doing OK"];
+  return ["bar-need","💪 Needs practice"];
+}
+function renderBars(elId, topics, showCount){
+  const el = document.getElementById(elId);
+  el.innerHTML = "";
+  const keys = Object.keys(TOPIC_NAMES).filter(k=>topics[k]);
+  if(!keys.length){ el.innerHTML = "<p class='small-note'>No data yet — take a test!</p>"; return; }
+  keys.sort((a,b)=> (topics[a].c/topics[a].t) - (topics[b].c/topics[b].t));
+  keys.forEach(k=>{
+    const v = topics[k];
+    const pct = Math.round(v.c/v.t*100);
+    const [cls, tag] = masteryClass(pct);
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    row.innerHTML = `<span class="bar-label">${TOPIC_NAMES[k]}</span>
+      <div class="bar-outer"><div class="bar-inner ${cls}" style="width:0%">${showCount ? v.c+"/"+v.t : pct+"%"}</div></div>
+      <span class="bar-tag">${tag}</span>`;
+    el.appendChild(row);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ row.querySelector(".bar-inner").style.width = Math.max(pct,8) + "%"; }));
+  });
+}
+
+/* ================= DASHBOARD ================= */
+function showDashboard(){
+  stopTimer();
+  const u = myApp();
+  document.getElementById("dashTitle").textContent = `📊 ${currentUser}'s Progress`;
+  renderBars("dashMastery", aggregateTopics(u), false);
+  const hist = document.querySelector("#historyTable tbody");
+  hist.innerHTML = "";
+  [...u.history].reverse().forEach(h=>{
+    const tr = document.createElement("tr");
+    const d = h.difficulty || h.diff || "medium";
+    const wrong = (h.answers||[]).filter(a=>!a.correct).length;
+    tr.innerHTML = `
+      <td><input type="checkbox" class="hist-check" data-date="${escapeHtml(h.date)}"
+                 onchange="syncSelection()" aria-label="select this test"></td>
+      <td>${new Date(h.date).toLocaleDateString()}<br><span style="font-size:.72rem;color:#8a8371">${new Date(h.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></td>
+      <td>Gr ${escapeHtml(h.gradeLevel||"?")} · ${cap(d)}${h.timed?" ⏱️":""}</td>
+      <td>${h.score}/${h.total} (${h.pct}%)</td>
+      <td>${h.perfect?"🎂 Perfect!":h.win?"🎋 Panda fed!":"💪 Practice"}</td>
+      <td>${wrong?`<button class="rev-btn" onclick="reviewTest('${escapeHtml(h.date)}')">Review ${wrong}</button>`:""}</td>`;
+    hist.appendChild(tr);
+  });
+  if(!u.history.length) hist.innerHTML = "<tr><td colspan=6>No tests yet!</td></tr>";
+  buildReviewPicker();
+  syncSelection();
+  const tops = TutorStore.allResults(APP_ID);
+  tops.sort((a,b)=> b.pct - a.pct || new Date(a.date) - new Date(b.date));
+  const tt = document.querySelector("#topScoresTable tbody");
+  tt.innerHTML = "";
+  const medals = ["🥇","🥈","🥉","🏅","🏅"];
+  tops.slice(0,5).forEach((t,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="medal">${medals[i]}</td><td>${escapeHtml(t.name)}</td><td>${t.score}/${t.total} (${t.pct}%)</td><td>${cap(t.difficulty||t.diff||"medium")}</td><td>${new Date(t.date).toLocaleDateString()}</td>`;
+    tt.appendChild(tr);
+  });
+  if(!tops.length) tt.innerHTML = "<tr><td colspan=5>No scores yet!</td></tr>";
+  show("scr-dash");
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+/* ================= REVIEW PAST MISTAKES ================= */
+function buildReviewPicker(){
+  const sel = document.getElementById("reviewPick");
+  const hist = [...myApp().history].reverse()
+    .filter(h => (h.answers||[]).some(a=>!a.correct));
+  if(!hist.length){
+    sel.innerHTML = "<option value=''>No mistakes recorded yet 🎉</option>";
+    document.getElementById("pastReview").innerHTML =
+      "<p class='rev-empty'>Nothing to review — every question so far has been correct!</p>";
+    return;
+  }
+  sel.innerHTML = hist.map(h=>{
+    const n = h.answers.filter(a=>!a.correct).length;
+    return `<option value="${escapeHtml(h.date)}">${new Date(h.date).toLocaleString()} — Grade ${escapeHtml(h.gradeLevel||"?")}, ${h.pct}% · ${n} to review</option>`;
+  }).join("");
+  renderPastReview();
+}
+function renderPastReview(){ renderReviewFor(document.getElementById("reviewPick").value); }
+function reviewTest(date){
+  const sel = document.getElementById("reviewPick");
+  if([...sel.options].some(o=>o.value===date)) sel.value = date;
+  renderReviewFor(date);
+  document.getElementById("pastReview").scrollIntoView({behavior:"smooth", block:"center"});
+}
+function renderReviewFor(date){
+  const host = document.getElementById("pastReview");
+  const rec = myApp().history.find(h=>h.date===date);
+  if(!rec){ host.innerHTML = "<p class='rev-empty'>Pick a test above.</p>"; return; }
+  const missed = (rec.answers||[]).filter(a=>!a.correct);
+  if(!missed.length){ host.innerHTML = "<p class='rev-empty'>🌟 Nothing wrong in that test!</p>"; return; }
+  host.innerHTML = missed.map((r,n)=>`
+    <div class="rev-item">
+      <div class="rev-q">${n+1}. ${escapeHtml(r.question)}
+        <span class="topic-badge" style="float:right">${escapeHtml(r.topicName||r.topic||"")}</span></div>
+      <div class="rev-meta">${escapeHtml(r.difficulty||"")}${r.seconds!=null?" · "+r.seconds+"s spent":""}</div>
+      <div class="review-your">${r.skipped ? "⏭️ Skipped" : "❌ Her answer: "+escapeHtml(r.pickedAnswer)}</div>
+      <div class="review-correct">✅ Correct answer: <strong>${escapeHtml(r.correctAnswer)}</strong></div>
+      <div class="explain-box show">💡 ${escapeHtml(r.explain||"")}</div>
+    </div>`).join("");
+}
+
+/* ================= SELECTIVE DELETE ================= */
+function selectedDates(){
+  return [...document.querySelectorAll(".hist-check:checked")].map(c=>c.dataset.date);
+}
+function syncSelection(){
+  const n = selectedDates().length;
+  document.getElementById("selBar").classList.toggle("on", n>0);
+  document.getElementById("selCount").textContent = n+" test"+(n===1?"":"s")+" selected";
+}
+function clearSelection(){
+  document.querySelectorAll(".hist-check").forEach(c=>c.checked=false);
+  syncSelection();
+}
+function confirmDeleteSelected(){
+  const n = selectedDates().length;
+  if(!n) return;
+  pendingDelete = "selected";
+  document.getElementById("deleteModalText").textContent = `Delete ${n} selected test${n===1?"":"s"}?`;
+  document.getElementById("deleteModalBody").textContent =
+    "Only these tests are removed. The rest of the history stays, and the removed tests move to the Deleted Data page.";
+  document.getElementById("deleteModal").classList.add("show");
+}
+
+/* ================= DELETE (with confirmation + archive) ================= */
+let pendingDelete = "all";
+function confirmDelete(){
+  pendingDelete = "all";
+  document.getElementById("deleteModalBody").textContent =
+    "Every math test is removed. Your data moves to the Deleted Data page, not erased.";
+  document.getElementById("deleteModalText").textContent = `Delete ALL math progress for ${currentUser}?`;
+  document.getElementById("deleteModal").classList.add("show");
+}
+function closeModal(){ document.getElementById("deleteModal").classList.remove("show"); }
+function doDelete(){
+  if(pendingDelete === "selected"){
+    TutorStore.deleteResults(currentUser, APP_ID, selectedDates());  // archives first
+    closeModal();
+    showDashboard();          // stay put; only some rows went away
+    return;
+  }
+  TutorStore.deleteUser(currentUser, APP_ID);   // archives before removing
+  closeModal();
+  switchUser();
+}
+function showArchive(){
+  const el = document.getElementById("archiveList");
+  el.innerHTML = "";
+  const del = TutorStore.deleted();
+  if(!del.length){ el.innerHTML = "<div class='card center'>Nothing here — no data has been deleted. 🐼</div>"; }
+  del.forEach(d=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    const data = d.data || {};
+    const tests = (data.history || []).length;
+    const best = data.best || 0;
+    div.innerHTML = `<h2>🐾 ${escapeHtml(d.name)}</h2>
+      <p style="font-size:.9rem">App: ${escapeHtml(d.app || "panda-math")} · Deleted: ${new Date(d.deletedAt).toLocaleString()} · Tests: ${tests} · Best: ${best}%</p>`;
+    el.appendChild(div);
+  });
+  show("scr-archive");
+}
+
+/* ================= FX: CONFETTI & FIREWORKS ================= */
+const fx = document.getElementById("fxCanvas");
+const ctx = fx.getContext("2d");
+let particles = [], fxRunning = false;
+function sizeFx(){ fx.width = innerWidth; fx.height = innerHeight; }
+addEventListener("resize", sizeFx); sizeFx();
+const COLORS = ["#e05252","#f5c542","#4a8f3c","#4a7fb5","#9b59b6","#e67e22","#1abc9c","#ff7eb9"];
+function launchConfetti(){
+  for(let i=0;i<220;i++){
+    particles.push({type:"c", x:Math.random()*fx.width, y:-20-Math.random()*fx.height*0.5,
+      vx:(Math.random()-.5)*2.4, vy:2+Math.random()*3.5, size:6+Math.random()*7,
+      color:COLORS[Math.floor(Math.random()*COLORS.length)], rot:Math.random()*Math.PI, vr:(Math.random()-.5)*.25, life:99999});
+  }
+  runFx(6000);
+}
+function launchFireworks(){
+  let bursts = 0;
+  const iv = setInterval(()=>{
+    const cx = fx.width*(0.15+Math.random()*0.7), cy = fx.height*(0.15+Math.random()*0.4);
+    const col = COLORS[Math.floor(Math.random()*COLORS.length)];
+    for(let i=0;i<70;i++){
+      const ang = Math.PI*2*i/70, sp = 2+Math.random()*4;
+      particles.push({type:"f", x:cx, y:cy, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
+        size:2.5+Math.random()*2, color:col, life:60+Math.random()*30});
+    }
+    if(++bursts >= 8) clearInterval(iv);
+  }, 450);
+  runFx(8000);
+}
+let fxTimeout = null;
+function runFx(ms){
+  if(fxTimeout) clearTimeout(fxTimeout);
+  fxTimeout = setTimeout(()=>{ particles = []; }, ms);
+  if(!fxRunning){ fxRunning = true; requestAnimationFrame(tickFx); }
+}
+function tickFx(){
+  ctx.clearRect(0,0,fx.width,fx.height);
+  particles = particles.filter(p=> p.life > 0 && p.y < fx.height + 30);
+  particles.forEach(p=>{
+    p.x += p.vx; p.y += p.vy; p.life--;
+    if(p.type==="c"){ p.vy += 0.03; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2); ctx.restore();
+    } else { p.vy += 0.05; ctx.globalAlpha = Math.max(p.life/90,0);
+      ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,7); ctx.fill(); ctx.globalAlpha = 1;
+    }
+  });
+  if(particles.length){ requestAnimationFrame(tickFx); } else { fxRunning = false; ctx.clearRect(0,0,fx.width,fx.height); }
+}
+
+/* ================= INIT ================= */
+if(window.TutorNav) TutorNav.init({app: APP_ID});
+renderChips();
+document.getElementById("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") login(); });
+</script>
+</body>
+</html>

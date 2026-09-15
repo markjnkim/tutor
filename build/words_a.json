@@ -1,0 +1,506 @@
+[
+{
+"w": "knight",
+"p": "silent",
+"d": "easy",
+"s": "The brave knight rode his horse to the castle.",
+"def": "A soldier of high rank who served a king long ago."
+},
+{
+"w": "wrist",
+"p": "silent",
+"d": "easy",
+"s": "She wears her watch on her left wrist.",
+"def": "The joint between your hand and your arm."
+},
+{
+"w": "climb",
+"p": "silent",
+"d": "easy",
+"s": "We like to climb the big tree in the yard.",
+"def": "To go up something using your hands and feet."
+},
+{
+"w": "thumb",
+"p": "silent",
+"d": "easy",
+"s": "He hurt his thumb while closing the door.",
+"def": "The short, thick finger on the side of your hand."
+},
+{
+"w": "knee",
+"p": "silent",
+"d": "easy",
+"s": "She scraped her knee falling off the bike.",
+"def": "The joint in the middle of your leg."
+},
+{
+"w": "listen",
+"p": "silent",
+"d": "easy",
+"s": "Please listen carefully to the directions.",
+"def": "To pay attention to a sound."
+},
+{
+"w": "island",
+"p": "silent",
+"d": "easy",
+"s": "They sailed to a small island in the bay.",
+"def": "A piece of land with water all around it."
+},
+{
+"w": "wrong",
+"p": "silent",
+"d": "easy",
+"s": "I got only one answer wrong on the quiz.",
+"def": "Not correct."
+},
+{
+"w": "knuckle",
+"p": "silent",
+"d": "medium",
+"s": "He cracked a knuckle on his right hand.",
+"def": "A joint in your finger."
+},
+{
+"w": "wrestle",
+"p": "silent",
+"d": "medium",
+"s": "The puppies like to wrestle on the carpet.",
+"def": "To struggle or grapple with someone."
+},
+{
+"w": "scissors",
+"p": "silent",
+"d": "medium",
+"s": "Use the scissors to cut along the line.",
+"def": "A tool with two blades used for cutting."
+},
+{
+"w": "rhythm",
+"p": "silent",
+"d": "medium",
+"s": "The drummer kept a steady rhythm.",
+"def": "A regular repeated pattern of sound or movement."
+},
+{
+"w": "column",
+"p": "silent",
+"d": "medium",
+"s": "Add the numbers in the first column.",
+"def": "An upright pillar, or a vertical list."
+},
+{
+"w": "honest",
+"p": "silent",
+"d": "medium",
+"s": "An honest person tells the truth.",
+"def": "Truthful and fair."
+},
+{
+"w": "muscle",
+"p": "silent",
+"d": "medium",
+"s": "Running builds muscle in your legs.",
+"def": "Tissue in the body that makes it move."
+},
+{
+"w": "doubt",
+"p": "silent",
+"d": "medium",
+"s": "I have no doubt that she will win.",
+"def": "A feeling of not being sure."
+},
+{
+"w": "knowledge",
+"p": "silent",
+"d": "hard",
+"s": "Her knowledge of astronomy impressed the teacher.",
+"def": "Information and understanding you have gained."
+},
+{
+"w": "silhouette",
+"p": "silent",
+"d": "hard",
+"s": "We saw the silhouette of a bird against the sunset.",
+"def": "A dark outline of something seen against light."
+},
+{
+"w": "pneumonia",
+"p": "silent",
+"d": "hard",
+"s": "The doctor treated his pneumonia with medicine.",
+"def": "An illness that causes the lungs to become infected."
+},
+{
+"w": "subtle",
+"p": "silent",
+"d": "hard",
+"s": "There was a subtle change in the color of the sky.",
+"def": "So slight it is hard to notice."
+},
+{
+"w": "conscience",
+"p": "silent",
+"d": "hard",
+"s": "His conscience told him to return the wallet.",
+"def": "The inner sense of right and wrong."
+},
+{
+"w": "handkerchief",
+"p": "silent",
+"d": "hard",
+"s": "He kept a clean handkerchief in his pocket.",
+"def": "A small square of cloth used for wiping your face."
+},
+{
+"w": "gnaw",
+"p": "silent",
+"d": "hard",
+"s": "The beaver will gnaw through the small tree.",
+"def": "To bite or chew on something over and over."
+},
+{
+"w": "solemn",
+"p": "silent",
+"d": "hard",
+"s": "The ceremony was quiet and solemn.",
+"def": "Very serious in manner."
+},
+{
+"w": "happen",
+"p": "double",
+"d": "easy",
+"s": "What will happen if we mix the two colors?",
+"def": "To take place or occur."
+},
+{
+"w": "dinner",
+"p": "double",
+"d": "easy",
+"s": "We eat dinner together every evening.",
+"def": "The main meal of the day."
+},
+{
+"w": "summer",
+"p": "double",
+"d": "easy",
+"s": "They swim at the lake all summer.",
+"def": "The warmest season of the year."
+},
+{
+"w": "button",
+"p": "double",
+"d": "easy",
+"s": "One button fell off his shirt.",
+"def": "A small disk used to fasten clothing."
+},
+{
+"w": "rabbit",
+"p": "double",
+"d": "easy",
+"s": "A rabbit hopped across the garden path.",
+"def": "A small furry animal with long ears."
+},
+{
+"w": "puzzle",
+"p": "double",
+"d": "easy",
+"s": "She finished the jigsaw puzzle in one hour.",
+"def": "A game or problem that tests your cleverness."
+},
+{
+"w": "middle",
+"p": "double",
+"d": "easy",
+"s": "Please sit in the middle seat.",
+"def": "The center point or part."
+},
+{
+"w": "lesson",
+"p": "double",
+"d": "easy",
+"s": "Today's lesson is about fractions.",
+"def": "Something taught or learned."
+},
+{
+"w": "beginning",
+"p": "double",
+"d": "medium",
+"s": "The beginning of the story was exciting.",
+"def": "The first part or the start."
+},
+{
+"w": "stopped",
+"p": "double",
+"d": "medium",
+"s": "The bus stopped at the corner.",
+"def": "Past tense of stop; came to an end."
+},
+{
+"w": "shimmer",
+"p": "double",
+"d": "medium",
+"s": "We watched the lake shimmer in the sunlight.",
+"def": "To shine with a soft wavering light."
+},
+{
+"w": "embarrass",
+"p": "double",
+"d": "medium",
+"s": "Do not embarrass your friend in front of others.",
+"def": "To make someone feel awkward or ashamed."
+},
+{
+"w": "occurred",
+"p": "double",
+"d": "medium",
+"s": "The storm occurred late in the night.",
+"def": "Happened or took place."
+},
+{
+"w": "committee",
+"p": "double",
+"d": "medium",
+"s": "The committee met to plan the school fair.",
+"def": "A group of people chosen to do a job together."
+},
+{
+"w": "swimming",
+"p": "double",
+"d": "medium",
+"s": "She goes swimming every Tuesday.",
+"def": "Moving through water using your arms and legs."
+},
+{
+"w": "gallop",
+"p": "double",
+"d": "medium",
+"s": "We watched the horse gallop across the field.",
+"def": "To run fast, the way a horse does."
+},
+{
+"w": "accommodate",
+"p": "double",
+"d": "hard",
+"s": "The hotel can accommodate forty guests.",
+"def": "To provide room or space for."
+},
+{
+"w": "necessary",
+"p": "double",
+"d": "hard",
+"s": "It is necessary to bring a pencil to the test.",
+"def": "Needed; required."
+},
+{
+"w": "parallel",
+"p": "double",
+"d": "hard",
+"s": "The two parallel lines never meet.",
+"def": "Side by side and always the same distance apart."
+},
+{
+"w": "millennium",
+"p": "double",
+"d": "hard",
+"s": "A millennium is one thousand years.",
+"def": "A period of one thousand years."
+},
+{
+"w": "exaggerate",
+"p": "double",
+"d": "hard",
+"s": "Do not exaggerate how big the fish was.",
+"def": "To make something seem larger than it really is."
+},
+{
+"w": "possession",
+"p": "double",
+"d": "hard",
+"s": "That old book is her favorite possession.",
+"def": "Something that a person owns."
+},
+{
+"w": "broccoli",
+"p": "double",
+"d": "hard",
+"s": "He ate the broccoli with his dinner.",
+"def": "A green vegetable with a thick stalk."
+},
+{
+"w": "appropriate",
+"p": "double",
+"d": "hard",
+"s": "Wear appropriate shoes for the hike.",
+"def": "Suitable or right for the situation."
+},
+{
+"w": "action",
+"p": "endings",
+"d": "easy",
+"s": "She took quick action to help.",
+"def": "The process of doing something."
+},
+{
+"w": "station",
+"p": "endings",
+"d": "easy",
+"s": "The train pulled into the station.",
+"def": "A place where trains or buses stop."
+},
+{
+"w": "question",
+"p": "endings",
+"d": "easy",
+"s": "Raise your hand if you have a question.",
+"def": "A sentence that asks for information."
+},
+{
+"w": "mission",
+"p": "endings",
+"d": "easy",
+"s": "Their mission was to plant one hundred trees.",
+"def": "An important job or task."
+},
+{
+"w": "vacation",
+"p": "endings",
+"d": "easy",
+"s": "We go to the beach every summer vacation.",
+"def": "A period of time away from school or work."
+},
+{
+"w": "motion",
+"p": "endings",
+"d": "easy",
+"s": "The gentle motion of the boat made her sleepy.",
+"def": "The act of moving."
+},
+{
+"w": "section",
+"p": "endings",
+"d": "easy",
+"s": "Read the first section of the chapter.",
+"def": "One part of something larger."
+},
+{
+"w": "nation",
+"p": "endings",
+"d": "easy",
+"s": "Canada is a large nation.",
+"def": "A country and its people."
+},
+{
+"w": "decision",
+"p": "endings",
+"d": "medium",
+"s": "Making that decision took a long time.",
+"def": "A choice you make after thinking."
+},
+{
+"w": "attention",
+"p": "endings",
+"d": "medium",
+"s": "Please pay attention to the instructions.",
+"def": "Careful thought or focus."
+},
+{
+"w": "invitation",
+"p": "endings",
+"d": "medium",
+"s": "She mailed an invitation to every classmate.",
+"def": "A written or spoken request to attend something."
+},
+{
+"w": "conclusion",
+"p": "endings",
+"d": "medium",
+"s": "The conclusion of the story surprised me.",
+"def": "The end, or a judgment you reach."
+},
+{
+"w": "celebration",
+"p": "endings",
+"d": "medium",
+"s": "The whole town joined the celebration.",
+"def": "A party or event held to honor something."
+},
+{
+"w": "expression",
+"p": "endings",
+"d": "medium",
+"s": "A puzzled expression crossed his face.",
+"def": "A look on the face, or a way of saying something."
+},
+{
+"w": "population",
+"p": "endings",
+"d": "medium",
+"s": "The population of the city keeps growing.",
+"def": "The number of people living in a place."
+},
+{
+"w": "description",
+"p": "endings",
+"d": "medium",
+"s": "Write a description of your favorite place.",
+"def": "An account in words of what something is like."
+},
+{
+"w": "pronunciation",
+"p": "endings",
+"d": "hard",
+"s": "The pronunciation of that word is tricky.",
+"def": "The way a word is spoken."
+},
+{
+"w": "comprehension",
+"p": "endings",
+"d": "hard",
+"s": "The reading comprehension test had ten passages.",
+"def": "The ability to understand something."
+},
+{
+"w": "transmission",
+"p": "endings",
+"d": "hard",
+"s": "The transmission of the signal was clear.",
+"def": "The act of sending something from one place to another."
+},
+{
+"w": "exhibition",
+"p": "endings",
+"d": "hard",
+"s": "The museum opened a dinosaur exhibition.",
+"def": "A public display of art or objects."
+},
+{
+"w": "persuasion",
+"p": "endings",
+"d": "hard",
+"s": "It took gentle persuasion to change his mind.",
+"def": "The act of convincing someone."
+},
+{
+"w": "acquisition",
+"p": "endings",
+"d": "hard",
+"s": "The library announced the acquisition of rare maps.",
+"def": "Something gained or bought."
+},
+{
+"w": "suspicion",
+"p": "endings",
+"d": "hard",
+"s": "She had a suspicion that the cat took the yarn.",
+"def": "A feeling that something may be true without proof."
+},
+{
+"w": "dimension",
+"p": "endings",
+"d": "hard",
+"s": "Measure every dimension of the box.",
+"def": "A measurement such as length, width, or height."
+}
+]

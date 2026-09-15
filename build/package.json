@@ -1,0 +1,12 @@
+{
+  "name": "tutor-build",
+  "private": true,
+  "description": "Build and test tooling for the Tutor apps. Nothing here ships to the browser.",
+  "scripts": {
+    "build": "./build.sh",
+    "test": "./test.sh"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  }
+}

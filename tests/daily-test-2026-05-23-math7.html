@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Math Test — Grade 7 — May 23, 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #07071a;
+    --surface: rgba(255,255,255,0.05);
+    --border: rgba(120,80,255,0.35);
+    --purple: #7c3aed;
+    --cyan: #06b6d4;
+    --gold: #ffd700;
+    --green: #22c55e;
+    --orange: #f97316;
+    --red: #ef4444;
+    --text: #e0e0ff;
+    --muted: #888;
+  }
+
+  /* ===== login overlay ===== */
+  #login-overlay { position: fixed; inset: 0; z-index: 200;
+    background: radial-gradient(ellipse at top left, #1a0a4e 0%, #07071a 60%, #000814 100%);
+    display: flex; align-items: center; justify-content: center; padding: 20px; }
+  #login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 34px 30px; max-width: 420px; width: 100%; text-align: center;
+    box-shadow: 0 0 40px rgba(124,58,237,0.3); }
+  #player-name { width: 100%; padding: 13px 15px; font-size: 1.05rem; font-family: inherit;
+    background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px;
+    color: var(--text); outline: none; }
+  #player-name:focus { border-color: var(--cyan); }
+  #login-go { width: 100%; margin-top: 14px; padding: 13px; font-size: 1.05rem; font-weight: 700;
+    font-family: inherit; border: none; border-radius: 12px; cursor: pointer;
+    background: linear-gradient(135deg, var(--purple), var(--cyan)); color: #fff; }
+  #login-go:hover { filter: brightness(1.15); }
+  #player-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+  .player-chip { background: rgba(6,182,212,0.15); border: 1px solid var(--cyan); color: var(--cyan);
+    border-radius: 999px; padding: 7px 15px; font-size: .85rem; cursor: pointer; }
+  .player-chip:hover { background: var(--cyan); color: #000; }
+  #player-tag { color: var(--cyan); font-size: .8rem; font-weight: 600; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    min-height: 100vh;
+    background: radial-gradient(ellipse at top left, #1a0a4e 0%, #07071a 50%, #000814 100%);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  #app { max-width: 960px; margin: 0 auto; padding: 14px 16px 40px; }
+
+  /* ── HEADER ─────────────────────────────────────────────── */
+  #header {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px 22px;
+    margin-bottom: 12px;
+    box-shadow: 0 0 30px rgba(120,80,255,0.15);
+  }
+  #header-title { font-size: 1rem; color: #b388ff; letter-spacing: 0.5px; font-weight: 600; }
+  #header-title span { display: block; font-size: 0.72rem; color: var(--muted); font-weight: 400; margin-top: 2px; }
+
+  #timer-wrap { display: flex; align-items: center; gap: 8px; }
+  #timer {
+    font-size: 1.7rem; font-weight: 700; color: var(--cyan);
+    text-shadow: 0 0 14px var(--cyan);
+    min-width: 76px; text-align: center;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+    transition: color 0.4s, text-shadow 0.4s;
+  }
+  #timer.danger { color: var(--red); text-shadow: 0 0 16px var(--red); animation: pulse 0.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.55} }
+
+  #add-time-btn {
+    background: rgba(6,182,212,0.12);
+    border: 1px solid var(--cyan); color: var(--cyan);
+    padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.78rem; font-weight: 600; transition: background 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+  #add-time-btn:hover:not(:disabled) { background: rgba(6,182,212,0.25); transform: scale(1.04); }
+  #add-time-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  #xp-badge {
+    background: rgba(255,215,0,0.1);
+    border: 1px solid rgba(255,215,0,0.35);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 0.78rem; color: var(--gold); white-space: nowrap;
+  }
+
+  /* ── PROGRESS ───────────────────────────────────────────── */
+  #progress-section { margin-bottom: 12px; }
+  #progress-meta {
+    display: flex; justify-content: space-between;
+    font-size: 0.76rem; color: var(--muted); margin-bottom: 5px;
+  }
+  #progress-bar-bg {
+    background: rgba(255,255,255,0.08);
+    border-radius: 99px; height: 8px; overflow: hidden;
+  }
+  #progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--cyan));
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 10px var(--cyan);
+  }
+
+  /* ── MAIN LAYOUT ────────────────────────────────────────── */
+  #main { display: flex; gap: 14px; align-items: flex-start; }
+
+  /* ── MINI-MAP ────────────────────────────────────────────── */
+  #minimap {
+    flex-shrink: 0; width: 136px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 12px 10px;
+    position: sticky; top: 14px;
+  }
+  #minimap-title {
+    font-size: 0.68rem; color: #b388ff; letter-spacing: 1.5px;
+    text-transform: uppercase; text-align: center; margin-bottom: 8px;
+  }
+  #minimap-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+  .mm-btn {
+    aspect-ratio: 1; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: #aaa; font-size: 0.68rem; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.18s; padding: 0;
+  }
+  .mm-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+  .mm-btn.current  { border-color: var(--cyan); background: rgba(6,182,212,0.2); color: var(--cyan); box-shadow: 0 0 7px rgba(6,182,212,0.5); }
+  .mm-btn.answered { border-color: var(--green); background: rgba(34,197,94,0.2); color: var(--green); }
+  .mm-btn.skipped  { border-color: #fbbf24; background: rgba(251,191,36,0.15); color: #fbbf24; }
+
+  #minimap-legend {
+    margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.07);
+    padding-top: 8px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.64rem; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── QUESTION CARD ──────────────────────────────────────── */
+  #question-panel { flex: 1; min-width: 0; }
+
+  #question-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--purple);
+    border-radius: 16px;
+    padding: 26px 28px;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 40px rgba(0,0,0,0.4);
+    transition: border-left-color 0.35s;
+  }
+  #question-card.easy   { border-left-color: var(--green); }
+  #question-card.medium { border-left-color: var(--cyan); }
+  #question-card.hard   { border-left-color: var(--orange); }
+
+  #q-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px; flex-wrap: wrap; gap: 4px;
+  }
+  #q-number { font-size: 0.75rem; color: var(--muted); }
+  #q-badges { display: flex; gap: 6px; }
+  .badge {
+    font-size: 0.65rem; padding: 2px 8px; border-radius: 20px;
+    font-weight: 600; letter-spacing: 0.4px;
+  }
+  .badge-topic { background: rgba(179,136,255,0.15); color: #b388ff; border: 1px solid rgba(179,136,255,0.3); }
+  .badge-easy   { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .badge-medium { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+  .badge-hard   { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+
+  #q-text {
+    font-size: 1.15rem; line-height: 1.65; margin-bottom: 22px;
+    font-weight: 400; color: #f0f0ff;
+  }
+
+  .choice {
+    display: flex; align-items: center; gap: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 13px 18px;
+    margin-bottom: 10px; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+    font-size: 1rem; user-select: none;
+  }
+  .choice:hover { border-color: var(--purple); background: rgba(124,58,237,0.12); transform: translateX(2px); }
+  .choice:active { transform: translateX(4px) scale(0.99); }
+  .choice.selected {
+    border-color: var(--cyan);
+    background: rgba(6,182,212,0.15);
+    box-shadow: 0 0 14px rgba(6,182,212,0.25);
+  }
+  .choice-letter {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.88rem;
+    transition: background 0.2s, color 0.2s;
+  }
+  .choice.selected .choice-letter { background: var(--cyan); color: #000; }
+  .choice-text { flex: 1; line-height: 1.4; }
+
+  /* Keyboard hint */
+  .choice-key {
+    font-size: 0.62rem; color: rgba(255,255,255,0.25);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px; padding: 1px 5px; flex-shrink: 0;
+  }
+
+  /* ── NAV BUTTONS ─────────────────────────────────────────── */
+  #nav-btns {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .nav-btn {
+    padding: 10px 20px; border-radius: 10px; border: none;
+    cursor: pointer; font-size: 0.9rem; font-weight: 600;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  #prev-btn {
+    background: rgba(255,255,255,0.07); color: #ccc;
+    border: 1px solid rgba(255,255,255,0.18);
+  }
+  #prev-btn:hover:not(:disabled) { background: rgba(255,255,255,0.14); }
+  #prev-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  #skip-btn {
+    background: rgba(251,191,36,0.12); color: #fbbf24;
+    border: 1px solid rgba(251,191,36,0.4);
+  }
+  #skip-btn:hover { background: rgba(251,191,36,0.25); }
+
+  #next-btn {
+    background: linear-gradient(90deg, var(--purple), var(--cyan));
+    color: #fff; border: none;
+    box-shadow: 0 0 14px rgba(6,182,212,0.35);
+  }
+  #next-btn:hover { opacity: 0.87; transform: scale(1.03); }
+
+  #submit-btn {
+    margin-left: auto;
+    background: linear-gradient(90deg, var(--orange), var(--red));
+    color: #fff; border: none; padding: 11px 26px;
+    border-radius: 10px; font-size: 1rem; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(239,68,68,0.4);
+    transition: all 0.2s;
+    animation: glowPulse 2s infinite;
+  }
+  @keyframes glowPulse {
+    0%,100%{ box-shadow: 0 0 18px rgba(239,68,68,0.4); }
+    50%{ box-shadow: 0 0 30px rgba(239,68,68,0.7); }
+  }
+  #submit-btn:hover { transform: scale(1.04); opacity: 0.9; }
+
+  /* Unanswered warning pill */
+  #unanswered-pill {
+    font-size: 0.72rem; color: #fbbf24;
+    background: rgba(251,191,36,0.1);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 20px; padding: 3px 10px;
+    display: none;
+  }
+
+  /* ── RESULTS ─────────────────────────────────────────────── */
+  #results { display: none; }
+  #progress-screen { display: none; }
+  .prog-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; margin-bottom: 16px; }
+  .prog-panel h3 { color: var(--cyan); margin-bottom: 12px; font-size: 1.05rem; }
+  .hist-check { width: 17px; height: 17px; accent-color: var(--red); cursor: pointer; }
+  .rev-btn { background: var(--cyan); color: #000; border: none; border-radius: 8px;
+    padding: 5px 10px; font-size: .76rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .sel-bar { display: none; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: rgba(239,68,68,.14); border: 1px solid var(--red); border-radius: 12px;
+    padding: 10px 13px; margin-bottom: 12px; }
+  .sel-bar.on { display: flex; }
+  .sel-bar .cnt { font-weight: 700; color: var(--red); }
+  .rev-item { border: 1px solid var(--border); border-radius: 12px; padding: 13px 15px; margin-bottom: 11px; }
+  .rev-empty { text-align: center; color: var(--muted); padding: 18px; }
+  select.pick { font-family: inherit; font-size: .93rem; padding: 10px 12px;
+    background: rgba(0,0,0,.4); border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); width: 100%; margin-bottom: 12px; outline: none; }
+  .prog-tbl { width: 100%; border-collapse: collapse; font-size: .84rem; }
+  .prog-tbl th, .prog-tbl td { padding: 8px 7px; text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,.07); }
+  .prog-tbl th { color: var(--cyan); font-size: .78rem; }
+  .pbtn { font-family: inherit; font-weight: 700; border: none; border-radius: 12px;
+    padding: 11px 20px; cursor: pointer; font-size: .95rem; }
+  .pbtn-main { background: linear-gradient(135deg, var(--purple), var(--cyan)); color: #fff; }
+  .pbtn-soft { background: rgba(255,255,255,.1); color: var(--text); }
+  .pbtn-warn { background: var(--red); color: #fff; }
+
+  #results-hero {
+    text-align: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 20px; padding: 36px 24px 28px;
+    margin-bottom: 18px;
+    position: relative; overflow: hidden;
+  }
+  #results-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center top, rgba(124,58,237,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  #score-big { font-size: 3.5rem; font-weight: 800; color: var(--cyan); text-shadow: 0 0 24px var(--cyan); line-height: 1; }
+  #score-fraction { font-size: 1rem; color: var(--muted); margin: 6px 0 12px; }
+  #grade-badge {
+    display: inline-block;
+    font-size: 1.8rem; font-weight: 800;
+    padding: 6px 24px; border-radius: 50px;
+    margin-bottom: 10px;
+  }
+  #rating-msg { font-size: 1.1rem; margin: 6px 0 16px; }
+  #results-stats {
+    display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+    font-size: 0.85rem; color: var(--muted);
+  }
+  #results-stats span { display: flex; align-items: center; gap: 5px; }
+
+  #xp-banner {
+    background: linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05));
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 12px; padding: 10px 20px;
+    text-align: center; color: var(--gold);
+    font-size: 0.95rem; font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  /* Weak areas */
+  #weak-areas {
+    background: rgba(239,68,68,0.06);
+    border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 14px; padding: 18px 20px; margin-bottom: 18px;
+    display: none;
+  }
+  #weak-areas h2 { color: #f87171; margin-bottom: 10px; font-size: 1rem; }
+  .weak-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.88rem;
+  }
+  .weak-item:last-child { border-bottom: none; }
+  .weak-bar-wrap { flex: 1; margin: 0 14px; }
+  .weak-bar-bg { height: 5px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
+  .weak-bar-fill { height: 100%; background: var(--red); border-radius: 99px; }
+  .weak-count { font-size: 0.78rem; color: var(--red); font-weight: 600; white-space: nowrap; }
+
+  /* Leaderboard */
+  #leaderboard {
+    background: rgba(255,215,0,0.04);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 14px; padding: 18px 20px; margin-bottom: 18px;
+  }
+  #leaderboard h2 { color: var(--gold); margin-bottom: 12px; font-size: 1rem; }
+  .lb-row {
+    display: grid; grid-template-columns: 28px 1fr 80px 60px 70px;
+    padding: 7px 4px; border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.84rem; align-items: center; gap: 8px;
+  }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-rank { color: var(--muted); font-weight: 700; font-size: 0.78rem; }
+  .lb-pct { font-weight: 700; }
+  .lb-row.highlight { background: rgba(255,215,0,0.08); border-radius: 8px; color: var(--gold); }
+  .lb-row.highlight .lb-rank { color: var(--gold); }
+  .rank-medal { font-size: 1rem; }
+
+  /* Breakdown */
+  #breakdown { margin-bottom: 20px; }
+  #breakdown h2 { color: #b388ff; margin-bottom: 12px; font-size: 1rem; }
+  .result-item {
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+    border-left: 4px solid rgba(255,255,255,0.1);
+    transition: border-left-color 0.3s;
+  }
+  .result-item.correct  { border-left-color: var(--green); }
+  .result-item.incorrect { border-left-color: var(--red); }
+  .ri-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap; }
+  .ri-meta { font-size: 0.72rem; color: var(--muted); }
+  .ri-status { font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+  .ri-status.correct  { color: var(--green); }
+  .ri-status.incorrect { color: var(--red); }
+  .ri-text { font-size: 0.92rem; margin-bottom: 8px; color: #ddd; }
+  .ri-answers { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+  .ri-your { color: var(--red); }
+  .ri-correct-ans { color: var(--green); }
+  .ri-explanation {
+    font-size: 0.78rem; color: #999; margin-top: 6px;
+    padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06);
+    font-style: italic;
+  }
+
+  #retry-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin: 0 auto;
+    background: linear-gradient(90deg, var(--purple), var(--cyan));
+    color: #fff; border: none; padding: 14px 40px;
+    border-radius: 14px; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; box-shadow: 0 0 22px rgba(124,58,237,0.45);
+    transition: all 0.2s;
+  }
+  #retry-btn:hover { transform: scale(1.04); opacity: 0.9; }
+
+  /* ── CANVAS OVERLAYS ─────────────────────────────────────── */
+  #confetti-canvas, #fireworks-canvas {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 9999; display: none;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    #header { grid-template-columns: 1fr auto; }
+    #xp-badge { grid-column: 1 / -1; justify-self: start; }
+    #main { flex-direction: column; }
+    #minimap { width: 100%; position: static; }
+    #minimap-grid { grid-template-columns: repeat(10, 1fr); }
+    #minimap-legend { flex-direction: row; flex-wrap: wrap; }
+    #question-card { padding: 18px 16px; }
+    #submit-btn { margin-left: 0; width: 100%; }
+    #nav-btns { justify-content: space-between; }
+    .lb-row { grid-template-columns: 28px 1fr 70px; }
+    .lb-row > :last-child { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== PLAYER LOGIN (shared TutorStore) ===== -->
+<div id="login-overlay">
+  <div id="login-box">
+    <div style="font-size:3rem">📐</div>
+    <h2 style="margin:8px 0 4px;color:var(--cyan)">Math Grade 7 · Daily Test</h2>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:18px">Who's taking this test?</p>
+    <input type="text" id="player-name" placeholder="Type your name…" maxlength="20" autocomplete="off">
+    <button id="login-go" onclick="playerLogin()">Start Test →</button>
+    <div id="player-chips"></div>
+    <p style="color:var(--muted);font-size:.72rem;margin-top:14px">Your answers and scores are saved on this computer.</p>
+    <p style="margin-top:10px"><button class="pbtn pbtn-soft" style="padding:8px 15px;font-size:.83rem"
+       onclick="openProgressFromLogin()">📊 See my past results</button></p>
+  </div>
+</div>
+<canvas id="confetti-canvas"></canvas>
+<canvas id="fireworks-canvas"></canvas>
+
+<div id="app">
+  <!-- HEADER -->
+  <div id="header">
+    <div id="header-title">
+      📐 Math Grade 7
+      <span>May 23, 2026 · Daily Test · <span id="player-tag"></span></span>
+    </div>
+    <div id="timer-wrap">
+      <button id="add-time-btn" onclick="addTime()" title="Add 2 minutes (3 uses max)">➕ +2 min</button>
+      <div id="timer">25:00</div>
+    </div>
+    <div id="xp-badge">⭐ <span id="total-xp">0</span> XP</div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="progress-section">
+    <div id="progress-meta">
+      <span id="progress-label">0 of 20 answered</span>
+      <span id="progress-right"></span>
+    </div>
+    <div id="progress-bar-bg"><div id="progress-bar-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- TEST SCREEN -->
+  <div id="test-screen">
+    <div id="main">
+      <!-- MINI-MAP -->
+      <div id="minimap">
+        <div id="minimap-title">Questions</div>
+        <div id="minimap-grid"></div>
+        <div id="minimap-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(6,182,212,0.6)"></div>Current</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(34,197,94,0.6)"></div>Answered</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(251,191,36,0.5)"></div>Skipped</div>
+        </div>
+      </div>
+
+      <!-- QUESTION PANEL -->
+      <div id="question-panel">
+        <div id="question-card">
+          <div id="q-meta">
+            <div id="q-number">Question 1 of 20</div>
+            <div id="q-badges"></div>
+          </div>
+          <div id="q-text"></div>
+          <div id="choices"></div>
+        </div>
+
+        <div id="nav-btns">
+          <button class="nav-btn" id="prev-btn" onclick="goPrev()" disabled>⬅ Prev</button>
+          <button class="nav-btn" id="skip-btn" onclick="goSkip()">⏭ Skip</button>
+          <button class="nav-btn" id="next-btn" onclick="goNext()">Next ➡</button>
+          <span id="unanswered-pill"></span>
+          <button id="submit-btn" onclick="trySubmit()">🎯 Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <div id="results">
+    <div id="results-hero">
+      <div id="score-big"></div>
+      <div id="score-fraction"></div>
+      <div id="grade-badge"></div>
+      <div id="rating-msg"></div>
+      <div id="results-stats">
+        <span id="stat-time">⏱ —</span>
+        <span id="stat-correct">✅ — correct</span>
+        <span id="stat-skipped">⏭ — skipped</span>
+      </div>
+    </div>
+
+    <div id="xp-banner"></div>
+
+    <div id="weak-areas">
+      <h2>📚 Topics to Review</h2>
+      <div id="weak-list"></div>
+    </div>
+
+    <div id="leaderboard">
+      <h2>🏆 Top Scores</h2>
+      <div id="lb-rows"></div>
+    </div>
+
+    <div id="breakdown">
+      <h2>📋 Full Breakdown</h2>
+      <div id="breakdown-list"></div>
+    </div>
+
+    <button id="retry-btn" onclick="location.reload()">🔄 Try Again</button>
+    <button class="pbtn pbtn-soft" onclick="showProgress()" style="margin-left:8px">📊 My Progress</button>
+  </div>
+</div>
+
+<!-- ===== PROGRESS SCREEN ===== -->
+<div id="progress-screen">
+  <div style="max-width:820px;margin:0 auto;padding:20px 16px 60px">
+    <h2 style="color:var(--cyan);text-align:center;margin-bottom:6px">📊 My Progress</h2>
+    <p style="text-align:center;color:var(--muted);font-size:.85rem;margin-bottom:20px" id="prog-who"></p>
+
+    <div class="prog-panel">
+      <h3>🔍 Review past mistakes</h3>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">
+        Every question missed or skipped, with the correct answer and the explanation.</p>
+      <select id="reviewPick" class="pick" onchange="renderPastReview()"></select>
+      <div id="pastReview"></div>
+    </div>
+
+    <div class="prog-panel">
+      <h3>📜 Test history</h3>
+      <div class="sel-bar" id="selBar">
+        <span class="cnt" id="selCount">0 selected</span>
+        <button class="pbtn pbtn-warn" style="padding:7px 13px;font-size:.8rem" onclick="confirmDeleteSelected()">🗑️ Delete selected</button>
+        <button class="pbtn pbtn-soft" style="padding:7px 13px;font-size:.8rem" onclick="clearSelection()">Clear</button>
+      </div>
+      <table class="prog-tbl" id="histTable"><thead><tr><th style="width:26px"></th><th>Date</th><th>Score</th><th>Grade</th><th>Time</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">
+      <button class="pbtn pbtn-main" onclick="location.reload()">🔄 Take the test again</button>
+      <button class="pbtn pbtn-warn" onclick="confirmDeleteAll()">🗑️ Delete ALL my progress</button>
+    </div>
+  </div>
+</div>
+
+<script src="../tutor-store.js"></script>
+<script src="../tutor-nav.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  QUESTION DATA  (20 questions, Grade 7 Math)
+// ═══════════════════════════════════════════════════════════════
+const QUESTIONS = [
+  // ── EASY (Q1–Q6) ─────────────────────────────────────────
+  {
+    topic: "Integers", difficulty: "easy",
+    text: "What is the value of −8 + 15?",
+    choices: ["−23", "7", "−7", "23"],
+    correct: 1,
+    explanation: "Start at −8 on the number line and count 15 steps right: −8 + 15 = 7."
+  },
+  {
+    topic: "Fractions", difficulty: "easy",
+    text: "What is ½ + ¼?",
+    choices: ["2/6", "3/4", "2/4", "1/3"],
+    correct: 1,
+    explanation: "Convert to a common denominator: 2/4 + 1/4 = 3/4."
+  },
+  {
+    topic: "Percentages", difficulty: "easy",
+    text: "What is 25% of 80?",
+    choices: ["15", "40", "20", "25"],
+    correct: 2,
+    explanation: "25% = 0.25. Multiply: 0.25 × 80 = 20."
+  },
+  {
+    topic: "Geometry", difficulty: "easy",
+    text: "A rectangle has length 9 cm and width 4 cm. What is its perimeter?",
+    choices: ["36 cm", "13 cm", "26 cm", "18 cm"],
+    correct: 2,
+    explanation: "Perimeter = 2(l + w) = 2(9 + 4) = 2 × 13 = 26 cm."
+  },
+  {
+    topic: "Order of Operations", difficulty: "easy",
+    text: "What is 3 + 4 × 2?",
+    choices: ["14", "10", "11", "8"],
+    correct: 2,
+    explanation: "Multiply before adding: 4 × 2 = 8, then 3 + 8 = 11."
+  },
+  {
+    topic: "Decimals", difficulty: "easy",
+    text: "What is 0.6 × 0.4?",
+    choices: ["2.4", "0.024", "0.24", "24"],
+    correct: 2,
+    explanation: "Multiply 6 × 4 = 24, then place 2 decimal digits: 0.24."
+  },
+  // ── MEDIUM (Q7–Q15) ───────────────────────────────────────
+  {
+    topic: "Ratios", difficulty: "medium",
+    text: "A recipe calls for 3 cups of flour for every 2 cups of sugar. If you use 9 cups of flour, how many cups of sugar do you need?",
+    choices: ["4", "5", "6", "8"],
+    correct: 2,
+    explanation: "The ratio is 3:2. Scaling by 3 gives 9:6 — you need 6 cups of sugar."
+  },
+  {
+    topic: "Basic Algebra", difficulty: "medium",
+    text: "Solve for x:  2x + 7 = 19",
+    choices: ["x = 6", "x = 12", "x = 13", "x = 7"],
+    correct: 0,
+    explanation: "Subtract 7 from both sides: 2x = 12. Divide by 2: x = 6."
+  },
+  {
+    topic: "Statistics", difficulty: "medium",
+    text: "The ages of five students are: 12, 14, 13, 14, 12. What is the mode?",
+    choices: ["12 and 14", "13", "12 only", "14 only"],
+    correct: 0,
+    explanation: "Mode = most frequent value. Both 12 and 14 each appear twice, so the data is bimodal: mode = 12 and 14."
+  },
+  {
+    topic: "Fractions", difficulty: "medium",
+    text: "What is ⅗ × 10/3?",
+    choices: ["1/2", "2", "18/15", "None of the above"],
+    correct: 1,
+    explanation: "Multiply numerators and denominators: (3 × 10) ÷ (5 × 3) = 30 ÷ 15 = 2."
+  },
+  {
+    topic: "Percentages", difficulty: "medium",
+    text: "A shirt originally costs $40. It is on sale for 15% off. What is the sale price?",
+    choices: ["$30.00", "$25.00", "$34.00", "$36.00"],
+    correct: 2,
+    explanation: "Discount = 15% × $40 = $6. Sale price = $40 − $6 = $34."
+  },
+  {
+    topic: "Geometry", difficulty: "medium",
+    text: "What is the area of a triangle with base 10 cm and height 6 cm?",
+    choices: ["60 cm²", "30 cm²", "16 cm²", "32 cm²"],
+    correct: 1,
+    explanation: "Area of a triangle = ½ × base × height = ½ × 10 × 6 = 30 cm²."
+  },
+  {
+    topic: "Integers", difficulty: "medium",
+    text: "What is (−3) × (−4) − (−2)?",
+    choices: ["10", "14", "−14", "−10"],
+    correct: 1,
+    explanation: "(−3)(−4) = 12 (negative × negative = positive). Then 12 − (−2) = 12 + 2 = 14."
+  },
+  {
+    topic: "Basic Algebra", difficulty: "medium",
+    text: "If 5y − 3 = 2y + 9, what is y?",
+    choices: ["y = 2", "y = 4", "y = 6", "y = 3"],
+    correct: 1,
+    explanation: "5y − 2y = 9 + 3 → 3y = 12 → y = 4."
+  },
+  {
+    topic: "Decimals", difficulty: "medium",
+    text: "Which of the following is equivalent to 0.125?",
+    choices: ["1/4", "1/8", "1/6", "3/25"],
+    correct: 1,
+    explanation: "1 ÷ 8 = 0.125, so 0.125 = 1/8."
+  },
+  // ── HARD (Q16–Q20) ────────────────────────────────────────
+  {
+    topic: "Order of Operations", difficulty: "hard",
+    text: "Evaluate:  4² ÷ (3 + 1) × 2 − 5",
+    choices: ["3", "8", "16", "None of the above"],
+    correct: 0,
+    explanation: "Step by step: 4² = 16. (3+1) = 4. 16 ÷ 4 = 4. 4 × 2 = 8. 8 − 5 = 3."
+  },
+  {
+    topic: "Ratios & Proportions", difficulty: "hard",
+    text: "A car travels 270 km in 3 hours. At the same speed, how long will it take to travel 405 km?",
+    choices: ["3.5 hours", "4 hours", "4.5 hours", "5 hours"],
+    correct: 2,
+    explanation: "Speed = 270 ÷ 3 = 90 km/h. Time = 405 ÷ 90 = 4.5 hours."
+  },
+  {
+    topic: "Statistics", difficulty: "hard",
+    text: "The mean of six numbers is 14. Five of the numbers are 10, 12, 15, 18, and 11. What is the sixth number?",
+    choices: ["14", "16", "18", "20"],
+    correct: 2,
+    explanation: "Total sum = 6 × 14 = 84. Sum of five known numbers = 10+12+15+18+11 = 66. Sixth number = 84 − 66 = 18."
+  },
+  {
+    topic: "Geometry", difficulty: "hard",
+    text: "A circle has a radius of 7 cm. What is its circumference? (Use π ≈ 22/7)",
+    choices: ["22 cm", "44 cm", "154 cm", "49 cm"],
+    correct: 1,
+    explanation: "C = 2πr = 2 × (22/7) × 7 = 2 × 22 = 44 cm."
+  },
+  {
+    topic: "Basic Algebra", difficulty: "hard",
+    text: "Maria is 3 years older than twice her brother's age. If Maria is 17, how old is her brother?",
+    choices: ["5", "6", "7", "8"],
+    correct: 2,
+    explanation: "Let b = brother's age. Equation: 2b + 3 = 17. Subtract 3: 2b = 14. Divide: b = 7."
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+const TOTAL = QUESTIONS.length;  // 20
+let currentQ    = 0;
+let answers     = new Array(TOTAL).fill(null); // null=unanswered, 0-3=selected index
+let skipped     = new Array(TOTAL).fill(false);
+let timerSecs   = 25 * 60;
+let timerHandle = null;
+let addTimeUses = 0;
+const MAX_USES  = 3;
+let startTime   = Date.now();
+let submitted   = false;
+const APP_ID    = 'math7';
+let currentUser = null;             // display name; lookups are case-insensitive
+let qStart      = Date.now();       // per-question timing
+let qSeconds    = new Array(TOTAL).fill(0);
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.TutorNav) TutorNav.init({app: 'math7'});
+  renderPlayerChips();
+  const input = document.getElementById('player-name');
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') playerLogin(); });
+  input.focus();
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  PROGRESS · REVIEW · SELECTIVE DELETE
+// ═══════════════════════════════════════════════════════════════
+let pendingDelete = 'all';
+
+function showProgress() {
+  document.getElementById('test-screen').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('progress-screen').style.display = 'block';
+  document.getElementById('prog-who').textContent = '👤 ' + currentUser;
+  drawProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function myHistory() { return TutorStore.app(currentUser, APP_ID).history || []; }
+
+function drawProgress() {
+  const hist = [...myHistory()].reverse();
+  const tb = document.querySelector('#histTable tbody');
+  tb.innerHTML = hist.length ? hist.map(h => {
+    const wrong = (h.answers || []).filter(a => !a.correct).length;
+    return `<tr>
+      <td><input type="checkbox" class="hist-check" data-date="${h.date}"
+                 onchange="syncSelection()" aria-label="select this test"></td>
+      <td>${new Date(h.date).toLocaleDateString()}<br>
+          <span style="font-size:.7rem;color:var(--muted)">${new Date(h.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></td>
+      <td>${h.score}/${h.total} (${h.pct}%)</td>
+      <td>${h.grade || '—'}</td>
+      <td>${fmtTime(h.timeTakenSec || 0)}</td>
+      <td>${wrong ? `<button class="rev-btn" onclick="reviewTest('${h.date}')">Review ${wrong}</button>` : ''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan=6>No tests yet!</td></tr>';
+  buildReviewPicker();
+  syncSelection();
+}
+
+function buildReviewPicker() {
+  const sel = document.getElementById('reviewPick');
+  const hist = [...myHistory()].reverse().filter(h => (h.answers || []).some(a => !a.correct));
+  if (!hist.length) {
+    sel.innerHTML = "<option value=''>No mistakes recorded yet 🎉</option>";
+    document.getElementById('pastReview').innerHTML =
+      "<p class='rev-empty'>Nothing to review — every question so far has been correct!</p>";
+    return;
+  }
+  sel.innerHTML = hist.map(h => {
+    const n = h.answers.filter(a => !a.correct).length;
+    return `<option value="${h.date}">${new Date(h.date).toLocaleString()} — ${h.pct}% · ${n} to review</option>`;
+  }).join('');
+  renderPastReview();
+}
+function renderPastReview() { renderReviewFor(document.getElementById('reviewPick').value); }
+function reviewTest(date) {
+  const sel = document.getElementById('reviewPick');
+  if ([...sel.options].some(o => o.value === date)) sel.value = date;
+  renderReviewFor(date);
+  document.getElementById('pastReview').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function renderReviewFor(date) {
+  const host = document.getElementById('pastReview');
+  const rec = myHistory().find(h => h.date === date);
+  if (!rec) { host.innerHTML = "<p class='rev-empty'>Pick a test above.</p>"; return; }
+  const missed = (rec.answers || []).filter(a => !a.correct);
+  if (!missed.length) { host.innerHTML = "<p class='rev-empty'>🌟 Nothing wrong in that test!</p>"; return; }
+  host.innerHTML = missed.map((r, n) => `
+    <div class="rev-item">
+      <div style="font-weight:700;margin-bottom:7px;line-height:1.4">${n + 1}. ${r.question}</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px">
+        ${r.topic || ''}${r.difficulty ? ' · ' + r.difficulty : ''}${r.seconds != null ? ' · ' + r.seconds + 's' : ''}</div>
+      <div style="color:var(--red);font-size:.87rem">
+        ${r.skipped ? '⏭ Skipped' : '❌ Your answer: ' + r.pickedAnswer}</div>
+      <div style="color:var(--green);font-size:.87rem;margin-top:3px">
+        ✅ Correct: <b>${r.correctAnswer}</b></div>
+      <div style="background:rgba(251,191,36,.1);border-left:3px solid var(--gold);
+                  border-radius:8px;padding:10px 12px;margin-top:9px;font-size:.87rem;line-height:1.5">
+        💡 ${r.explain || ''}</div>
+    </div>`).join('');
+}
+
+function selectedDates() {
+  return [...document.querySelectorAll('.hist-check:checked')].map(c => c.dataset.date);
+}
+function syncSelection() {
+  const n = selectedDates().length;
+  document.getElementById('selBar').classList.toggle('on', n > 0);
+  document.getElementById('selCount').textContent = n + ' test' + (n === 1 ? '' : 's') + ' selected';
+}
+function clearSelection() {
+  document.querySelectorAll('.hist-check').forEach(c => c.checked = false);
+  syncSelection();
+}
+function confirmDeleteSelected() {
+  const n = selectedDates().length;
+  if (!n) return;
+  if (!confirm(`Delete ${n} selected test${n === 1 ? '' : 's'}?\n\nOnly these are removed — the rest of your history stays, and they move to the deleted-data archive.`)) return;
+  TutorStore.deleteResults(currentUser, APP_ID, selectedDates());   // archives first
+  drawProgress();
+}
+function confirmDeleteAll() {
+  if (!confirm(`Delete ALL Math Grade 7 progress for ${currentUser}?\n\nEvery test is removed. Your data moves to the deleted-data archive, not erased.`)) return;
+  TutorStore.deleteUser(currentUser, APP_ID);
+  location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PLAYER LOGIN (case-insensitive via TutorStore)
+// ═══════════════════════════════════════════════════════════════
+function renderPlayerChips() {
+  const box = document.getElementById('player-chips');
+  const users = TutorStore.users();
+  box.innerHTML = users.length
+    ? '<span style="width:100%;font-size:.78rem;color:var(--muted)">Or tap your name:</span>' : '';
+  users.forEach(u => {
+    const c = document.createElement('span');
+    c.className = 'player-chip';
+    c.textContent = u.displayName;
+    c.onclick = () => { document.getElementById('player-name').value = u.displayName; playerLogin(); };
+    box.appendChild(c);
+  });
+}
+
+function openProgressFromLogin() {
+  const typed = document.getElementById('player-name').value.trim();
+  if (!typed) { alert('Type your name first so I know whose results to show.'); return; }
+  currentUser = TutorStore.login(typed).displayName;
+  document.getElementById('login-overlay').style.display = 'none';
+  if (window.TutorNav) TutorNav.setUser(currentUser);
+  showProgress();
+}
+
+function playerLogin() {
+  const typed = document.getElementById('player-name').value.trim();
+  if (!typed) { document.getElementById('player-name').focus(); return; }
+  currentUser = TutorStore.login(typed).displayName;   // "robin" === "Robin"
+  document.getElementById('player-tag').textContent = '👤 ' + currentUser;
+  if (window.TutorNav) TutorNav.setUser(currentUser);
+  document.getElementById('login-overlay').style.display = 'none';
+  const prior = TutorStore.app(currentUser, APP_ID);
+  document.getElementById('total-xp').textContent = (prior.xp || 0).toLocaleString();
+  buildMinimap();
+  renderQuestion();
+  startTime = Date.now();
+  qStart = Date.now();
+  startTimer();
+}
+
+// Keyboard shortcuts: ← → to navigate, 1–4 to pick answer
+document.addEventListener('keydown', e => {
+  if (submitted) return;
+  if (e.key === 'ArrowLeft')  { goPrev(); return; }
+  if (e.key === 'ArrowRight') { goNext(); return; }
+  const n = parseInt(e.key);
+  if (n >= 1 && n <= 4) selectAnswer(n - 1);
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  MINI-MAP
+// ═══════════════════════════════════════════════════════════════
+function buildMinimap() {
+  const grid = document.getElementById('minimap-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const btn = document.createElement('button');
+    btn.id = 'mm-' + i;
+    btn.className = 'mm-btn';
+    btn.textContent = i + 1;
+    btn.title = `Go to question ${i + 1}`;
+    btn.onclick = () => jumpTo(i);
+    grid.appendChild(btn);
+  }
+  syncMinimap();
+}
+
+function syncMinimap() {
+  for (let i = 0; i < TOTAL; i++) {
+    const btn = document.getElementById('mm-' + i);
+    btn.className = 'mm-btn';
+    if      (i === currentQ)          btn.classList.add('current');
+    else if (answers[i] !== null)     btn.classList.add('answered');
+    else if (skipped[i])              btn.classList.add('skipped');
+  }
+}
+
+function jumpTo(i) { stampTime(); currentQ = i; renderQuestion(); }
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER QUESTION
+// ═══════════════════════════════════════════════════════════════
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+
+  // Metadata row
+  document.getElementById('q-number').textContent = `Question ${currentQ + 1} of ${TOTAL}`;
+  document.getElementById('q-badges').innerHTML =
+    `<span class="badge badge-topic">${q.topic}</span>` +
+    `<span class="badge badge-${q.difficulty}">${cap(q.difficulty)}</span>`;
+
+  // Card accent colour
+  const card = document.getElementById('question-card');
+  card.className = q.difficulty;
+
+  // Question text
+  document.getElementById('q-text').textContent = q.text;
+
+  // Answer choices
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  q.choices.forEach((text, idx) => {
+    const div = document.createElement('div');
+    div.className = 'choice' + (answers[currentQ] === idx ? ' selected' : '');
+    div.setAttribute('role', 'button');
+    div.setAttribute('tabindex', '0');
+    div.innerHTML =
+      `<div class="choice-letter">${LETTERS[idx]}</div>` +
+      `<span class="choice-text">${text}</span>` +
+      `<span class="choice-key">${idx + 1}</span>`;
+    div.onclick = () => selectAnswer(idx);
+    div.onkeydown = e => (e.key === 'Enter' || e.key === ' ') && selectAnswer(idx);
+    choicesEl.appendChild(div);
+  });
+
+  // Prev button
+  document.getElementById('prev-btn').disabled = (currentQ === 0);
+
+  // Next button label
+  document.getElementById('next-btn').textContent =
+    currentQ === TOTAL - 1 ? 'Finish ✓' : 'Next ➡';
+
+  syncMinimap();
+  syncProgress();
+  syncSubmitButton();
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function stampTime() {
+  qSeconds[currentQ] += Math.round((Date.now() - qStart) / 1000);
+  qStart = Date.now();
+}
+
+function selectAnswer(idx) {
+  if (submitted) return;
+  stampTime();
+  answers[currentQ] = idx;
+  skipped[currentQ] = false;
+  renderQuestion();
+  // Auto-advance after short delay if not on last question
+  if (currentQ < TOTAL - 1) {
+    setTimeout(goNext, 420);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PROGRESS
+// ═══════════════════════════════════════════════════════════════
+function syncProgress() {
+  let answeredCount = 0, skippedCount = 0;
+  for (let i = 0; i < TOTAL; i++) {
+    if (answers[i] !== null) answeredCount++;
+    else if (skipped[i])     skippedCount++;
+  }
+  const unanswered = TOTAL - answeredCount;
+  document.getElementById('progress-label').textContent =
+    `${answeredCount} of ${TOTAL} answered`;
+  document.getElementById('progress-right').textContent =
+    skippedCount > 0 ? `${skippedCount} skipped` : '';
+  document.getElementById('progress-bar-fill').style.width =
+    (answeredCount / TOTAL * 100) + '%';
+  return { answeredCount, skippedCount, unanswered };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SUBMIT BUTTON — always visible, warns about unanswered
+// ═══════════════════════════════════════════════════════════════
+function syncSubmitButton() {
+  const { unanswered } = syncProgress();
+  const pill = document.getElementById('unanswered-pill');
+  if (unanswered > 0) {
+    pill.textContent = `${unanswered} unanswered`;
+    pill.style.display = 'inline-block';
+  } else {
+    pill.style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function goPrev() {
+  if (currentQ > 0) { stampTime(); currentQ--; renderQuestion(); }
+}
+
+function goNext() {
+  if (currentQ < TOTAL - 1) { stampTime(); currentQ++; renderQuestion(); }
+  else trySubmit();
+}
+
+function goSkip() {
+  stampTime();
+  skipped[currentQ] = true;
+  // find next unanswered+unskipped question
+  let next = -1;
+  for (let i = currentQ + 1; i < TOTAL; i++) {
+    if (answers[i] === null && !skipped[i]) { next = i; break; }
+  }
+  if (next === -1) {
+    // wrap from start
+    for (let i = 0; i < currentQ; i++) {
+      if (answers[i] === null && !skipped[i]) { next = i; break; }
+    }
+  }
+  if (next !== -1) currentQ = next;
+  else currentQ = Math.min(currentQ + 1, TOTAL - 1);
+  renderQuestion();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════════════════════════════
+function startTimer() {
+  updateTimerDisplay();
+  timerHandle = setInterval(() => {
+    timerSecs--;
+    updateTimerDisplay();
+    if (timerSecs <= 0) {
+      clearInterval(timerHandle);
+      submitTest();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSecs / 60);
+  const s = timerSecs % 60;
+  const el = document.getElementById('timer');
+  el.textContent = `${m}:${String(s).padStart(2, '0')}`;
+  el.classList.toggle('danger', timerSecs < 300);
+}
+
+function addTime() {
+  if (addTimeUses >= MAX_USES) return;
+  timerSecs += 120;
+  addTimeUses++;
+  updateTimerDisplay();
+  const btn = document.getElementById('add-time-btn');
+  const remaining = MAX_USES - addTimeUses;
+  if (remaining === 0) {
+    btn.disabled = true;
+    btn.textContent = 'No more time';
+  } else {
+    btn.textContent = `➕ +2 min (${remaining} left)`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SUBMIT
+// ═══════════════════════════════════════════════════════════════
+function trySubmit() {
+  const unanswered = answers.filter(a => a === null).length;
+  if (unanswered > 0) {
+    if (!confirm(`You have ${unanswered} unanswered question${unanswered > 1 ? 's' : ''}.\nSubmit anyway?`)) return;
+  }
+  submitTest();
+}
+
+function submitTest() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerHandle);
+
+  const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
+  // Score
+  let correctCount = 0;
+  for (let i = 0; i < TOTAL; i++) {
+    if (answers[i] === QUESTIONS[i].correct) correctCount++;
+  }
+  const skippedCount = skipped.filter(Boolean).length;
+  const pct = Math.round(correctCount / TOTAL * 100);
+
+  // Grade
+  let grade, gradeColor, msg;
+  if (pct === 100) {
+    grade = 'A+'; gradeColor = '#ffd700';
+    msg = '🎆 PERFECT SCORE! Absolutely brilliant! 🎆';
+  } else if (pct >= 90) {
+    grade = 'A'; gradeColor = '#22c55e';
+    msg = '🌟 Outstanding! Almost perfect!';
+  } else if (pct >= 80) {
+    grade = 'B'; gradeColor = '#06b6d4';
+    msg = '🎉 Great job! Keep it up!';
+  } else if (pct >= 70) {
+    grade = 'C'; gradeColor = '#fbbf24';
+    msg = '👍 Good work! Review your mistakes.';
+  } else if (pct >= 60) {
+    grade = 'D'; gradeColor = '#f97316';
+    msg = '📚 Keep studying — you\'re getting there!';
+  } else {
+    grade = 'F'; gradeColor = '#ef4444';
+    msg = '💪 Don\'t give up! Review the material and try again.';
+  }
+
+  // XP (stored per player, per app)
+  let xpEarned = correctCount * 10;
+  if (pct >= 80)  xpEarned += 50;
+  if (pct === 100) xpEarned += 100;
+
+  // ── Per-question metadata ────────────────────────────────
+  stampTime();
+  const answerRecords = QUESTIONS.map((q, i) => ({
+    qId: i + 1, topic: q.topic, topicName: q.topic, difficulty: q.difficulty,
+    order: i + 1, question: q.text, choices: q.choices.slice(),
+    correctIndex: q.correct, correctAnswer: q.choices[q.correct],
+    picked: answers[i], pickedAnswer: answers[i] === null ? null : q.choices[answers[i]],
+    correct: answers[i] === q.correct,
+    skipped: answers[i] === null,
+    seconds: qSeconds[i],
+    explain: q.explanation
+  }));
+
+  // Per-topic tallies
+  const topics = {};
+  answerRecords.forEach(r => {
+    const t = topics[r.topic] = topics[r.topic] || { c: 0, t: 0 };
+    t.t++; if (r.correct) t.c++;
+  });
+
+  // ── Save to shared store ─────────────────────────────────
+  const prior = TutorStore.app(currentUser, APP_ID);
+  const totalXP = (prior.xp || 0) + xpEarned;
+  const record = {
+    app: APP_ID, subject: 'Math', gradeLevel: '7', testId: 'daily-2026-05-23',
+    date: new Date().toISOString(),
+    player: currentUser, playerKey: TutorStore.keyOf(currentUser),
+    difficulty: 'mixed', timed: true, grade: 7,
+    timeLimitSec: 25 * 60 + addTimeUses * 120,
+    timeTakenSec: timeTaken,
+    score: correctCount, total: TOTAL, pct,
+    win: pct >= 80, perfect: pct === 100,
+    skippedCount, grade, xpEarned,
+    topics, answers: answerRecords
+  };
+  TutorStore.saveResult(currentUser, APP_ID, record);
+  TutorStore.setAppField(currentUser, APP_ID, 'xp', totalXP);
+
+  // Leaderboard — all players, this test app
+  let scores = TutorStore.allResults(APP_ID)
+    .map(r => ({ name: r.name, pct: r.pct, correct: r.score,
+                 date: new Date(r.date).toLocaleDateString(), time: fmtTime(r.timeTakenSec || 0),
+                 stamp: r.date }));
+  scores.sort((a, b) => b.pct - a.pct || (a.stamp < b.stamp ? -1 : 1));
+  scores = scores.slice(0, 10);
+  const myRank = scores.findIndex(s => s.stamp === record.date);
+
+  // ── Show results ───────────────────────────────────────────
+  document.getElementById('test-screen').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Hero
+  document.getElementById('score-big').textContent = `${pct}%`;
+  document.getElementById('score-fraction').textContent = `${correctCount} out of ${TOTAL} correct`;
+  const gb = document.getElementById('grade-badge');
+  gb.textContent = grade;
+  gb.style.cssText = `background:${gradeColor}22;color:${gradeColor};border:2px solid ${gradeColor}55;`;
+  document.getElementById('rating-msg').textContent = msg;
+  document.getElementById('stat-time').textContent = `⏱ ${fmtTime(timeTaken)}`;
+  document.getElementById('stat-correct').textContent = `✅ ${correctCount} correct`;
+  document.getElementById('stat-skipped').textContent = `⏭ ${skippedCount} skipped`;
+
+  // XP banner
+  document.getElementById('xp-banner').textContent =
+    `⭐ You earned +${xpEarned} XP this session  ·  Total: ${totalXP.toLocaleString()} XP`;
+
+  // Weak areas
+  const topicWrong = {};
+  for (let i = 0; i < TOTAL; i++) {
+    if (answers[i] !== QUESTIONS[i].correct) {
+      const t = QUESTIONS[i].topic;
+      topicWrong[t] = (topicWrong[t] || 0) + 1;
+    }
+  }
+  if (Object.keys(topicWrong).length > 0) {
+    document.getElementById('weak-areas').style.display = 'block';
+    const maxWrong = Math.max(...Object.values(topicWrong));
+    document.getElementById('weak-list').innerHTML =
+      Object.entries(topicWrong)
+        .sort((a, b) => b[1] - a[1])
+        .map(([t, n]) => `
+          <div class="weak-item">
+            <span>${t}</span>
+            <div class="weak-bar-wrap">
+              <div class="weak-bar-bg">
+                <div class="weak-bar-fill" style="width:${n/maxWrong*100}%"></div>
+              </div>
+            </div>
+            <span class="weak-count">${n} mistake${n > 1 ? 's' : ''}</span>
+          </div>`)
+        .join('');
+  }
+
+  // Leaderboard
+  const medals = ['🥇', '🥈', '🥉'];
+  document.getElementById('lb-rows').innerHTML = scores.map((s, i) => `
+    <div class="lb-row${i === myRank ? ' highlight' : ''}">
+      <span class="lb-rank">${medals[i] || '#' + (i+1)}</span>
+      <span class="lb-pct">${s.pct}%  <small style="color:var(--muted);font-weight:400">${s.correct}/${TOTAL}</small></span>
+      <span style="font-size:0.78rem;color:var(--cyan)">${s.name}</span>
+      <span style="color:var(--muted);font-size:0.78rem">${s.date}</span>
+      <span style="color:var(--muted);font-size:0.78rem">${s.time}</span>
+    </div>`).join('');
+
+  // Full breakdown
+  document.getElementById('breakdown-list').innerHTML = QUESTIONS.map((q, i) => {
+    const isCorrect = answers[i] === q.correct;
+    const wasSkipped = answers[i] === null;
+    const userLabel  = wasSkipped ? 'Not answered' : LETTERS[answers[i]] + '. ' + q.choices[answers[i]];
+    const corrLabel  = LETTERS[q.correct] + '. ' + q.choices[q.correct];
+    return `
+      <div class="result-item ${isCorrect ? 'correct' : 'incorrect'}">
+        <div class="ri-header">
+          <span class="ri-meta">Q${i+1} · ${q.topic} · ${cap(q.difficulty)}</span>
+          <span class="ri-status ${isCorrect ? 'correct' : 'incorrect'}">
+            ${isCorrect ? '✅ Correct' : wasSkipped ? '⏭ Skipped' : '❌ Incorrect'}
+          </span>
+        </div>
+        <div class="ri-text">${q.text}</div>
+        <div class="ri-answers">
+          ${!isCorrect ? `<span class="ri-your">Your answer: ${userLabel}</span><br>` : ''}
+          <span class="ri-correct-ans">Correct answer: ${corrLabel}</span>
+        </div>
+        <div class="ri-explanation">${q.explanation}</div>
+      </div>`;
+  }).join('');
+
+  // Animations
+  if (pct >= 80)  launchConfetti();
+  if (pct === 100) setTimeout(launchFireworks, 600);
+}
+
+function fmtTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}m ${String(s).padStart(2, '0')}s`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CONFETTI  (canvas, ≥80%)
+// ═══════════════════════════════════════════════════════════════
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+
+  const palette = ['#ff4e50','#fc913a','#f9d62e','#b2f5ea','#7efff5','#b388ff','#ff80ab','#22c55e','#ffd700'];
+  const pieces  = Array.from({ length: 200 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * 120,
+    vx: (Math.random() - 0.5) * 4,
+    vy: 2.5 + Math.random() * 4,
+    w: 7 + Math.random() * 9,
+    h: 4 + Math.random() * 4,
+    color: palette[Math.random() * palette.length | 0],
+    rot: Math.random() * Math.PI * 2,
+    rotV: (Math.random() - 0.5) * 0.25,
+    gravity: 0.05 + Math.random() * 0.06
+  }));
+
+  let t = 0;
+  (function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    t += 16;
+    const alpha = t > 3200 ? 1 - (t - 3200) / 800 : 1;
+    ctx.globalAlpha = Math.max(0, alpha);
+    pieces.forEach(p => {
+      p.x  += p.vx; p.y += p.vy;
+      p.vy += p.gravity;
+      p.rot += p.rotV;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    if (t < 4000) requestAnimationFrame(frame);
+    else { canvas.style.display = 'none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  })();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FIREWORKS  (canvas, 100%)
+// ═══════════════════════════════════════════════════════════════
+function launchFireworks() {
+  const canvas = document.getElementById('fireworks-canvas');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+
+  const palette = ['#ffd700','#ff4e50','#7efff5','#b388ff','#ff80ab','#fc913a','#22c55e'];
+  const sparks  = [];
+
+  function burst(cx, cy) {
+    const count = 70 + Math.random() * 30 | 0;
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 / count) * i + Math.random() * 0.3;
+      const speed = 2 + Math.random() * 6;
+      sparks.push({
+        x: cx, y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        color: palette[Math.random() * palette.length | 0],
+        r: 2.5 + Math.random() * 3
+      });
+    }
+  }
+
+  // Staggered bursts across the screen
+  [[0.25,0.35],[0.75,0.30],[0.50,0.18],[0.15,0.55],[0.85,0.50],[0.50,0.65]]
+    .forEach(([rx,ry], i) =>
+      setTimeout(() => burst(canvas.width*rx, canvas.height*ry), i*350));
+
+  let t0 = null;
+  (function frame(ts) {
+    if (!t0) t0 = ts;
+    ctx.fillStyle = 'rgba(0,0,0,0.14)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    sparks.forEach(p => {
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += 0.07;
+      p.life -= 0.014;
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle   = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      if (sparks[i].life <= 0) sparks.splice(i, 1);
+    }
+    if (ts - t0 < 5500) requestAnimationFrame(frame);
+    else { canvas.style.display = 'none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  })(performance.now());
+}
+</script>
+</body>
+</html>

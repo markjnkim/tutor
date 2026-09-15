@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>한글 Adventure — Mei's Way Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nunito:wght@400;600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --moss:#3a5a40;
+  --leaf:#7fa66a;
+  --cream:#fdf6e7;
+  --paper:#fffdf7;
+  --bark:#5c4433;
+  --sky:#a8d5e2;
+  --berry:#d98b84;
+  --sun:#f3c969;
+  --ink:#2f3a2f;
+  --shadow:rgba(58,90,64,.14);
+}
+
+/* ===== login overlay ===== */
+#ko-login{position:fixed; inset:0; z-index:200; background:linear-gradient(180deg,#e8f2df,var(--cream));
+  display:flex; align-items:center; justify-content:center; padding:20px;}
+#ko-login-box{background:var(--paper); border:2px solid var(--leaf); border-radius:22px;
+  padding:34px 30px; max-width:420px; width:100%; text-align:center; box-shadow:0 8px 26px var(--shadow);}
+#ko-name{width:100%; padding:13px 15px; font-size:1.05rem; font-family:inherit;
+  border:2px solid #cfe0c2; border-radius:14px; outline:none; background:#fff; color:var(--ink);}
+#ko-name:focus{border-color:var(--moss);}
+#ko-go{width:100%; margin-top:14px; padding:13px; font-size:1.05rem; font-weight:700; font-family:inherit;
+  border:none; border-radius:14px; cursor:pointer; background:var(--moss); color:#fff;}
+#ko-go:hover{filter:brightness(1.12);}
+#ko-chips{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:16px;}
+.ko-chip{background:#eaf3e2; border:2px solid var(--leaf); color:var(--moss); border-radius:999px;
+  padding:7px 15px; font-size:.85rem; cursor:pointer;}
+.ko-chip:hover{background:var(--leaf); color:#fff;}
+#ko-who{font-size:.78rem; color:var(--moss); font-weight:700;}
+.topbar{padding-left:64px;}   /* room for the sidebar toggle */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow-x:hidden}
+body{
+  font-family:'Nunito',system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(ellipse at 15% 0%, #cfe8d5 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 10%, #ffeec9 0%, transparent 50%),
+    linear-gradient(180deg,#eaf5e6 0%, #fdf6e7 60%, #f6ead3 100%);
+  background-attachment:fixed;
+  min-height:100vh;padding:18px;
+}
+.wrap{max-width:940px;margin:0 auto}
+
+/* ---------- top bar ---------- */
+.topbar{
+  background:var(--paper);border:2px solid #e6dcc4;border-radius:20px;
+  padding:14px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  box-shadow:0 6px 18px var(--shadow);margin-bottom:16px;
+}
+.brand{font-family:'Gaegu',cursive;font-size:1.9rem;font-weight:700;color:var(--moss);line-height:1;display:flex;align-items:center;gap:8px}
+.brand small{font-family:'Nunito';font-size:.72rem;font-weight:600;color:#8a8570;display:block}
+.topbar .spacer{flex:1}
+.pill{background:var(--cream);border:2px solid #e6dcc4;border-radius:999px;padding:6px 14px;font-weight:800;font-size:.9rem;display:flex;align-items:center;gap:6px}
+.pill.seeds{color:var(--moss)}
+.pill.acorn{color:var(--bark)}
+
+/* ---------- panels ---------- */
+.panel{background:var(--paper);border:2px solid #e6dcc4;border-radius:22px;padding:26px;box-shadow:0 8px 24px var(--shadow);margin-bottom:16px}
+.screen{display:none;animation:rise .45s cubic-bezier(.2,.8,.3,1)}
+.screen.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+h2.title{font-family:'Gaegu',cursive;font-size:2rem;color:var(--moss);margin-bottom:4px}
+p.sub{color:#7d7a68;font-size:.95rem;margin-bottom:18px}
+
+/* ---------- buttons ---------- */
+.btn{
+  font-family:'Nunito';font-weight:800;font-size:1rem;border:none;cursor:pointer;
+  padding:14px 22px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  transition:transform .16s cubic-bezier(.2,.8,.3,1),box-shadow .16s,filter .16s;
+  box-shadow:0 4px 0 rgba(0,0,0,.10);
+}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.04)}
+.btn:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(0,0,0,.12)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;filter:none}
+.btn:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
+.b-moss{background:var(--moss);color:#fff}
+.b-leaf{background:var(--leaf);color:#fff}
+.b-cream{background:var(--cream);color:var(--moss);border:2px solid #e0d5ba;box-shadow:0 4px 0 #e0d5ba}
+.b-berry{background:var(--berry);color:#fff}
+.b-sun{background:var(--sun);color:#5a4713}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row.center{justify-content:center}
+
+/* ---------- map ---------- */
+.mapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:14px;margin-top:6px}
+.node{
+  background:var(--cream);border:2px solid #e0d5ba;border-radius:18px;padding:14px 10px;text-align:center;
+  cursor:pointer;transition:transform .16s,box-shadow .16s;position:relative;
+}
+.node:hover:not(.locked){transform:translateY(-4px);box-shadow:0 8px 18px var(--shadow)}
+.node.done{background:linear-gradient(160deg,#8fbf7a,#6f9d5c);border-color:#5f8b4e;color:#fff}
+.node.now{border-color:var(--sun);box-shadow:0 0 0 4px rgba(243,201,105,.35)}
+.node.locked{opacity:.45;cursor:not-allowed;filter:grayscale(.5)}
+.node .ic{font-size:1.6rem;display:block;margin-bottom:4px}
+.node .nm{font-size:.82rem;font-weight:800;line-height:1.2}
+.node .un{font-size:.66rem;opacity:.7;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.node .chk{position:absolute;top:6px;right:8px;font-size:.9rem}
+.unithead{font-family:'Gaegu',cursive;font-size:1.4rem;color:var(--bark);margin:22px 0 8px;display:flex;align-items:center;gap:8px}
+.unithead::after{content:'';flex:1;height:2px;background:repeating-linear-gradient(90deg,#e0d5ba 0 8px,transparent 8px 14px)}
+
+/* ---------- lesson stage ---------- */
+.stage{text-align:center;padding:12px 0 4px}
+.hangul{
+  font-family:'Noto Sans KR',sans-serif;font-weight:700;color:var(--moss);
+  font-size:clamp(3rem,13vw,5.4rem);line-height:1.25;letter-spacing:.06em;
+  display:flex;justify-content:center;flex-wrap:wrap;gap:.06em;
+}
+.hangul .syl{
+  padding:0 .06em;border-radius:14px;transition:all .22s cubic-bezier(.2,.8,.3,1);
+  cursor:pointer;position:relative;
+}
+.hangul .syl:hover{background:rgba(168,213,226,.35)}
+.hangul .syl.lit{
+  background:var(--sun);color:#4a3a0c;transform:translateY(-8px) scale(1.06);
+  box-shadow:0 8px 0 rgba(196,158,66,.55);
+}
+.sentence .hangul{font-size:clamp(1.6rem,6.2vw,2.8rem)}
+.sentence .hangul .word{display:flex;margin-right:.35em}
+
+.jamostrip{
+  display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:14px 0 6px;min-height:64px;
+}
+.jamo{
+  background:var(--cream);border:2px solid #e0d5ba;border-radius:12px;padding:6px 12px;text-align:center;
+  min-width:58px;animation:pop .3s cubic-bezier(.2,1.5,.4,1);
+}
+.jamo.lead{border-color:var(--leaf)}
+.jamo.vow{border-color:var(--berry)}
+.jamo.tail{border-color:var(--sky)}
+.jamo b{font-family:'Noto Sans KR';font-size:1.5rem;display:block;line-height:1.1}
+.jamo span{font-size:.68rem;font-weight:700;color:#8a8570;text-transform:uppercase;letter-spacing:.4px}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+
+.romaja{font-size:1.15rem;font-weight:800;color:var(--bark);letter-spacing:.03em}
+.gloss{
+  display:inline-block;background:var(--cream);border:2px dashed #ddd0b0;border-radius:14px;
+  padding:8px 18px;margin-top:10px;font-weight:700;color:var(--moss);
+}
+.tipbox{
+  background:linear-gradient(160deg,#fff8e6,#fdf1dc);border-left:5px solid var(--sun);
+  border-radius:12px;padding:14px 16px;margin-top:16px;text-align:left;font-size:.95rem;line-height:1.6;
+}
+.tipbox b{color:var(--bark)}
+
+/* ---------- progress ---------- */
+.prog{height:12px;background:#e9e2cd;border-radius:99px;overflow:hidden;margin:6px 0 4px}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--leaf),var(--moss));border-radius:99px;transition:width .4s}
+.progline{display:flex;justify-content:space-between;font-size:.8rem;font-weight:700;color:#8a8570}
+
+/* ---------- mic ---------- */
+.miccard{background:linear-gradient(160deg,#f2f9f1,#e6f2e4);border:2px solid #cfe3ca;border-radius:20px;padding:20px;margin-top:18px}
+.mictitle{font-family:'Gaegu',cursive;font-size:1.5rem;color:var(--moss);margin-bottom:4px}
+.micnote{font-size:.85rem;color:#7d7a68;margin-bottom:14px}
+.bars{display:flex;align-items:flex-end;justify-content:center;gap:4px;height:46px;margin:12px 0}
+.bars i{width:6px;background:var(--leaf);border-radius:3px;height:6px;transition:height .08s}
+.scorewrap{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:12px}
+.ring{position:relative;width:96px;height:96px}
+.ring svg{transform:rotate(-90deg)}
+.ring .val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.3rem;color:var(--moss)}
+.heard{background:var(--paper);border:2px solid #e0d5ba;border-radius:12px;padding:10px 14px;font-family:'Noto Sans KR';font-size:1.1rem;font-weight:600}
+.heard small{display:block;font-family:'Nunito';font-size:.7rem;font-weight:700;color:#8a8570;text-transform:uppercase;letter-spacing:.5px}
+.micmsg{font-weight:800;margin-top:10px;font-size:1.05rem}
+.selfrate{margin-top:12px}
+
+/* ---------- quiz ---------- */
+.qtext{font-size:1.2rem;font-weight:800;text-align:center;margin-bottom:6px}
+.qsub{text-align:center;color:#8a8570;font-size:.85rem;margin-bottom:18px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.opt{
+  background:var(--cream);border:2px solid #e0d5ba;border-radius:16px;padding:18px 14px;
+  font-weight:800;cursor:pointer;text-align:center;transition:transform .14s,border-color .14s,background .14s;
+  font-size:1.05rem;
+}
+.opt .kr{font-family:'Noto Sans KR';font-size:1.7rem;display:block}
+.opt:hover:not(.dead){transform:translateY(-3px);border-color:var(--leaf)}
+.opt.right{background:#d8efd0;border-color:#6f9d5c;color:#2f5a26}
+.opt.wrong{background:#fadfdc;border-color:var(--berry);color:#8a3b33}
+.opt.dead{cursor:default;opacity:.75}
+
+/* ---------- sprites / cheer ---------- */
+#cheer{position:fixed;inset:0;pointer-events:none;z-index:60;display:flex;align-items:center;justify-content:center}
+.cheerbox{display:flex;flex-direction:column;align-items:center;gap:6px;animation:cheerIn 1.9s cubic-bezier(.2,.8,.3,1) forwards}
+.cheerbox .bubble{
+  background:var(--paper);border:3px solid var(--moss);border-radius:18px;padding:8px 18px;
+  font-family:'Gaegu',cursive;font-size:1.5rem;color:var(--moss);white-space:nowrap;
+  box-shadow:0 6px 0 rgba(58,90,64,.25);
+}
+@keyframes cheerIn{
+  0%{opacity:0;transform:translateY(40px) scale(.7)}
+  18%{opacity:1;transform:translateY(-10px) scale(1.06)}
+  30%{transform:translateY(0) scale(1)}
+  75%{opacity:1;transform:translateY(-6px)}
+  100%{opacity:0;transform:translateY(-70px) scale(.9)}
+}
+.leafburst{position:fixed;pointer-events:none;z-index:59;font-size:1.3rem;animation:fall 1.6s ease-in forwards}
+@keyframes fall{
+  0%{opacity:1;transform:translateY(0) rotate(0)}
+  100%{opacity:0;transform:translateY(180px) rotate(var(--spin))}
+}
+
+/* ---------- home scene ---------- */
+.homescene{background:var(--paper);border:2px solid #e6dcc4;border-radius:22px;overflow:hidden;box-shadow:0 8px 24px var(--shadow)}
+.homescene svg{display:block;width:100%;height:auto}
+.lockedhome{position:relative}
+.lockedhome::after{
+  content:'';position:absolute;inset:0;backdrop-filter:blur(7px);background:rgba(253,246,231,.55);
+}
+.lockedhome .veil{
+  position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;font-family:'Gaegu',cursive;font-size:1.5rem;color:var(--moss);text-align:center;padding:16px;
+}
+.lockedhome .veil small{font-family:'Nunito';font-size:.85rem;font-weight:700;color:#7d7a68}
+
+/* ---------- misc ---------- */
+.kbd{background:var(--cream);border:1px solid #e0d5ba;border-bottom-width:3px;border-radius:6px;padding:1px 7px;font-size:.8rem;font-weight:800}
+.alphagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:14px}
+.acard{
+  background:var(--cream);border:2px solid #e0d5ba;border-radius:14px;padding:12px 6px;text-align:center;cursor:pointer;
+  transition:transform .14s,border-color .14s;
+}
+.acard:hover{transform:translateY(-3px);border-color:var(--leaf)}
+.acard.active{border-color:var(--sun);box-shadow:0 0 0 3px rgba(243,201,105,.4)}
+.acard.known{background:#e4f1de;border-color:#8fbf7a}
+.acard b{font-family:'Noto Sans KR';font-size:1.9rem;display:block;line-height:1.1;color:var(--moss)}
+.acard span{font-size:.75rem;font-weight:800;color:#8a8570}
+.banner{background:#fff3d6;border:2px solid var(--sun);border-radius:14px;padding:12px 16px;font-size:.9rem;line-height:1.55;margin-bottom:14px}
+.banner b{color:var(--bark)}
+footer{text-align:center;color:#8a8570;font-size:.78rem;padding:10px 0 24px}
+@media (max-width:560px){
+  .panel{padding:18px}
+  .brand{font-size:1.5rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- ===== PLAYER LOGIN (shared TutorStore) ===== -->
+<div id="ko-login">
+  <div id="ko-login-box">
+    <div style="font-size:3rem">🌿</div>
+    <h2 style="margin:8px 0 4px;color:var(--moss)">한글 Adventure</h2>
+    <p style="color:var(--bark);font-size:.9rem;margin-bottom:18px">Who is walking Mei home today?</p>
+    <input type="text" id="ko-name" placeholder="Type your name…" maxlength="20" autocomplete="off">
+    <button id="ko-go" onclick="koLogin()">Start the journey 🍃</button>
+    <div id="ko-chips"></div>
+    <p style="color:#9a8f7d;font-size:.72rem;margin-top:14px">Your progress is saved on this computer.</p>
+  </div>
+</div>
+<div class="wrap">
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="topbar">
+    <div class="brand">🌿 한글 Adventure
+      <small>Help Mei read her way home · <span id="ko-who"></span></small>
+    </div>
+    <div class="spacer"></div>
+    <div class="pill seeds">🌱 <span id="seedCount">0</span></div>
+    <div class="pill acorn">🌰 <span id="lessonCount">0</span>/<span id="lessonTotal">12</span></div>
+    <button class="btn b-cream" style="padding:8px 14px;font-size:.85rem" onclick="go('map')">🗺️ Map</button>
+  </div>
+
+  <!-- ============ MAP ============ -->
+  <div id="s-map" class="screen on">
+    <div class="panel">
+      <h2 class="title">Mei's Journey</h2>
+      <p class="sub">Twelve stops through the forest. Each one teaches you to read a little more.</p>
+
+      <div class="homescene lockedhome" id="homeSceneWrap">
+        <div class="veil" id="homeVeil">
+          <div>🌫️ The path home is still misty</div>
+          <small>Finish all 12 stops to see Mei reach her family</small>
+        </div>
+        <div id="homeSceneSlot"></div>
+      </div>
+
+      <div id="mapBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ LESSON ============ -->
+  <div id="s-lesson" class="screen">
+    <div class="panel">
+      <div class="progline"><span id="lsName">Lesson</span><span id="lsCount">1 / 6</span></div>
+      <div class="prog"><i id="lsBar" style="width:0%"></i></div>
+
+      <div id="lessonBody"></div>
+
+      <div class="row center" style="margin-top:20px">
+        <button class="btn b-cream" onclick="prevItem()">← Back</button>
+        <button class="btn b-moss" id="nextBtn" onclick="nextItem()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ QUIZ ============ -->
+  <div id="s-quiz" class="screen">
+    <div class="panel">
+      <div class="progline"><span>Check what you learned</span><span id="qzCount">1 / 6</span></div>
+      <div class="prog"><i id="qzBar" style="width:0%"></i></div>
+      <div id="quizBody" style="margin-top:22px"></div>
+    </div>
+  </div>
+
+  <!-- ============ RESULT ============ -->
+  <div id="s-result" class="screen">
+    <div class="panel" style="text-align:center">
+      <div id="resultArt" style="margin:0 auto 10px;max-width:220px"></div>
+      <h2 class="title" id="resultTitle">Well done!</h2>
+      <p class="sub" id="resultMsg"></p>
+      <div class="row center">
+        <button class="btn b-cream" onclick="retryLesson()">↻ Practice again</button>
+        <button class="btn b-moss" onclick="go('map')">🗺️ Back to the map</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>Speak clearly, take your time, and don't worry about mistakes — they're part of the path. 화이팅! 💪</footer>
+</div>
+
+<div id="cheer"></div>
+
+<script src="tutor-store.js"></script>
+<script src="tutor-nav.js"></script>
+<script>
+/* =========================================================
+   0. SAFE STORAGE (works as file, artifact, or served page)
+   ========================================================= */
+const store = (()=>{
+  let mem = {};
+  let ok = true;
+  try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); }catch(e){ ok=false; }
+  return {
+    get(k,d){ try{ const v = ok? localStorage.getItem(k) : mem[k]; return v==null? d : JSON.parse(v); }catch(e){ return d; } },
+    set(k,v){ try{ const s=JSON.stringify(v); if(ok) localStorage.setItem(k,s); else mem[k]=s; }catch(e){} }
+  };
+})();
+
+/* =========================================================
+   1. HANGUL ENGINE — decompose syllables into jamo
+   ========================================================= */
+const LEAD = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const VOW  = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ'];
+const TAIL = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+
+const ROM_LEAD = {'ㄱ':'g','ㄲ':'kk','ㄴ':'n','ㄷ':'d','ㄸ':'tt','ㄹ':'r','ㅁ':'m','ㅂ':'b','ㅃ':'pp','ㅅ':'s','ㅆ':'ss','ㅇ':'—','ㅈ':'j','ㅉ':'jj','ㅊ':'ch','ㅋ':'k','ㅌ':'t','ㅍ':'p','ㅎ':'h'};
+const ROM_VOW  = {'ㅏ':'a','ㅐ':'ae','ㅑ':'ya','ㅒ':'yae','ㅓ':'eo','ㅔ':'e','ㅕ':'yeo','ㅖ':'ye','ㅗ':'o','ㅘ':'wa','ㅙ':'wae','ㅚ':'oe','ㅛ':'yo','ㅜ':'u','ㅝ':'wo','ㅞ':'we','ㅟ':'wi','ㅠ':'yu','ㅡ':'eu','ㅢ':'ui','ㅣ':'i'};
+const ROM_TAIL = {'ㄱ':'k','ㄲ':'k','ㄳ':'k','ㄴ':'n','ㄵ':'n','ㄶ':'n','ㄷ':'t','ㄹ':'l','ㄺ':'k','ㄻ':'m','ㄼ':'l','ㄽ':'l','ㄾ':'l','ㄿ':'p','ㅀ':'l','ㅁ':'m','ㅂ':'p','ㅄ':'p','ㅅ':'t','ㅆ':'t','ㅇ':'ng','ㅈ':'t','ㅊ':'t','ㅋ':'k','ㅌ':'t','ㅍ':'p','ㅎ':'t'};
+
+function isSyllable(ch){ const c=ch.charCodeAt(0); return c>=0xAC00 && c<=0xD7A3; }
+function decompose(ch){
+  if(!isSyllable(ch)) return null;
+  const c = ch.charCodeAt(0) - 0xAC00;
+  return { lead:LEAD[Math.floor(c/588)], vowel:VOW[Math.floor((c%588)/28)], tail:TAIL[c%28] };
+}
+/** flatten a whole string into a jamo array — used for pronunciation scoring */
+function toJamo(str){
+  const out=[];
+  for(const ch of str){
+    const d=decompose(ch);
+    if(d){ out.push(d.lead,d.vowel); if(d.tail) out.push(d.tail); }
+    else if(ch.trim()) out.push(ch);
+  }
+  return out;
+}
+
+/* =========================================================
+   2. AUDIO — speech synthesis with syllable-synced highlight
+   ========================================================= */
+let koVoice = null;
+function pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  koVoice = vs.find(v=>v.lang==='ko-KR') || vs.find(v=>v.lang && v.lang.startsWith('ko')) || null;
+}
+pickVoice();
+if(typeof speechSynthesis!=='undefined') speechSynthesis.onvoiceschanged = pickVoice;
+
+function speak(text, rate=0.85){
+  return new Promise(res=>{
+    if(!('speechSynthesis' in window)) return res();
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='ko-KR'; u.rate=rate; u.pitch=1;
+    if(koVoice) u.voice=koVoice;
+    u.onend=()=>res(); u.onerror=()=>res();
+    speechSynthesis.speak(u);
+  });
+}
+
+/** Speak a word one syllable at a time, lighting each syllable as it sounds.
+    Because each syllable is its own utterance, the highlight is truly in sync. */
+async function speakHighlighted(text, opts={}){
+  const rate = opts.rate || 0.7;
+  const chars = [...text];
+  clearHighlight();
+  for(let i=0;i<chars.length;i++){
+    const ch = chars[i];
+    if(ch===' '){ await pause(160); continue; }
+    lightSyllable(i);
+    showJamoFor(ch);
+    await speak(ch, rate);
+    await pause(opts.gap ?? 140);
+  }
+  clearHighlight();
+  if(opts.thenWhole!==false){
+    await pause(220);
+    lightAll();
+    await speak(text, 0.85);
+    clearHighlight();
+    showJamoFor(null);
+  }
+}
+const pause = ms => new Promise(r=>setTimeout(r,ms));
+
+function lightSyllable(i){
+  document.querySelectorAll('#lessonBody .syl').forEach(el=>{
+    el.classList.toggle('lit', Number(el.dataset.i)===i);
+  });
+}
+function lightAll(){ document.querySelectorAll('#lessonBody .syl').forEach(el=>el.classList.add('lit')); }
+function clearHighlight(){ document.querySelectorAll('#lessonBody .syl').forEach(el=>el.classList.remove('lit')); }
+
+function showJamoFor(ch){
+  const strip = document.getElementById('jamoStrip');
+  if(!strip) return;
+  if(!ch){ strip.innerHTML=''; return; }
+  const d = decompose(ch);
+  if(!d){ strip.innerHTML=''; return; }
+  let html = `<div class="jamo lead"><b>${d.lead}</b><span>${ROM_LEAD[d.lead]||''}</span></div>`;
+  html += `<div class="jamo vow"><b>${d.vowel}</b><span>${ROM_VOW[d.vowel]||''}</span></div>`;
+  if(d.tail) html += `<div class="jamo tail"><b>${d.tail}</b><span>${ROM_TAIL[d.tail]||''}</span></div>`;
+  strip.innerHTML = html;
+}
+
+/* Render a word/sentence as clickable, highlightable syllables */
+function renderHangul(text, isSentence){
+  const chars=[...text];
+  let html='';
+  chars.forEach((ch,i)=>{
+    if(ch===' '){ html+='<span style="width:.35em"></span>'; return; }
+    html+=`<span class="syl" data-i="${i}" onclick="tapSyllable('${ch}',${i})">${ch}</span>`;
+  });
+  return `<div class="hangul${isSentence?' sentence':''}">${html}</div>`;
+}
+async function tapSyllable(ch,i){
+  lightSyllable(i); showJamoFor(ch);
+  await speak(ch,0.6);
+  clearHighlight();
+}
+
+/* =========================================================
+   3. MICROPHONE — request ONCE, keep the stream alive
+   ========================================================= */
+const Mic = {
+  stream:null, rec:null, chunks:[], recognizer:null, heard:'', analyser:null, rafId:null, active:false,
+
+  /** Called once. The stream is cached and NEVER stopped, so the browser
+      does not re-prompt for permission on later recordings. */
+  async ensure(){
+    if(this.stream && this.stream.active) return this.stream;
+    this.stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true}});
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const src = ctx.createMediaStreamSource(this.stream);
+    this.analyser = ctx.createAnalyser();
+    this.analyser.fftSize = 64;
+    src.connect(this.analyser);
+    return this.stream;
+  },
+
+  granted(){ return !!(this.stream && this.stream.active); },
+
+  async start(targetKo){
+    await this.ensure();
+    this.chunks=[]; this.heard=''; this.active=true;
+    this.rec = new MediaRecorder(this.stream);
+    this.rec.ondataavailable = e => { if(e.data.size) this.chunks.push(e.data); };
+    this.rec.start();
+    this.meter(true);
+
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(SR){
+      try{
+        this.recognizer = new SR();
+        this.recognizer.lang='ko-KR';
+        this.recognizer.continuous=false;
+        this.recognizer.interimResults=true;
+        this.recognizer.maxAlternatives=3;
+        this.recognizer.onresult = e=>{
+          for(let i=e.resultIndex;i<e.results.length;i++){
+            this.heard = e.results[i][0].transcript;
+          }
+        };
+        this.recognizer.onerror = ()=>{};
+        this.recognizer.start();
+      }catch(e){ this.recognizer=null; }
+    }
+  },
+
+  async stop(){
+    this.active=false;
+    this.meter(false);
+    if(this.recognizer){ try{ this.recognizer.stop(); }catch(e){} }
+    const blob = await new Promise(res=>{
+      if(!this.rec || this.rec.state==='inactive') return res(null);
+      this.rec.onstop = ()=> res(new Blob(this.chunks,{type:this.rec.mimeType||'audio/webm'}));
+      this.rec.stop();
+    });
+    await pause(420); // let the recognizer settle on a final transcript
+    return { blob, heard:this.heard.trim() };
+  },
+
+  meter(on){
+    const bars = document.querySelectorAll('#micBars i');
+    if(!on){ cancelAnimationFrame(this.rafId); bars.forEach(b=>b.style.height='6px'); return; }
+    const data = new Uint8Array(this.analyser.frequencyBinCount);
+    const tick = ()=>{
+      this.analyser.getByteFrequencyData(data);
+      bars.forEach((b,i)=>{
+        const v = data[i*2] || 0;
+        b.style.height = Math.max(6, (v/255)*44) + 'px';
+      });
+      this.rafId = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+};
+
+/* ---- pronunciation scoring: compare jamo sequences ---- */
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,i)=>i), cur=new Array(n+1);
+  for(let i=1;i<=m;i++){
+    cur[0]=i;
+    for(let j=1;j<=n;j++){
+      cur[j]=Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    }
+    [prev,cur]=[cur,prev];
+  }
+  return prev[n];
+}
+function scorePronunciation(target, heard){
+  if(!heard) return null;
+  const clean = s => s.replace(/[.,!?~\s]/g,'');
+  const t = toJamo(clean(target));
+  const h = toJamo(clean(heard));
+  if(!t.length) return null;
+  const dist = levenshtein(t,h);
+  const raw  = 1 - dist/Math.max(t.length,h.length,1);
+  // gentle curve: partial attempts still feel like progress
+  return Math.max(0, Math.round(Math.min(100, raw*100*1.08)));
+}
+
+/* =========================================================
+   4. CHEER SPRITES — original little forest friends
+   ========================================================= */
+const SPRITES = {
+  sprout:`<svg width="86" height="86" viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="24" ry="5" fill="rgba(58,90,64,.16)"/><path d="M50 40c0-14 10-22 22-22 0 14-9 22-22 22z" fill="#7fa66a"/><path d="M50 44c0-12-9-19-19-19 0 12 8 19 19 19z" fill="#95bb80"/><ellipse cx="50" cy="65" rx="26" ry="25" fill="#fdf6e7" stroke="#3a5a40" stroke-width="3.5"/><circle cx="41" cy="62" r="3.6" fill="#2f3a2f"/><circle cx="59" cy="62" r="3.6" fill="#2f3a2f"/><path d="M43 73q7 6 14 0" stroke="#2f3a2f" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="33" cy="70" r="4" fill="#f0b6ad" opacity=".8"/><circle cx="67" cy="70" r="4" fill="#f0b6ad" opacity=".8"/></svg>`,
+  acorn:`<svg width="86" height="86" viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="22" ry="5" fill="rgba(58,90,64,.16)"/><path d="M28 46q22-16 44 0z" fill="#7a5a3c"/><rect x="26" y="40" width="48" height="12" rx="6" fill="#8a6748"/><path d="M50 34v-9" stroke="#5c4433" stroke-width="4" stroke-linecap="round"/><ellipse cx="50" cy="68" rx="24" ry="22" fill="#e8c99a" stroke="#5c4433" stroke-width="3.5"/><circle cx="42" cy="66" r="3.4" fill="#2f3a2f"/><circle cx="58" cy="66" r="3.4" fill="#2f3a2f"/><path d="M44 76q6 5 12 0" stroke="#2f3a2f" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
+  bird:`<svg width="86" height="86" viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="20" ry="5" fill="rgba(58,90,64,.16)"/><ellipse cx="50" cy="60" rx="26" ry="24" fill="#a8d5e2" stroke="#3a5a40" stroke-width="3.5"/><path d="M26 58q-14 4-18 14 16 2 22-6z" fill="#8ec3d4" stroke="#3a5a40" stroke-width="3"/><circle cx="44" cy="54" r="3.6" fill="#2f3a2f"/><circle cx="60" cy="54" r="3.6" fill="#2f3a2f"/><path d="M52 62l8 5-8 5z" fill="#f3c969"/><path d="M40 84l-4 8M60 84l4 8" stroke="#f3c969" stroke-width="4" stroke-linecap="round"/></svg>`,
+  mist:`<svg width="86" height="86" viewBox="0 0 100 100"><ellipse cx="50" cy="92" rx="22" ry="5" fill="rgba(58,90,64,.12)"/><path d="M24 70q-6-22 12-30 4-16 22-12 16 2 16 18 12 6 6 24z" fill="#fdf6e7" stroke="#7d9b82" stroke-width="3.5"/><circle cx="42" cy="58" r="3.4" fill="#2f3a2f"/><circle cx="60" cy="58" r="3.4" fill="#2f3a2f"/><path d="M45 68q6 5 12 0" stroke="#2f3a2f" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="34" cy="65" r="3.6" fill="#d98b84" opacity=".7"/><circle cx="68" cy="65" r="3.6" fill="#d98b84" opacity=".7"/></svg>`
+};
+const CHEERS = ['잘했어요! Nice!','좋아요! So good!','완벽해요! Perfect!','최고! You did it!','대단해요! Amazing!','맞아요! That\'s right!'];
+
+function cheer(msg){
+  const keys=Object.keys(SPRITES);
+  const sprite=SPRITES[keys[Math.floor(Math.random()*keys.length)]];
+  const text = msg || CHEERS[Math.floor(Math.random()*CHEERS.length)];
+  const box=document.createElement('div');
+  box.className='cheerbox';
+  box.innerHTML = sprite + `<div class="bubble">${text}</div>`;
+  const host=document.getElementById('cheer');
+  host.innerHTML=''; host.appendChild(box);
+  setTimeout(()=>{ if(box.parentNode) box.remove(); },1900);
+  leafBurst();
+}
+function leafBurst(){
+  const leaves=['🍃','🌿','🍀','✨','🌸'];
+  for(let i=0;i<9;i++){
+    const el=document.createElement('div');
+    el.className='leafburst';
+    el.textContent=leaves[Math.floor(Math.random()*leaves.length)];
+    el.style.left=(20+Math.random()*60)+'%';
+    el.style.top=(25+Math.random()*25)+'%';
+    el.style.setProperty('--spin',(Math.random()*720-360)+'deg');
+    el.style.animationDelay=(Math.random()*.3)+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),1900);
+  }
+}
+
+/* =========================================================
+   5. MEI'S HOME — original illustrated scene
+   ========================================================= */
+function homeSceneSVG(){
+  return `
+<svg viewBox="0 0 800 340" role="img" aria-label="Mei arriving home to her father, mother and sister outside a small house at sunset">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd9a0"/><stop offset="45%" stop-color="#ffeccb"/><stop offset="100%" stop-color="#dcefd4"/>
+    </linearGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8fbf7a"/><stop offset="100%" stop-color="#5f8b4e"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="340" fill="url(#sky)"/>
+  <circle cx="655" cy="96" r="42" fill="#ffce7a" opacity=".85"/>
+
+  <!-- distant hills -->
+  <path d="M0 210 Q120 150 240 205 T520 200 T800 215 V340 H0Z" fill="#b9d9ab" opacity=".75"/>
+  <path d="M0 240 Q160 190 330 238 T640 232 T800 250 V340 H0Z" fill="url(#hill)"/>
+
+  <!-- clouds -->
+  <g fill="#fffdf7" opacity=".8">
+    <ellipse cx="120" cy="70" rx="42" ry="18"/><ellipse cx="152" cy="64" rx="30" ry="20"/>
+    <ellipse cx="530" cy="52" rx="34" ry="14"/><ellipse cx="556" cy="48" rx="24" ry="16"/>
+  </g>
+
+  <!-- big tree -->
+  <g>
+    <rect x="92" y="196" width="17" height="70" rx="6" fill="#7a5a3c"/>
+    <ellipse cx="100" cy="176" rx="62" ry="46" fill="#6f9d5c"/>
+    <ellipse cx="66" cy="188" rx="36" ry="28" fill="#7fa66a"/>
+    <ellipse cx="132" cy="186" rx="34" ry="26" fill="#84ad6d"/>
+  </g>
+
+  <!-- house -->
+  <g transform="translate(470,124)">
+    <rect x="0" y="52" width="176" height="112" rx="8" fill="#fdf6e7" stroke="#5c4433" stroke-width="4"/>
+    <path d="M-16 56 L88 -6 L192 56 Z" fill="#c96f5c" stroke="#5c4433" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="70" y="104" width="40" height="60" rx="4" fill="#7a5a3c" stroke="#5c4433" stroke-width="3"/>
+    <circle cx="102" cy="136" r="3.4" fill="#f3c969"/>
+    <rect x="18" y="80" width="36" height="32" rx="4" fill="#ffe9a8" stroke="#5c4433" stroke-width="3"/>
+    <rect x="126" y="80" width="36" height="32" rx="4" fill="#ffe9a8" stroke="#5c4433" stroke-width="3"/>
+    <rect x="140" y="-4" width="16" height="34" rx="4" fill="#8a6748" stroke="#5c4433" stroke-width="3"/>
+    <g opacity=".65" fill="#fffdf7">
+      <circle cx="148" cy="-16" r="8"/><circle cx="158" cy="-32" r="10"/><circle cx="146" cy="-50" r="12"/>
+    </g>
+  </g>
+
+  <!-- path -->
+  <path d="M300 340 Q350 290 400 276 T520 262" stroke="#e8d4a8" stroke-width="26" fill="none" stroke-linecap="round" opacity=".9"/>
+
+  <!-- FAMILY: father, mother, sister waiting by the door -->
+  <!-- father -->
+  <g transform="translate(392,196)">
+    <ellipse cx="0" cy="72" rx="18" ry="4" fill="rgba(58,90,64,.18)"/>
+    <path d="M-15 70 V30 Q-15 14 0 14 Q15 14 15 30 V70 Z" fill="#5b7f9b" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M-15 34 L-30 52" stroke="#5b7f9b" stroke-width="9" stroke-linecap="round"/>
+    <path d="M15 34 L30 20" stroke="#5b7f9b" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="16" fill="#f7dcc2" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M-16 -4 Q0 -22 16 -4 Q10 -14 0 -14 Q-10 -14 -16 -4Z" fill="#4a3a2c"/>
+    <circle cx="-6" cy="2" r="2.4" fill="#2f3a2f"/><circle cx="6" cy="2" r="2.4" fill="#2f3a2f"/>
+    <path d="M-5 9 q5 4 10 0" stroke="#2f3a2f" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- mother -->
+  <g transform="translate(438,200)">
+    <ellipse cx="0" cy="68" rx="18" ry="4" fill="rgba(58,90,64,.18)"/>
+    <path d="M-17 66 Q-14 26 0 14 Q14 26 17 66 Z" fill="#d98b84" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M-14 32 L-30 18" stroke="#d98b84" stroke-width="9" stroke-linecap="round"/>
+    <path d="M14 32 L28 48" stroke="#d98b84" stroke-width="9" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="16" fill="#f7dcc2" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M-17 0 Q-18 -20 0 -20 Q18 -20 17 0 Q12 -12 0 -12 Q-12 -12 -17 0Z" fill="#3a2e26"/>
+    <circle cx="-6" cy="2" r="2.4" fill="#2f3a2f"/><circle cx="6" cy="2" r="2.4" fill="#2f3a2f"/>
+    <path d="M-5 9 q5 4 10 0" stroke="#2f3a2f" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  </g>
+  <!-- sister (waving) -->
+  <g transform="translate(478,214)">
+    <ellipse cx="0" cy="56" rx="15" ry="4" fill="rgba(58,90,64,.18)"/>
+    <path d="M-13 54 Q-11 24 0 14 Q11 24 13 54 Z" fill="#f3c969" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M-11 28 L-24 40" stroke="#f3c969" stroke-width="8" stroke-linecap="round"/>
+    <path d="M11 28 L26 8" stroke="#f3c969" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="14" fill="#f7dcc2" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M-14 -2 Q-15 -18 0 -18 Q15 -18 14 -2 Q9 -11 0 -11 Q-9 -11 -14 -2Z" fill="#4a3a2c"/>
+    <circle cx="-5" cy="1" r="2.2" fill="#2f3a2f"/><circle cx="5" cy="1" r="2.2" fill="#2f3a2f"/>
+    <path d="M-4 8 q4 4 8 0" stroke="#2f3a2f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- MEI running toward them -->
+  <g transform="translate(300,222)">
+    <ellipse cx="0" cy="62" rx="17" ry="4" fill="rgba(58,90,64,.18)"/>
+    <path d="M-14 60 Q-12 26 0 14 Q12 26 14 60 Z" fill="#e8917f" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M-12 30 L-30 16" stroke="#e8917f" stroke-width="8.5" stroke-linecap="round"/>
+    <path d="M12 30 L30 14" stroke="#e8917f" stroke-width="8.5" stroke-linecap="round"/>
+    <path d="M-6 60 L-14 74" stroke="#f7dcc2" stroke-width="8" stroke-linecap="round"/>
+    <path d="M6 60 L16 72" stroke="#f7dcc2" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="0" cy="0" r="15" fill="#f7dcc2" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M-15 -2 Q-16 -20 0 -20 Q16 -20 15 -2 Q10 -12 0 -12 Q-10 -12 -15 -2Z" fill="#3a2e26"/>
+    <path d="M-15 -4 q-6 8 -3 16" stroke="#3a2e26" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M15 -4 q6 8 3 16" stroke="#3a2e26" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="-5" cy="2" r="2.6" fill="#2f3a2f"/><circle cx="5" cy="2" r="2.6" fill="#2f3a2f"/>
+    <circle cx="-10" cy="7" r="3.2" fill="#f0b6ad" opacity=".8"/><circle cx="10" cy="7" r="3.2" fill="#f0b6ad" opacity=".8"/>
+    <path d="M-5 9 q5 6 10 0" stroke="#2f3a2f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- little forest friends waving goodbye -->
+  <g transform="translate(196,262) scale(.55)">${SPRITES.sprout}</g>
+  <g transform="translate(150,272) scale(.45)">${SPRITES.acorn}</g>
+
+  <!-- speech -->
+  <g transform="translate(316,166)">
+    <rect x="-6" y="-26" width="118" height="34" rx="14" fill="#fffdf7" stroke="#3a5a40" stroke-width="3"/>
+    <path d="M8 8 l4 12 l12 -12Z" fill="#fffdf7" stroke="#3a5a40" stroke-width="3" stroke-linejoin="round"/>
+    <text x="53" y="-3" font-family="'Noto Sans KR',sans-serif" font-size="19" font-weight="700" fill="#3a5a40" text-anchor="middle">집에 왔어요!</text>
+  </g>
+</svg>`;
+}
+
+/* =========================================================
+   6. CURRICULUM
+   Design: gradual release (model → guided → independent),
+   retrieval practice via quizzes, and spaced re-exposure —
+   earlier letters keep reappearing inside later words.
+   ========================================================= */
+const CURRICULUM = [
+ /* ---------- UNIT 1: the alphabet ---------- */
+ { unit:'Unit 1 · The Alphabet (한글)', id:'v1', icon:'🌱', name:'Simple Vowels', type:'alphabet',
+   intro:'Korean vowels are drawn from three pieces: a dot (the sun), a flat line (the earth), and an upright line (a person). Every vowel is a combination of those.',
+   items:[
+    {jamo:'ㅏ', say:'아', rom:'a',  key:'like the a in <b>father</b>', build:'person + dot on the right'},
+    {jamo:'ㅓ', say:'어', rom:'eo', key:'like the u in <b>cup</b>',    build:'dot on the left of the person'},
+    {jamo:'ㅗ', say:'오', rom:'o',  key:'like the o in <b>go</b>',     build:'dot above the earth'},
+    {jamo:'ㅜ', say:'우', rom:'u',  key:'like the oo in <b>moon</b>',  build:'dot below the earth'},
+    {jamo:'ㅡ', say:'으', rom:'eu', key:'lips wide, like <b>brr</b>',  build:'the flat earth line'},
+    {jamo:'ㅣ', say:'이', rom:'i',  key:'like the ee in <b>see</b>',   build:'the upright person line'}
+   ]},
+
+ { unit:'Unit 1 · The Alphabet (한글)', id:'v2', icon:'🌿', name:'Y-Vowels & Pairs', type:'alphabet',
+   intro:'Add a second dot and the vowel gains a <b>y</b> sound in front. That is the whole rule.',
+   items:[
+    {jamo:'ㅑ', say:'야', rom:'ya',  key:'ㅏ with two dots → <b>ya</b>', build:'ㅏ + one more dot'},
+    {jamo:'ㅕ', say:'여', rom:'yeo', key:'ㅓ with two dots → <b>yeo</b>', build:'ㅓ + one more dot'},
+    {jamo:'ㅛ', say:'요', rom:'yo',  key:'ㅗ with two dots → <b>yo</b>',  build:'ㅗ + one more dot'},
+    {jamo:'ㅠ', say:'유', rom:'yu',  key:'ㅜ with two dots → <b>yu</b>',  build:'ㅜ + one more dot'},
+    {jamo:'ㅐ', say:'애', rom:'ae',  key:'like the a in <b>cat</b>',      build:'ㅏ + ㅣ joined'},
+    {jamo:'ㅔ', say:'에', rom:'e',   key:'like the e in <b>bed</b>',      build:'ㅓ + ㅣ joined'}
+   ]},
+
+ { unit:'Unit 1 · The Alphabet (한글)', id:'c1', icon:'🍃', name:'Basic Consonants', type:'alphabet',
+   intro:'Consonant shapes are little diagrams of your mouth. ㄱ is the back of the tongue lifting; ㅁ is your closed lips; ㅇ is an open throat.',
+   items:[
+    {jamo:'ㄱ', say:'가', rom:'g/k', key:'<b>g</b> in <b>go</b>',    build:'back of the tongue rising'},
+    {jamo:'ㄴ', say:'나', rom:'n',   key:'<b>n</b> in <b>no</b>',    build:'tongue tip behind the teeth'},
+    {jamo:'ㄷ', say:'다', rom:'d/t', key:'<b>d</b> in <b>do</b>',    build:'ㄴ with a lid on top'},
+    {jamo:'ㄹ', say:'라', rom:'r/l', key:'a light <b>r</b>/<b>l</b> flick', build:'the tongue curling'},
+    {jamo:'ㅁ', say:'마', rom:'m',   key:'<b>m</b> in <b>mom</b>',   build:'a picture of closed lips'},
+    {jamo:'ㅂ', say:'바', rom:'b/p', key:'<b>b</b> in <b>boy</b>',   build:'ㅁ with the lips opening'},
+    {jamo:'ㅅ', say:'사', rom:'s',   key:'<b>s</b> in <b>sun</b>',   build:'air escaping through teeth'},
+    {jamo:'ㅇ', say:'아', rom:'—/ng',key:'<b>silent</b> at the start, <b>ng</b> at the end', build:'an open circle of air'},
+    {jamo:'ㅈ', say:'자', rom:'j',   key:'<b>j</b> in <b>jam</b>',   build:'ㅅ with a lid'},
+    {jamo:'ㅎ', say:'하', rom:'h',   key:'<b>h</b> in <b>hat</b>',   build:'a hat over the open throat'}
+   ]},
+
+ { unit:'Unit 1 · The Alphabet (한글)', id:'c2', icon:'💨', name:'Strong Consonants', type:'alphabet',
+   intro:'Add a stroke for a <b>puff of air</b>. Double the letter for a <b>tight, tense</b> sound made with no air at all.',
+   items:[
+    {jamo:'ㅋ', say:'카', rom:'k',  key:'ㄱ + a puff of air',  build:'ㄱ with an extra stroke'},
+    {jamo:'ㅌ', say:'타', rom:'t',  key:'ㄷ + a puff of air',  build:'ㄷ with an extra stroke'},
+    {jamo:'ㅍ', say:'파', rom:'p',  key:'ㅂ + a puff of air',  build:'a flattened ㅂ'},
+    {jamo:'ㅊ', say:'차', rom:'ch', key:'ㅈ + a puff of air',  build:'ㅈ with a hat'},
+    {jamo:'ㄲ', say:'까', rom:'kk', key:'tight, no air — like <b>sky</b>', build:'two ㄱ together'},
+    {jamo:'ㄸ', say:'따', rom:'tt', key:'tight, no air — like <b>sty</b>', build:'two ㄷ together'},
+    {jamo:'ㅃ', say:'빠', rom:'pp', key:'tight, no air — like <b>spy</b>', build:'two ㅂ together'},
+    {jamo:'ㅆ', say:'싸', rom:'ss', key:'a hissed, tense <b>s</b>',        build:'two ㅅ together'},
+    {jamo:'ㅉ', say:'짜', rom:'jj', key:'a tense <b>jj</b>',               build:'two ㅈ together'}
+   ]},
+
+ /* ---------- UNIT 2: building blocks ---------- */
+ { unit:'Unit 2 · Building Blocks', id:'s1', icon:'🧩', name:'Consonant + Vowel', type:'syllable',
+   intro:'Korean letters stack into a square block. Consonant first, vowel second. Tall vowels (ㅏ ㅓ ㅣ) sit to the <b>right</b>; flat vowels (ㅗ ㅜ ㅡ) sit <b>below</b>.',
+   items:[
+    {word:'가', rom:'ga', gloss:'go',    note:'ㄱ + ㅏ — a tall vowel, so ㅏ stands to the right.'},
+    {word:'나', rom:'na', gloss:'I / me',note:'ㄴ + ㅏ. You already know both pieces.'},
+    {word:'모', rom:'mo', gloss:'(sound)',note:'ㅁ + ㅗ — a flat vowel, so ㅗ tucks underneath.'},
+    {word:'구', rom:'gu', gloss:'nine',  note:'ㄱ + ㅜ — flat vowel goes below again.'},
+    {word:'시', rom:'si', gloss:'hour',  note:'ㅅ + ㅣ. ㅅ before ㅣ softens toward <i>shi</i>.'},
+    {word:'요', rom:'yo', gloss:'(ending)',note:'ㅇ is silent here, so you only hear the vowel ㅛ.'}
+   ]},
+
+ { unit:'Unit 2 · Building Blocks', id:'s2', icon:'🧱', name:'The Bottom Letter (받침)', type:'syllable',
+   intro:'A third letter can sit at the <b>bottom</b> of the block. It is called <b>받침</b> (batchim) and it closes the syllable.',
+   items:[
+    {word:'밥', rom:'bap', gloss:'rice / a meal', note:'ㅂ + ㅏ + ㅂ. The final ㅂ is unreleased — lips close, no puff.'},
+    {word:'물', rom:'mul', gloss:'water',         note:'ㅁ + ㅜ + ㄹ. Final ㄹ sounds like a soft <b>l</b>.'},
+    {word:'산', rom:'san', gloss:'mountain',      note:'ㅅ + ㅏ + ㄴ.'},
+    {word:'별', rom:'byeol', gloss:'star',        note:'ㅂ + ㅕ + ㄹ — a y-vowel with a bottom letter.'},
+    {word:'집', rom:'jip', gloss:'house / home',  note:'ㅈ + ㅣ + ㅂ. Mei\'s destination!'},
+    {word:'강', rom:'gang', gloss:'river',        note:'Here ㅇ is at the <b>bottom</b>, so it says <b>ng</b>.'}
+   ]},
+
+ /* ---------- UNIT 3: vocabulary ---------- */
+ { unit:'Unit 3 · Words', id:'w1', icon:'👨‍👩‍👧', name:'Family', type:'vocab', quiz:true,
+   intro:'The people Mei is walking home to.',
+   items:[
+    {word:'엄마',   rom:'eomma',   gloss:'mom'},
+    {word:'아빠',   rom:'appa',    gloss:'dad'},
+    {word:'언니',   rom:'eonni',   gloss:'older sister (said by a girl)'},
+    {word:'동생',   rom:'dongsaeng',gloss:'younger sibling'},
+    {word:'가족',   rom:'gajok',   gloss:'family'},
+    {word:'집',     rom:'jip',     gloss:'home'}
+   ]},
+
+ { unit:'Unit 3 · Words', id:'w2', icon:'🌲', name:'The Forest', type:'vocab', quiz:true,
+   intro:'Everything Mei passes on the way.',
+   items:[
+    {word:'나무',  rom:'namu',   gloss:'tree'},
+    {word:'꽃',    rom:'kkot',   gloss:'flower'},
+    {word:'물',    rom:'mul',    gloss:'water'},
+    {word:'산',    rom:'san',    gloss:'mountain'},
+    {word:'하늘',  rom:'haneul', gloss:'sky'},
+    {word:'별',    rom:'byeol',  gloss:'star'}
+   ]},
+
+ { unit:'Unit 3 · Words', id:'w3', icon:'🍎', name:'Every Day', type:'vocab', quiz:true,
+   intro:'Words you could use tomorrow.',
+   items:[
+    {word:'밥',      rom:'bap',      gloss:'rice / a meal'},
+    {word:'우유',    rom:'uyu',      gloss:'milk'},
+    {word:'사과',    rom:'sagwa',    gloss:'apple'},
+    {word:'책',      rom:'chaek',    gloss:'book'},
+    {word:'고양이',  rom:'goyangi',  gloss:'cat'},
+    {word:'강아지',  rom:'gangaji',  gloss:'puppy'}
+   ]},
+
+ /* ---------- UNIT 4: sentences ---------- */
+ { unit:'Unit 4 · Sentences', id:'g1', icon:'🔤', name:'This is ___', type:'sentence', quiz:true,
+   intro:'Korean marks the <b>topic</b> of a sentence with a little tag: <b>은</b> after a bottom letter, <b>는</b> after a vowel. Then <b>이에요 / 예요</b> means "is".',
+   items:[
+    {word:'저는 학생이에요', rom:'jeoneun haksaeng-ieyo', gloss:'I am a student',
+     note:'저 (I) + <b>는</b> (topic) … 학생 (student) + <b>이에요</b> (is). Ends in a bottom letter, so 이에요.'},
+    {word:'이것은 나무예요', rom:'igeoseun namu-yeyo', gloss:'This is a tree',
+     note:'나무 ends in a vowel, so it takes <b>예요</b> instead.'},
+    {word:'메이는 학생이에요', rom:'Mei-neun haksaeng-ieyo', gloss:'Mei is a student',
+     note:'메이 ends in a vowel → <b>는</b>.'},
+    {word:'엄마는 집에 있어요', rom:'eommaneun jibe isseoyo', gloss:'Mom is at home',
+     note:'있어요 means "exists / is there".'}
+   ]},
+
+ { unit:'Unit 4 · Sentences', id:'g2', icon:'🥢', name:'Verbs Go Last', type:'sentence', quiz:true,
+   intro:'English is <b>I eat rice</b>. Korean is <b>I rice eat</b> — the verb always comes last. The object gets a tag too: <b>을</b> after a bottom letter, <b>를</b> after a vowel.',
+   items:[
+    {word:'나는 밥을 먹어요', rom:'naneun babeul meogeoyo', gloss:'I eat rice',
+     note:'나 (I) + 는 … 밥 (rice) + <b>을</b> … 먹어요 (eat) <b>last</b>.'},
+    {word:'메이는 물을 마셔요', rom:'Mei-neun mureul masyeoyo', gloss:'Mei drinks water',
+     note:'물 ends in ㄹ, a bottom letter → <b>을</b>.'},
+    {word:'언니는 책을 읽어요', rom:'eonnineun chaegeul ilgeoyo', gloss:'Older sister reads a book',
+     note:'Every word here you have already met.'},
+    {word:'아빠는 사과를 좋아해요', rom:'appaneun sagwareul joahaeyo', gloss:'Dad likes apples',
+     note:'사과 ends in a vowel → <b>를</b>.'}
+   ]},
+
+ { unit:'Unit 4 · Sentences', id:'g3', icon:'🏡', name:'Going Places', type:'sentence', quiz:true,
+   intro:'<b>에</b> marks where you are going. <b>에서</b> marks where something happens. This is the lesson that gets Mei home.',
+   items:[
+    {word:'메이는 집에 가요', rom:'Mei-neun jibe gayo', gloss:'Mei goes home',
+     note:'집 (home) + <b>에</b> (to) + 가요 (goes). The sentence this whole journey was for.'},
+    {word:'우리는 산에서 놀아요', rom:'urineun sanseo noraye', gloss:'We play on the mountain',
+     note:'산 + <b>에서</b> — the action happens <i>at</i> the mountain.'},
+    {word:'가족은 집에 있어요', rom:'gajogeun jibe isseoyo', gloss:'The family is at home',
+     note:'가족 ends in ㄱ → topic tag <b>은</b>.'},
+    {word:'엄마 아빠 언니 사랑해요', rom:'eomma appa eonni saranghaeyo', gloss:'Mom, Dad, sister — I love you',
+     note:'사랑해요 = "I love (you)". Mei says this at the door.'}
+   ]}
+];
+
+const TOTAL = CURRICULUM.length;
+document.getElementById('lessonTotal').textContent = TOTAL;
+
+/* =========================================================
+   7. STATE
+   ========================================================= */
+const APP_ID = 'korean';
+let currentUser = null;
+const BLANK = { done:[], seeds:0, scores:{} };
+let S = Object.assign({}, BLANK);
+
+/* Progress lives in the shared store under the signed-in name, so Korean sits
+   alongside math and spelling for the same student. The old standalone key is
+   migrated once, the first time anyone logs in on this browser. */
+function koProgress(){
+  const app = TutorStore.app(currentUser, APP_ID);
+  return app.progress || null;
+}
+function save(){
+  if(!currentUser) return;
+  TutorStore.setAppField(currentUser, APP_ID, 'progress', S);
+  TutorStore.setAppField(currentUser, APP_ID, 'best',
+    Math.round(S.done.length / TOTAL * 100));
+}
+function migrateLegacy(){
+  // The standalone version stored everything under 'hangul_v2' with no name
+  // attached, so it can only belong to whoever logs in first. Claim it once,
+  // then clear it — otherwise the next new student would inherit it too.
+  const old = store.get('hangul_v2', null);
+  if(old && Array.isArray(old.done) && old.done.length && !koProgress()){
+    S = { done: old.done.slice(), seeds: old.seeds || 0, scores: Object.assign({}, old.scores) };
+    save();
+    try{ localStorage.removeItem('hangul_v2'); }catch(e){}
+    return true;
+  }
+  return false;
+}
+function syncTop(){
+  document.getElementById('seedCount').textContent = S.seeds;
+  document.getElementById('lessonCount').textContent = S.done.length;
+}
+
+let L = { idx:0, item:0, lesson:null };   // active lesson
+let Q = { qs:[], i:0, right:0 };          // active quiz
+
+function go(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+screen).classList.add('on');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(screen==='map') drawMap();
+}
+
+/* =========================================================
+   8. MAP
+   ========================================================= */
+function drawMap(){
+  syncTop();
+  const host = document.getElementById('mapBody');
+  let html=''; let unit=null;
+  CURRICULUM.forEach((les,i)=>{
+    if(les.unit!==unit){ unit=les.unit; html += `</div><div class="unithead">${unit}</div><div class="mapgrid">`; }
+    const done = S.done.includes(les.id);
+    const open = i===0 || S.done.includes(CURRICULUM[i-1].id) || done;
+    const cls = done? 'done' : (open? 'now':'locked');
+    html += `<div class="node ${cls}" ${open?`onclick="openLesson(${i})"`:''} ${open?'tabindex="0"':''}>
+      ${done?'<span class="chk">✅</span>':''}
+      <span class="ic">${open?les.icon:'🔒'}</span>
+      <span class="nm">${les.name}</span>
+      <span class="un">${les.type}</span>
+    </div>`;
+  });
+  html += '</div>';
+  host.innerHTML = html.replace(/^<\/div>/,'');
+
+  // reveal the home scene when everything is finished
+  const slot = document.getElementById('homeSceneSlot');
+  slot.innerHTML = homeSceneSVG();
+  const wrap = document.getElementById('homeSceneWrap');
+  if(S.done.length >= TOTAL){
+    wrap.classList.remove('lockedhome');
+    document.getElementById('homeVeil').style.display='none';
+  }else{
+    wrap.classList.add('lockedhome');
+    const veil = document.getElementById('homeVeil');
+    veil.style.display='flex';
+    veil.innerHTML = `<div>🌫️ ${TOTAL - S.done.length} stops left on the path</div>
+      <small>Finish them all to see Mei reach her family</small>`;
+  }
+}
+
+function openLesson(i){
+  L = { idx:i, item:0, lesson:CURRICULUM[i] };
+  go('lesson');
+  drawItem();
+}
+
+/* =========================================================
+   9. LESSON RENDERING
+   ========================================================= */
+function drawItem(){
+  const les = L.lesson, it = les.items[L.item];
+  document.getElementById('lsName').textContent = les.name;
+  document.getElementById('lsCount').textContent = `${L.item+1} / ${les.items.length}`;
+  document.getElementById('lsBar').style.width = ((L.item)/les.items.length*100)+'%';
+  document.getElementById('nextBtn').textContent =
+    (L.item === les.items.length-1) ? (les.quiz? 'Take the quiz →' : 'Finish →') : 'Next →';
+
+  const body = document.getElementById('lessonBody');
+  const intro = L.item===0 ? `<div class="banner">${les.intro}</div>` : '';
+
+  if(les.type==='alphabet') body.innerHTML = intro + alphabetView(les,it);
+  else body.innerHTML = intro + wordView(les,it);
+
+  attachMic(les.type==='alphabet' ? it.say : it.word);
+}
+
+/* ---- alphabet lesson ---- */
+function alphabetView(les,it){
+  const cards = les.items.map((x,i)=>`
+    <div class="acard ${i===L.item?'active':''} ${i<L.item?'known':''}" onclick="jumpItem(${i})">
+      <b>${x.jamo}</b><span>${x.rom}</span>
+    </div>`).join('');
+  return `
+  <div class="stage">
+    <div class="hangul"><span class="syl" data-i="0" style="font-size:1.15em">${it.jamo}</span></div>
+    <div class="romaja">${it.rom}</div>
+    <div class="gloss">${it.key}</div>
+    <div class="row center" style="margin-top:16px">
+      <button class="btn b-moss" onclick="speak('${it.say}',0.55)">🔊 Hear the sound</button>
+      <button class="btn b-cream" onclick="speak('${it.say}',0.35)">🐢 Very slow</button>
+    </div>
+    <div class="tipbox">
+      <b>Shape:</b> ${it.build}<br>
+      <b>In a block:</b> written with silent ㅇ it becomes <span style="font-family:'Noto Sans KR';font-size:1.25em">${it.say}</span> —
+      that is how you would see it inside a real word.
+    </div>
+    <div class="alphagrid">${cards}</div>
+  </div>`;
+}
+
+/* ---- word / sentence lesson ---- */
+function wordView(les,it){
+  const isSent = les.type==='sentence';
+  return `
+  <div class="stage">
+    ${renderHangul(it.word, isSent)}
+    <div id="jamoStrip" class="jamostrip"></div>
+    <div class="romaja">${it.rom}</div>
+    <div class="gloss">${it.gloss}</div>
+    <div class="row center" style="margin-top:16px">
+      <button class="btn b-moss" onclick="speakHighlighted('${it.word}')">✨ Sound it out</button>
+      <button class="btn b-cream" onclick="speak('${it.word}',0.8)">🔊 Whole ${isSent?'sentence':'word'}</button>
+      <button class="btn b-cream" onclick="speak('${it.word}',0.45)">🐢 Slow</button>
+    </div>
+    <p class="sub" style="margin-top:12px;font-size:.85rem">Tap any syllable to hear just that piece.</p>
+    ${it.note? `<div class="tipbox">${it.note}</div>`:''}
+  </div>`;
+}
+
+function jumpItem(i){ L.item=i; drawItem(); }
+function prevItem(){
+  if(L.item>0){ L.item--; drawItem(); }
+  else go('map');
+}
+function nextItem(){
+  const les=L.lesson;
+  if(L.item < les.items.length-1){ L.item++; drawItem(); }
+  else if(les.quiz){ startQuiz(les); }
+  else finishLesson(les, null);
+}
+
+/* =========================================================
+   10. MIC PANEL — record, play back, then score
+   ========================================================= */
+function attachMic(target){
+  const body = document.getElementById('lessonBody');
+  const panel = document.createElement('div');
+  panel.className='miccard';
+  panel.innerHTML = `
+    <div class="mictitle">🎤 Your turn</div>
+    <div class="micnote">Listen first, then record yourself. You will hear your own voice played back before the score.</div>
+    <div class="row center">
+      <button class="btn b-leaf" id="recBtn">● Record</button>
+      <button class="btn b-cream" id="playBtn" disabled>▶︎ Hear my voice</button>
+    </div>
+    <div class="bars" id="micBars">${'<i></i>'.repeat(12)}</div>
+    <div id="micResult"></div>
+    <div class="micmsg" id="micMsg"></div>`;
+  body.appendChild(panel);
+
+  const recBtn = panel.querySelector('#recBtn');
+  const playBtn = panel.querySelector('#playBtn');
+  let lastURL = null;
+
+  recBtn.onclick = async ()=>{
+    if(!Mic.active){
+      try{
+        // First click of the session is the ONLY permission prompt.
+        if(!Mic.granted()){
+          document.getElementById('micMsg').textContent = 'Allow microphone access once — it stays on after that.';
+        }
+        await Mic.start(target);
+        recBtn.textContent='⏹ Stop';
+        recBtn.classList.replace('b-leaf','b-berry');
+        document.getElementById('micMsg').textContent='Listening… say it clearly.';
+        document.getElementById('micResult').innerHTML='';
+      }catch(err){
+        document.getElementById('micMsg').innerHTML =
+          `⚠️ The microphone is blocked. Check the 🎤 icon in your browser's address bar and allow it, then reload.`;
+      }
+      return;
+    }
+
+    // stop → play back → score
+    recBtn.disabled = true;
+    const { blob, heard } = await Mic.stop();
+    recBtn.textContent='● Record again';
+    recBtn.classList.replace('b-berry','b-leaf');
+    recBtn.disabled = false;
+
+    if(blob && blob.size){
+      if(lastURL) URL.revokeObjectURL(lastURL);
+      lastURL = URL.createObjectURL(blob);
+      playBtn.disabled=false;
+      playBtn.onclick = ()=>{ const a=new Audio(lastURL); a.play(); };
+      document.getElementById('micMsg').textContent='Playing your recording back…';
+      const a = new Audio(lastURL);
+      a.onended = ()=> reveal(target, heard);
+      a.onerror = ()=> reveal(target, heard);
+      a.play().catch(()=>reveal(target,heard));
+    }else{
+      reveal(target, heard);
+    }
+  };
+}
+
+function reveal(target, heard){
+  const score = scorePronunciation(target, heard);
+  const box = document.getElementById('micResult');
+  const msg = document.getElementById('micMsg');
+
+  if(score===null){
+    // No speech recognition available — be honest and let her judge.
+    box.innerHTML = `
+      <div class="selfrate" style="text-align:center">
+        <p style="font-size:.9rem;color:#7d7a68;margin-bottom:10px">
+          Automatic scoring isn't available here, so compare for yourself:
+          play the model, play your recording, then choose.
+        </p>
+        <div class="row center">
+          <button class="btn b-cream" onclick="speak('${target}',0.6)">🔊 Model</button>
+          <button class="btn b-leaf" onclick="selfRate(85)">😄 Very close</button>
+          <button class="btn b-sun" onclick="selfRate(60)">🙂 Getting there</button>
+          <button class="btn b-cream" onclick="selfRate(35)">🌱 Try again</button>
+        </div>
+      </div>`;
+    msg.textContent='';
+    return;
+  }
+
+  const colour = score>=75? '#5f8b4e' : score>=50? '#c99a2e' : '#c3736a';
+  const circ = 2*Math.PI*40;
+  box.innerHTML = `
+    <div class="scorewrap">
+      <div class="ring">
+        <svg width="96" height="96">
+          <circle cx="48" cy="48" r="40" stroke="#e9e2cd" stroke-width="9" fill="none"/>
+          <circle cx="48" cy="48" r="40" stroke="${colour}" stroke-width="9" fill="none"
+            stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-score/100)}"/>
+        </svg>
+        <div class="val" style="color:${colour}">${score}%</div>
+      </div>
+      <div class="heard"><small>what the mic heard</small>${heard || '—'}</div>
+    </div>`;
+
+  if(score>=75){
+    msg.innerHTML = `<span style="color:#5f8b4e">Beautiful. That's the sound. 🌟</span>`;
+    award(10); cheer();
+  }else if(score>=50){
+    msg.innerHTML = `<span style="color:#c99a2e">Close! Listen once more and try the ending again.</span>`;
+    award(5);
+  }else{
+    msg.innerHTML = `<span style="color:#c3736a">Not quite yet — play the model slowly and copy it piece by piece. 🌱</span>`;
+  }
+}
+function selfRate(v){
+  const msg=document.getElementById('micMsg');
+  if(v>=85){ msg.innerHTML='<span style="color:#5f8b4e">Wonderful! 🌟</span>'; award(10); cheer(); }
+  else if(v>=60){ msg.innerHTML='<span style="color:#c99a2e">Good — one more try will sharpen it.</span>'; award(5); }
+  else{ msg.innerHTML='<span style="color:#c3736a">That\'s okay. Slow it right down and copy one syllable at a time. 🌱</span>'; }
+}
+function award(n){ S.seeds+=n; save(); syncTop(); }
+
+/* =========================================================
+   11. QUIZ — retrieval practice after vocabulary & grammar
+   ========================================================= */
+function startQuiz(les){
+  Q = { qs:buildQuiz(les), i:0, right:0, les };
+  go('quiz');
+  drawQuestion();
+}
+
+function buildQuiz(les){
+  const items = les.items;
+  const pool  = items.map(x=>x);
+  const qs = [];
+  const shuffled = [...items].sort(()=>Math.random()-0.5);
+
+  shuffled.forEach((it,n)=>{
+    const wrong = pool.filter(p=>p.word!==it.word).sort(()=>Math.random()-0.5).slice(0,3);
+    const mode = n % 3;
+    if(mode===0){
+      qs.push({
+        q:`Which one means “${it.gloss}”?`, sub:'Read the Korean and choose.',
+        opts:[it,...wrong].sort(()=>Math.random()-0.5).map(o=>({label:`<span class="kr">${o.word}</span>`, ok:o.word===it.word})),
+        say:null
+      });
+    }else if(mode===1){
+      qs.push({
+        q:'Listen, then choose what you heard.', sub:'Press the speaker as many times as you like.',
+        opts:[it,...wrong].sort(()=>Math.random()-0.5).map(o=>({label:`<span class="kr">${o.word}</span>`, ok:o.word===it.word})),
+        say:it.word
+      });
+    }else{
+      qs.push({
+        q:`What does <span style="font-family:'Noto Sans KR'">${it.word}</span> mean?`, sub:'Choose the English meaning.',
+        opts:[it,...wrong].sort(()=>Math.random()-0.5).map(o=>({label:o.gloss, ok:o.word===it.word})),
+        say:it.word
+      });
+    }
+  });
+  return qs;
+}
+
+function drawQuestion(){
+  const q = Q.qs[Q.i];
+  document.getElementById('qzCount').textContent = `${Q.i+1} / ${Q.qs.length}`;
+  document.getElementById('qzBar').style.width = (Q.i/Q.qs.length*100)+'%';
+  document.getElementById('quizBody').innerHTML = `
+    <div class="qtext">${q.q}</div>
+    <div class="qsub">${q.sub}</div>
+    ${q.say? `<div class="row center" style="margin-bottom:16px">
+        <button class="btn b-moss" onclick="speak('${q.say}',0.75)">🔊 Play</button>
+        <button class="btn b-cream" onclick="speak('${q.say}',0.45)">🐢 Slow</button></div>`:''}
+    <div class="opts">
+      ${q.opts.map((o,i)=>`<div class="opt" onclick="answer(${i})">${o.label}</div>`).join('')}
+    </div>`;
+}
+
+function answer(i){
+  const q=Q.qs[Q.i];
+  const nodes=document.querySelectorAll('#quizBody .opt');
+  nodes.forEach((n,j)=>{
+    n.classList.add('dead');
+    n.onclick=null;
+    if(q.opts[j].ok) n.classList.add('right');
+    else if(j===i) n.classList.add('wrong');
+  });
+  if(q.opts[i].ok){ Q.right++; award(5); cheer(); }
+  setTimeout(()=>{
+    Q.i++;
+    if(Q.i<Q.qs.length) drawQuestion();
+    else finishLesson(Q.les, {right:Q.right,total:Q.qs.length});
+  }, q.opts[i].ok? 900 : 1500);
+}
+
+/* =========================================================
+   12. FINISH
+   ========================================================= */
+function finishLesson(les, quiz){
+  const firstTime = !S.done.includes(les.id);
+  if(firstTime){ S.done.push(les.id); S.seeds += 25; }
+  if(quiz) S.scores[les.id] = Math.round(quiz.right/quiz.total*100);
+  save(); syncTop();
+
+  /* Also log it to shared history so Korean shows up in progress
+     reporting the same way a math or spelling test does. */
+  if(currentUser && quiz){
+    const pct = Math.round(quiz.right/quiz.total*100);
+    TutorStore.saveResult(currentUser, APP_ID, {
+      app: APP_ID, subject: 'Korean', gradeLevel: null,
+      date: new Date().toISOString(),
+      player: currentUser, playerKey: TutorStore.keyOf(currentUser),
+      lessonId: les.id, lessonName: les.name, unit: les.unit, lessonType: les.type,
+      firstCompletion: firstTime,
+      score: quiz.right, total: quiz.total, pct,
+      win: pct >= 80, perfect: quiz.right === quiz.total,
+      lessonsComplete: S.done.length, lessonsTotal: TOTAL, seeds: S.seeds
+    });
+  }
+
+  const keys=Object.keys(SPRITES);
+  document.getElementById('resultArt').innerHTML =
+    `<div style="transform:scale(1.8);margin:24px 0">${SPRITES[keys[Math.floor(Math.random()*keys.length)]]}</div>`;
+
+  const allDone = S.done.length>=TOTAL;
+  document.getElementById('resultTitle').textContent = allDone? 'Mei is home! 🏡' : `${les.name} — complete!`;
+
+  let msg = quiz? `You got <b>${quiz.right} of ${quiz.total}</b> right. ` : '';
+  msg += allDone
+    ? 'You read every letter, every word and every sentence on the path. Go look at the map — the mist has lifted.'
+    : 'The forest friends are cheering. One more stop closer to home.';
+  document.getElementById('resultMsg').innerHTML = msg;
+
+  go('result');
+  cheer(allDone? '집에 왔어요! Home at last!' : null);
+}
+function retryLesson(){ openLesson(L.idx); }
+
+/* =========================================================
+   13. BOOT
+   ========================================================= */
+syncTop();
+drawMap();
+
+
+/* =========================================================
+   LOGIN  (case-insensitive, shared across all Tutor apps)
+   ========================================================= */
+function koRenderChips(){
+  const box = document.getElementById('ko-chips');
+  const users = (window.TutorStore ? TutorStore.users() : []);
+  box.innerHTML = users.length
+    ? '<span style="width:100%;font-size:.78rem;color:#9a8f7d">Or tap your name:</span>' : '';
+  users.forEach(u=>{
+    const c = document.createElement('span');
+    c.className = 'ko-chip';
+    c.textContent = '🌱 ' + u.displayName;
+    c.onclick = ()=>{ document.getElementById('ko-name').value = u.displayName; koLogin(); };
+    box.appendChild(c);
+  });
+}
+function koLogin(){
+  const typed = document.getElementById('ko-name').value.trim();
+  if(!typed){ document.getElementById('ko-name').focus(); return; }
+  currentUser = TutorStore.login(typed).displayName;   // "robin" === "Robin"
+  const saved = koProgress();
+  if(saved){
+    S = { done: saved.done || [], seeds: saved.seeds || 0, scores: saved.scores || {} };
+  } else {
+    S = { done: [], seeds: 0, scores: {} };
+    migrateLegacy();
+  }
+  document.getElementById('ko-who').textContent = '👤 ' + currentUser;
+  document.getElementById('ko-login').style.display = 'none';
+  if(window.TutorNav) TutorNav.setUser(currentUser);
+  syncTop();
+  go('map');
+}
+
+if(window.TutorNav) TutorNav.init({app: APP_ID});
+koRenderChips();
+document.getElementById('ko-name').addEventListener('keydown', e=>{ if(e.key==='Enter') koLogin(); });
+document.getElementById('ko-name').focus();
+
+</script>
+</body>
+</html>

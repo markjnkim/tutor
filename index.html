@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 Tutor Home</title>
+<style>
+:root{ --green:#4a8f3c; --green-dark:#2e6323; --cream:#fdf9ef; --brown:#7a5c3e; }
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:"Trebuchet MS","Comic Sans MS",Verdana,sans-serif;
+  background:linear-gradient(180deg,#eaf6e2 0%,var(--cream) 40%);
+  min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.card{
+  background:#fff; border-radius:24px; padding:40px 36px; max-width:520px; width:100%;
+  box-shadow:0 6px 20px rgba(60,90,40,.15); text-align:center;
+}
+.logo{font-size:3.5rem;}
+h1{color:var(--green-dark); margin:8px 0 4px;}
+p.sub{color:var(--brown); margin-bottom:26px;}
+label{display:block; text-align:left; font-weight:bold; color:var(--green-dark); margin-bottom:8px;}
+select{
+  font-family:inherit; font-size:1.05rem; width:100%; padding:13px 14px;
+  border:2px solid #cfe3c2; border-radius:14px; background:#fff; cursor:pointer; outline:none;
+}
+select:focus{border-color:var(--green);}
+button{
+  font-family:inherit; font-size:1.15rem; font-weight:bold; margin-top:20px; width:100%;
+  background:var(--green); color:#fff; border:none; border-radius:14px; padding:14px;
+  cursor:pointer; transition:transform .1s;
+}
+button:hover{transform:translateY(-2px);}
+button:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+.note{font-size:.8rem; color:#999; margin-top:14px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🎓</div>
+  <h1>Tutor</h1>
+  <p class="sub">Pick a subject and start learning!</p>
+  <label for="subjectSelect">Subject</label>
+  <select id="subjectSelect" onchange="onPick()">
+    <option value="">— Choose a subject —</option>
+    <option value="panda-math.html">🐼 Panda Math Quest (Grades 2–8)</option>
+    <option value="spelling-bee.html">🐝 Panda Spelling Bee (Grades 3–8)</option>
+    <option value="geometry.html">📐 Shape Quest — Geometry from the Ground Up</option>
+    <option value="typing.html">🕊️ The Wind Courier — Learn to Type</option>
+    <option value="korean.html">🌿 한글 Adventure — Learn to Read Korean</option>
+    <option value="tests/daily-test-2026-05-23-math7.html">🧮 Math (Grade 7)</option>
+    <option value="soon:writing">✍️ Writing Practice (coming soon)</option>
+  </select>
+  <button id="goBtn" onclick="go()" disabled>Start →</button>
+  <p class="note" id="noteText">More subjects can be added here anytime.</p>
+  <div id="playerNote"></div>
+</div>
+<script src="tutor-store.js"></script>
+<script src="tutor-nav.js"></script>
+<script>
+TutorNav.init({app: "home"});
+// Show who has saved progress on this computer (names are case-insensitive)
+(function(){
+  const users = TutorStore.users();
+  if(!users.length) return;
+  document.getElementById("playerNote").innerHTML =
+    "<p class='note'>👤 Saved progress: " +
+    users.map(u => u.displayName.replace(/[<>&]/g, "")).join(", ") + "</p>";
+})();
+</script>
+<script>
+function onPick(){
+  const v = document.getElementById("subjectSelect").value;
+  const btn = document.getElementById("goBtn");
+  const note = document.getElementById("noteText");
+  if(!v){ btn.disabled = true; note.textContent = "More subjects can be added here anytime."; return; }
+  if(v.startsWith("soon:")){ btn.disabled = true; note.textContent = "🚧 This subject is coming soon!"; return; }
+  btn.disabled = false; note.textContent = "Ready when you are!";
+}
+function go(){
+  const v = document.getElementById("subjectSelect").value;
+  if(v && !v.startsWith("soon:")) window.location.href = v;
+}
+</script>
+</body>
+</html>

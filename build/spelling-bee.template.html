@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐼 Panda Spelling Bee — Grade 5-6</title>
+<style>
+:root{
+  --green:#4a8f3c; --green-dark:#2e6323; --green-light:#e8f5e0;
+  --cream:#fdf9ef; --brown:#7a5c3e; --red:#e05252; --red-light:#fdeaea;
+  --yellow:#f5c542; --blue:#4a7fb5; --ink:#2d2a26;
+  --ok-green:#dff3d6; --card:#ffffff;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:"Trebuchet MS","Comic Sans MS",Verdana,sans-serif;
+  background:linear-gradient(180deg,#eaf6e2 0%,var(--cream) 40%);
+  min-height:100vh; color:var(--ink);
+}
+.screen{display:none; max-width:820px; margin:0 auto; padding:24px 16px 60px;}
+.screen.active{display:block;}
+h1{color:var(--green-dark); text-align:center; font-size:2rem; margin-bottom:4px;}
+h2{color:var(--green-dark); margin-bottom:12px; font-size:1.2rem;}
+.subtitle{text-align:center; color:var(--brown); margin-bottom:24px;}
+.card{background:var(--card); border-radius:20px; padding:24px; box-shadow:0 4px 14px rgba(60,90,40,.12); margin-bottom:18px;}
+button{font-family:inherit; font-size:1rem; font-weight:bold; border:none; border-radius:14px;
+  padding:12px 22px; cursor:pointer; transition:transform .1s, box-shadow .1s;}
+button:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.15);}
+button:disabled{opacity:.45; cursor:not-allowed;}
+.btn-primary{background:var(--green); color:#fff;}
+.btn-secondary{background:#e9e4d8; color:var(--ink);}
+.btn-danger{background:var(--red); color:#fff;}
+.btn-small{padding:8px 15px; font-size:.85rem;}
+input[type=text]{font-family:inherit; font-size:1.1rem; padding:12px 16px; border:2px solid #cfe3c2;
+  border-radius:14px; width:100%; outline:none;}
+input[type=text]:focus{border-color:var(--green);}
+select{font-family:inherit; font-size:.95rem; padding:9px 12px; border:2px solid #cfe3c2;
+  border-radius:12px; background:#fff; width:100%; outline:none;}
+.big-panda{font-size:4.5rem; text-align:center; display:block; animation:bob 2.5s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.user-chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+.chip{background:var(--green-light); border:2px solid var(--green); color:var(--green-dark);
+  border-radius:999px; padding:8px 18px; font-weight:bold; cursor:pointer;}
+.chip:hover{background:var(--green); color:#fff;}
+.row-buttons{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
+.small-note{font-size:.78rem; color:#8a8371; text-align:center; margin-top:10px;}
+.center{text-align:center;}
+
+.grade-row{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 4px;}
+.grade-card{flex:1 1 62px; min-width:62px; border:3px solid #ddd; border-radius:14px;
+  padding:10px 4px; text-align:center; cursor:pointer; background:#fff;}
+.grade-card.selected{border-color:var(--green); background:var(--green-light);}
+.grade-card.disabled{opacity:.4; cursor:not-allowed; background:#f4f2ec;}
+.grade-card .g-num{font-weight:bold; font-size:1.15rem;}
+.grade-card .g-lbl{font-size:.62rem; color:#888;}
+/* setup */
+.diff-row{display:flex; gap:12px; margin:10px 0 4px;}
+.diff-card{flex:1; border:3px solid #ddd; border-radius:16px; padding:14px 8px; text-align:center; cursor:pointer; background:#fff;}
+.diff-card.selected{border-color:var(--green); background:var(--green-light);}
+.diff-card .d-emoji{font-size:1.8rem;}
+.diff-card .d-name{font-weight:bold; margin:4px 0;}
+.diff-card .d-desc{font-size:.75rem; color:#777;}
+.toggle-row{display:flex; align-items:center; justify-content:space-between; margin-top:16px; gap:12px;}
+.switch{position:relative; width:58px; height:30px; flex-shrink:0;}
+.switch input{opacity:0; width:0; height:0;}
+.slider{position:absolute; inset:0; background:#ccc; border-radius:999px; transition:.25s; cursor:pointer;}
+.slider:before{content:""; position:absolute; height:24px; width:24px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.25s;}
+.switch input:checked + .slider{background:var(--green);}
+.switch input:checked + .slider:before{transform:translateX(28px);}
+.voice-row{margin-top:16px;}
+.voice-row label{display:block; font-weight:bold; margin-bottom:6px; font-size:.9rem;}
+/* quiz */
+.quiz-header{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;}
+.q-count{font-weight:bold; color:var(--green-dark);}
+.timer-box{background:#fff; border:2px solid var(--yellow); border-radius:12px; padding:6px 12px; font-weight:bold; display:flex; align-items:center; gap:8px;}
+.timer-box.warn{border-color:var(--red); color:var(--red); animation:pulse 1s infinite;}
+@keyframes pulse{50%{opacity:.55}}
+/* bamboo climb */
+.climb-track{position:relative; height:150px; background:linear-gradient(180deg,#cfe9f7,#e6f4d9);
+  border-radius:16px; margin-bottom:16px; overflow:hidden; border:2px solid #a9cf92;}
+.stalk{position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:26px; height:100%;
+  background:repeating-linear-gradient(180deg,#7cb342 0 26px,#689f38 26px 30px);}
+#climbPanda{position:absolute; left:50%; transform:translateX(-50%); bottom:6px; font-size:2.4rem;
+  transition:bottom .7s cubic-bezier(.34,1.56,.64,1); z-index:2;}
+#climbPanda.hop{animation:hopA .6s;}
+@keyframes hopA{40%{transform:translateX(-50%) scale(1.25) rotate(-8deg)}}
+#climbPanda.sad{animation:shakeA .5s;}
+@keyframes shakeA{25%,75%{transform:translateX(-62%)}50%{transform:translateX(-38%)}}
+#leafTop{position:absolute; top:6px; left:50%; transform:translateX(-50%); font-size:2rem;}
+.climb-label{position:absolute; top:8px; left:10px; font-size:.75rem; color:var(--green-dark); font-weight:bold;}
+/* speak panel */
+.speak-panel{text-align:center; padding:10px 0 4px;}
+.speak-big{background:var(--green); color:#fff; font-size:1.3rem; padding:18px 40px; border-radius:18px;}
+.helper-row{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:14px 0 4px;}
+.helper-text{background:#fff8dc; border-left:5px solid var(--yellow); border-radius:10px;
+  padding:12px 16px; margin:12px 0; line-height:1.5; display:none; text-align:left;}
+.helper-text.show{display:block; animation:fadein .3s;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px)}}
+#answerBox{font-size:1.6rem; text-align:center; letter-spacing:2px; margin-top:8px;}
+#answerBox.correct{border-color:var(--green); background:var(--ok-green);}
+#answerBox.wrong{border-color:var(--red); background:var(--red-light);}
+.feedback-banner{display:none; text-align:center; font-size:1.25rem; font-weight:bold; margin:12px 0 4px;}
+.pattern-badge{display:inline-block; background:var(--blue); color:#fff; font-size:.75rem; font-weight:bold;
+  border-radius:999px; padding:4px 12px;}
+.quiz-buttons{display:flex; gap:10px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap;}
+/* results */
+.eat-scene{position:relative; height:120px; background:linear-gradient(180deg,#d8eec9,#c2e2ad);
+  border-radius:16px; border:2px solid #a9cf92; overflow:hidden; margin-bottom:14px;}
+.scene-ground{position:absolute; bottom:0; width:100%; height:16px; background:#8fbc74;}
+#eatPanda{position:absolute; bottom:12px; left:10px; font-size:3.4rem; z-index:2;}
+#eatPanda.chomp{animation:chompA .3s;}
+@keyframes chompA{50%{transform:rotate(-14deg) scale(1.18)}}
+#eatBamboo{position:absolute; bottom:12px; right:26px; font-size:3.2rem;}
+#eatCake{position:absolute; bottom:12px; right:80px; font-size:2.6rem; opacity:0; transition:opacity .5s;}
+#chompBubble{position:absolute; top:8px; left:50%; background:#fff; border:2px solid var(--green);
+  border-radius:999px; padding:4px 12px; font-weight:bold; font-size:.85rem; color:var(--green-dark);
+  opacity:0; transition:opacity .15s; z-index:3; white-space:nowrap;}
+.score-big{font-size:3.2rem; font-weight:bold; text-align:center; color:var(--green-dark);}
+.result-msg{text-align:center; font-size:1.25rem; font-weight:bold; margin-bottom:14px;}
+.best-banner{display:none; text-align:center; background:var(--yellow); color:#6b4e00; font-weight:bold;
+  border-radius:999px; padding:8px 20px; margin:0 auto 14px; width:fit-content; animation:popbest .8s;}
+@keyframes popbest{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.review-item{border:2px solid #eee3cf; border-radius:14px; padding:14px 16px; margin-bottom:12px;}
+.review-word{font-size:1.15rem; margin-bottom:8px;}
+.spell-diff{font-family:"Courier New",monospace; font-size:1.35rem; letter-spacing:3px; font-weight:bold;}
+.spell-diff .ok{color:var(--green-dark);}
+.spell-diff .bad{color:#fff; background:var(--red); border-radius:4px; padding:0 3px;}
+.spell-diff .miss{color:#fff; background:var(--blue); border-radius:4px; padding:0 3px;}
+.diff-legend{font-size:.75rem; color:#8a8371; margin-top:6px;}
+.replay-btn{background:var(--blue); color:#fff; border-radius:10px; padding:5px 12px; font-size:.8rem; margin-left:8px;}
+/* review + selective delete */
+.hist-check{width:18px;height:18px;accent-color:var(--red);cursor:pointer}
+.rev-btn{background:var(--blue);color:#fff;border-radius:9px;padding:5px 11px;font-size:.78rem}
+.sel-bar{display:none;align-items:center;gap:10px;flex-wrap:wrap;background:var(--red-light);
+  border:2px solid var(--red);border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.sel-bar.on{display:flex}
+.sel-bar .cnt{font-weight:bold;color:var(--red)}
+.rev-item{border:2px solid #eee3cf;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.rev-meta{font-size:.78rem;color:#8a8371;margin-bottom:8px}
+.rev-empty{text-align:center;color:#8a8371;padding:18px}
+/* bars */
+.bar-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+.bar-label{width:160px; font-size:.9rem; font-weight:bold;}
+.bar-outer{flex:1; height:22px; background:#eee7d8; border-radius:999px; overflow:hidden;}
+.bar-inner{height:100%; border-radius:999px; transition:width .8s; display:flex; align-items:center;
+  justify-content:flex-end; padding-right:8px; font-size:.72rem; color:#fff; font-weight:bold; min-width:34px;}
+.bar-excel{background:var(--green);} .bar-ok{background:var(--yellow);} .bar-need{background:var(--red);}
+.bar-tag{width:110px; font-size:.8rem; font-weight:bold; text-align:right;}
+table{width:100%; border-collapse:collapse; font-size:.9rem;}
+th,td{padding:8px 10px; text-align:left; border-bottom:1px solid #eee3cf;}
+th{color:var(--green-dark);}
+.medal{font-size:1.1rem;}
+#fxCanvas{position:fixed; inset:0; pointer-events:none; z-index:50;}
+.modal-back{display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:60; align-items:center; justify-content:center;}
+.modal-back.show{display:flex;}
+.modal{background:#fff; border-radius:18px; padding:26px; max-width:420px; text-align:center;}
+.warn-box{background:#fff4e5; border-left:5px solid var(--yellow); border-radius:10px; padding:12px 16px;
+  margin-bottom:14px; font-size:.88rem; line-height:1.5; display:none;}
+</style>
+</head>
+<body>
+<canvas id="fxCanvas"></canvas>
+
+<!-- ============ LOGIN ============ -->
+<div class="screen active" id="scr-login">
+  <span class="big-panda">🐼🐝</span>
+  <h1>Panda Spelling Bee</h1>
+  <p class="subtitle">Grade 5–6 · Listen to the word, then type it. Help the panda climb to the bamboo leaves!</p>
+  <div class="card">
+    <h2>Who's spelling today?</h2>
+    <input type="text" id="nameInput" placeholder="Type your name…" maxlength="20">
+    <div class="row-buttons"><button class="btn-primary" onclick="login()">Let's Go! 🎋</button></div>
+    <div class="user-chips" id="userChips"></div>
+  </div>
+  <p class="small-note">Progress is saved on this computer for each name.</p>
+</div>
+
+<!-- ============ SETUP ============ -->
+<div class="screen" id="scr-setup">
+  <span class="big-panda">🐼🐝</span>
+  <h1 id="helloName">Hi!</h1>
+  <p class="subtitle">20 words read aloud. Spell 80% right and the panda reaches the leaves! 🎋<br>100% earns a special bonus treat… 🎂</p>
+  <div class="warn-box" id="voiceWarn">
+    🔇 <strong>No speech voices found.</strong> This browser can't read words aloud.
+    Try Chrome or Safari. You can still take the test — each word will be shown as a hint you can reveal.
+  </div>
+  <div class="card">
+    <h2>Grade level</h2>
+    <div class="grade-row" id="gradeRow"></div>
+    <p class="small-note" id="gradeNote" style="text-align:left"></p>
+    <h2 style="margin-top:18px">Difficulty <span style="font-weight:normal;font-size:.8rem;color:#777">— within that grade</span></h2>
+    <div class="diff-row">
+      <div class="diff-card" data-diff="easy" onclick="pickDiff('easy')">
+        <div class="d-emoji">🌱</div><div class="d-name">Easy</div><div class="d-desc">Shorter words · 15 min</div>
+      </div>
+      <div class="diff-card selected" data-diff="medium" onclick="pickDiff('medium')">
+        <div class="d-emoji">🎋</div><div class="d-name">Medium</div><div class="d-desc">Grade level · 12 min</div>
+      </div>
+      <div class="diff-card" data-diff="hard" onclick="pickDiff('hard')">
+        <div class="d-emoji">🔥</div><div class="d-name">Hard</div><div class="d-desc">Spelling bee · 10 min</div>
+      </div>
+    </div>
+    <div class="voice-row">
+      <label for="voiceSelect">🔊 Reading voice</label>
+      <select id="voiceSelect"></select>
+      <div class="row-buttons" style="margin-top:10px">
+        <button class="btn-secondary btn-small" onclick="testVoice()">▶️ Test this voice</button>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <div><strong>⏱️ Timer</strong> <span style="font-size:.85rem;color:#777">(add time anytime)</span></div>
+      <label class="switch"><input type="checkbox" id="timerToggle" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div><strong>👀 Show the word</strong> <span style="font-size:.85rem;color:#777">(practice mode — not a real test)</span></div>
+      <label class="switch"><input type="checkbox" id="peekToggle"><span class="slider"></span></label>
+    </div>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" style="font-size:1.2rem" onclick="startTest()">Start the Bee! 🚀</button>
+    <button class="btn-secondary" onclick="showDashboard()">📊 My Progress</button>
+    <button class="btn-secondary" onclick="switchUser()">👋 Switch player</button>
+  </div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div class="screen" id="scr-quiz">
+  <div class="quiz-header">
+    <span class="q-count" id="qCount">Word 1 of 20</span>
+    <span class="q-count" id="scoreCount">✅ 0 correct</span>
+    <div class="timer-box" id="timerBox" style="display:none">
+      <span id="timerText">12:00</span>
+      <button class="btn-secondary btn-small" onclick="addTime()">+3 min</button>
+    </div>
+  </div>
+  <div class="climb-track">
+    <span class="climb-label" id="climbLabel">🎋 16 correct words to reach the leaves!</span>
+    <div class="stalk"></div>
+    <span id="leafTop">🎋</span>
+    <span id="climbPanda">🐼</span>
+  </div>
+  <div class="card">
+    <div class="center"><span class="pattern-badge" id="patternBadge">Silent letters</span></div>
+    <div class="speak-panel">
+      <button class="btn-primary speak-big" id="speakBtn" onclick="speakWord()">🔊 Hear the word</button>
+      <div class="helper-row">
+        <button class="btn-secondary btn-small" onclick="speakWord()">🔁 Repeat</button>
+        <button class="btn-secondary btn-small" onclick="speakSlow()">🐢 Say it slowly</button>
+        <button class="btn-secondary btn-small" onclick="speakSentence()">💬 In a sentence</button>
+        <button class="btn-secondary btn-small" onclick="speakDefinition()">📖 Definition</button>
+      </div>
+      <div class="helper-text" id="helperText"></div>
+      <label for="answerBox" style="display:block;font-weight:bold;margin-top:14px;font-size:.9rem">Type the word:</label>
+      <input type="text" id="answerBox" autocomplete="off" autocorrect="off" autocapitalize="off"
+             spellcheck="false" placeholder="spell it here…">
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <div class="quiz-buttons">
+      <button class="btn-secondary" id="skipBtn" onclick="skipWord()">Skip ⏭️</button>
+      <button class="btn-primary" id="submitBtn" onclick="submitAnswer()">Check Spelling ✔️</button>
+      <button class="btn-primary" id="nextBtn" onclick="nextWord()" style="display:none">Next Word ➡️</button>
+      <button class="btn-primary" id="finishBtn" onclick="finishTest()" style="display:none">Finish &amp; See Results 🏁</button>
+    </div>
+    <p class="small-note">Tip: press <strong>Enter</strong> to check your spelling.</p>
+  </div>
+</div>
+
+<!-- ============ RESULTS ============ -->
+<div class="screen" id="scr-results">
+  <h1>Spelling Bee Complete!</h1>
+  <div class="best-banner" id="bestBanner">🌟 NEW PERSONAL BEST! 🌟</div>
+  <div class="card center">
+    <div class="eat-scene" id="eatScene">
+      <span id="chompBubble">CHOMP!</span>
+      <span id="eatPanda">🐼</span>
+      <span id="eatBamboo">🎋</span>
+      <span id="eatCake">🎂</span>
+      <div class="scene-ground"></div>
+    </div>
+    <div class="score-big" id="scoreBig">0 / 20</div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+  <div class="card">
+    <h2>📚 Review — let's learn these!</h2>
+    <div id="reviewList"></div>
+  </div>
+  <div class="card">
+    <h2>📈 This test by spelling pattern</h2>
+    <div id="testPatternBars"></div>
+  </div>
+  <div class="card">
+    <h2>🧠 Overall mastery</h2>
+    <div id="masteryBars"></div>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" onclick="showSetup()">Play Again 🔁</button>
+    <button class="btn-secondary" onclick="showDashboard()">📊 Full Progress</button>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="screen" id="scr-dash">
+  <h1 id="dashTitle">📊 Progress</h1>
+  <div class="card">
+    <h2>🧠 Mastery by spelling pattern</h2>
+    <div id="dashMastery"></div>
+    <p class="small-note">🌟 Excels ≥ 85% · 👍 Doing OK 60–84% · 💪 Needs practice &lt; 60%</p>
+  </div>
+  <div class="card">
+    <h2>🐝 Words to practice</h2>
+    <div id="troubleWords"></div>
+  </div>
+  <div class="card">
+    <h2>🏆 Top scores (all players)</h2>
+    <table id="topScoresTable"><thead><tr><th></th><th>Player</th><th>Score</th><th>Level</th><th>Date</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="card">
+    <h2>🔍 Review past mistakes</h2>
+    <p class="small-note" style="text-align:left;margin-top:0">
+      Every word she misspelled or skipped, with the correct spelling, a sentence and the meaning.</p>
+    <select id="reviewPick" onchange="renderPastReview()" style="font-family:inherit;font-size:.95rem;
+      padding:10px 12px;border:2px solid #cfe3c2;border-radius:12px;width:100%;margin-bottom:12px"></select>
+    <div id="pastReview"></div>
+  </div>
+  <div class="card">
+    <h2>📜 Test history</h2>
+    <div class="sel-bar" id="selBar">
+      <span class="cnt" id="selCount">0 selected</span>
+      <button class="btn-danger btn-small" onclick="confirmDeleteSelected()">🗑️ Delete selected</button>
+      <button class="btn-secondary btn-small" onclick="clearSelection()">Clear</button>
+    </div>
+    <table id="historyTable"><thead><tr><th style="width:30px"></th><th>Date</th><th>Level</th><th>Score</th><th>Result</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" onclick="showSetup()">⬅️ Back</button>
+    <button class="btn-danger" onclick="confirmDelete()">🗑️ Delete ALL my progress</button>
+    <button class="btn-secondary" onclick="showArchive()">🗂️ Deleted data page</button>
+  </div>
+</div>
+
+<!-- ============ ARCHIVE ============ -->
+<div class="screen" id="scr-archive">
+  <h1>🗂️ Deleted Data</h1>
+  <p class="subtitle">Removed records are kept here for reference — nothing is lost silently.</p>
+  <div id="archiveList"></div>
+  <div class="row-buttons"><button class="btn-primary" onclick="showDashboard()">⬅️ Back</button></div>
+</div>
+
+<div class="modal-back" id="deleteModal">
+  <div class="modal">
+    <div style="font-size:3rem">🐼❓</div>
+    <h2 id="deleteModalText">Delete progress?</h2>
+    <p id="deleteModalBody" style="margin:10px 0 18px; font-size:.9rem; color:#666">Your data moves to the Deleted Data page, not erased.</p>
+    <div class="row-buttons">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" onclick="doDelete()">Yes, delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="tutor-store.js"></script>
+<script src="tutor-nav.js"></script>
+<script>
+/* ================= WORD BANK ================= */
+const WORD_BANK = __WORDS__;
+
+const PATTERN_NAMES = {
+  silent:"Silent letters", double:"Double consonants", endings:"-tion / -sion endings",
+  homophone:"Homophones", prefix:"Prefixes", suffix:"Suffixes",
+  "ie-ei":"ie / ei words", tricky:"Tricky spellings"
+};
+const TIMER_MIN = {easy:15, medium:12, hard:10};
+/* Grades with word lists. Others appear disabled until words exist. */
+const GRADES_AVAILABLE = [...new Set(WORD_BANK.map(w => w.g))].sort((a,b)=>a-b);
+const ALL_GRADES = [2,3,4,5,6,7,8,9,10,11,12];
+const TOTAL = 20, WIN_COUNT = 16;
+const APP_ID = "spelling";
+let currentUser = null, session = null;
+function myApp(){ return TutorStore.app(currentUser, APP_ID); }
+
+/* ================= SPEECH ================= */
+const synth = window.speechSynthesis || null;
+let voices = [], chosenVoice = null;
+
+function loadVoices(){
+  const sel0 = document.getElementById("voiceSelect");
+  if(!synth){
+    // Browser has no speech support at all — warn and fall back to showing words.
+    voices = [];
+    if(sel0) sel0.innerHTML = "<option>Speech not supported in this browser</option>";
+    document.getElementById("voiceWarn").style.display = "block";
+    return;
+  }
+  voices = (synth.getVoices() || []).filter(v => /^en/i.test(v.lang));
+  if(!voices.length) voices = synth.getVoices() || [];
+  const sel = document.getElementById("voiceSelect");
+  sel.innerHTML = "";
+  if(!voices.length){
+    sel.innerHTML = "<option>No voices available</option>";
+    document.getElementById("voiceWarn").style.display = "block";
+    return;
+  }
+  document.getElementById("voiceWarn").style.display = "none";
+  voices.forEach((v,i)=>{
+    const o = document.createElement("option");
+    o.value = i; o.textContent = v.name + " (" + v.lang + ")";
+    sel.appendChild(o);
+  });
+  // Prefer a natural-sounding default
+  const preferred = voices.findIndex(v => /samantha|karen|daniel|google us|natural|zira/i.test(v.name));
+  sel.value = preferred >= 0 ? preferred : 0;
+  chosenVoice = voices[sel.value];
+  sel.onchange = ()=>{ chosenVoice = voices[sel.value]; };
+}
+function say(text, rate){
+  if(!synth || !text) return false;
+  try{
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if(chosenVoice) u.voice = chosenVoice;
+    u.rate = rate || 0.9;
+    u.pitch = 1;
+    synth.speak(u);
+    return true;
+  }catch(e){ return false; }
+}
+function testVoice(){ say("Hello! I will read your spelling words.", 0.95); }
+function speechAvailable(){ return !!(synth && voices.length); }
+
+/* ================= SCREENS ================= */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+function escapeHtml(s){ const d=document.createElement("div"); d.textContent=String(s==null?"":s); return d.innerHTML; }
+
+/* ================= LOGIN ================= */
+function renderChips(){
+  const box = document.getElementById("userChips");
+  const users = TutorStore.users();
+  box.innerHTML = users.length ? "<span style='width:100%;font-size:.85rem;color:#777'>Or tap your name:</span>" : "";
+  users.forEach(u=>{
+    const c = document.createElement("span");
+    c.className = "chip"; c.textContent = "🐾 " + u.displayName;
+    c.onclick = ()=>{ document.getElementById("nameInput").value = u.displayName; login(); };
+    box.appendChild(c);
+  });
+}
+function login(){
+  const typed = document.getElementById("nameInput").value.trim();
+  if(!typed){ document.getElementById("nameInput").focus(); return; }
+  currentUser = TutorStore.login(typed).displayName;   // case-insensitive
+  document.getElementById("helloName").textContent = "Hi, " + currentUser + "! 🎉";
+  const saved = myApp().lastGrade;
+  chosenGrade = GRADES_AVAILABLE.includes(saved) ? saved
+              : (GRADES_AVAILABLE.includes(5) ? 5 : GRADES_AVAILABLE[0]);
+  renderGrades();
+  if(window.TutorNav) TutorNav.setUser(currentUser);
+  loadVoices();
+  show("scr-setup");
+}
+function switchUser(){ currentUser=null; document.getElementById("nameInput").value=""; renderChips(); show("scr-login"); }
+function showSetup(){ stopTimer(); if(synth) synth.cancel(); show("scr-setup"); }
+
+let chosenDiff = "medium";
+let chosenGrade = 5;
+
+function renderGrades(){
+  const row = document.getElementById("gradeRow");
+  row.innerHTML = "";
+  ALL_GRADES.forEach(g=>{
+    const has = GRADES_AVAILABLE.includes(g);
+    const card = document.createElement("div");
+    card.className = "grade-card" + (has ? "" : " disabled") + (g === chosenGrade ? " selected" : "");
+    card.dataset.grade = g;
+    card.innerHTML = `<div class="g-num">${g}</div><div class="g-lbl">${has ? "grade" : "soon"}</div>`;
+    if(has) card.onclick = ()=>pickGrade(g);
+    row.appendChild(card);
+  });
+  updateGradeNote();
+}
+function pickGrade(g){
+  if(!GRADES_AVAILABLE.includes(g)) return;
+  chosenGrade = g;
+  document.querySelectorAll("#gradeRow .grade-card").forEach(c=>
+    c.classList.toggle("selected", Number(c.dataset.grade) === g));
+  updateGradeNote();
+  try{ TutorStore.setAppField(currentUser, APP_ID, "lastGrade", g); }catch(e){}
+}
+function updateGradeNote(){
+  const n = WORD_BANK.filter(w=>w.g===chosenGrade).length;
+  const pats = [...new Set(WORD_BANK.filter(w=>w.g===chosenGrade).map(w=>w.p))];
+  document.getElementById("gradeNote").textContent =
+    `Grade ${chosenGrade}: ${n} words covering ${pats.map(x=>PATTERN_NAMES[x]||x).join(", ")}.`;
+}
+function pickDiff(d){
+  chosenDiff = d;
+  document.querySelectorAll(".diff-card").forEach(c=>c.classList.toggle("selected", c.dataset.diff===d));
+}
+
+/* ================= TEST BUILD ================= */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function buildTest(diff, grade){
+  const inGrade = WORD_BANK.filter(w=>w.g===grade);
+  let pool = inGrade.filter(w=>w.d===diff);
+  if(pool.length < TOTAL){
+    // Thin bucket — top up from the rest of this grade so the test is
+    // always full, rather than repeating words.
+    const rest = shuffle(inGrade.filter(w=>w.d!==diff));
+    pool = pool.concat(rest.slice(0, TOTAL - pool.length));
+  }
+  const byPat = {};
+  pool.forEach(w=>{ (byPat[w.p]=byPat[w.p]||[]).push(w); });
+  Object.values(byPat).forEach(a=>shuffle(a));
+  const pats = shuffle(Object.keys(byPat));
+  const picked = [];
+  let i = 0;
+  while(picked.length < TOTAL && i < 500){
+    const p = pats[i % pats.length];
+    if(byPat[p].length) picked.push(byPat[p].pop());
+    i++;
+  }
+  return shuffle(picked).slice(0, TOTAL);
+}
+
+/* ================= QUIZ ================= */
+function startTest(){
+  session = {
+    diff: chosenDiff,
+    timed: document.getElementById("timerToggle").checked,
+    peek: document.getElementById("peekToggle").checked,
+    words: buildTest(chosenDiff, chosenGrade),
+    grade: chosenGrade,
+    idx:0, correct:0, results:[],
+    startedAt: Date.now(), qStart: Date.now(), replays: 0, helpersUsed: [],
+    timeLeft: TIMER_MIN[chosenDiff]*60, timerId: null
+  };
+  document.getElementById("timerBox").style.display = session.timed ? "flex" : "none";
+  if(session.timed) startTimer();
+  movePanda();
+  renderWord(true);
+  show("scr-quiz");
+}
+function renderWord(first){
+  const w = session.words[session.idx];
+  document.getElementById("qCount").textContent = `Word ${session.idx+1} of ${TOTAL}`;
+  document.getElementById("scoreCount").textContent = `✅ ${session.correct} correct`;
+  document.getElementById("patternBadge").textContent = PATTERN_NAMES[w.p];
+  const box = document.getElementById("answerBox");
+  box.value = ""; box.disabled = false; box.className = "";
+  document.getElementById("feedbackBanner").style.display = "none";
+  const h = document.getElementById("helperText");
+  h.classList.remove("show"); h.innerHTML = "";
+  document.getElementById("submitBtn").style.display = "";
+  document.getElementById("skipBtn").style.display = "";
+  document.getElementById("nextBtn").style.display = "none";
+  document.getElementById("finishBtn").style.display = "none";
+  document.getElementById("speakBtn").textContent = "🔊 Hear the word";
+  session.qStart = Date.now(); session.replays = 0; session.helpersUsed = [];
+  if(session.peek){
+    h.innerHTML = "👀 Practice mode — the word is: <strong>" + escapeHtml(w.w) + "</strong>";
+    h.classList.add("show");
+  }
+  // Browsers block audio before a user gesture, so the very first word waits for a click.
+  if(!first) speakWord();
+  box.focus();
+}
+function speakWord(){
+  const w = session.words[session.idx];
+  session.replays++;
+  if(!say(w.w, 0.85) || !speechAvailable()) showWordFallback();
+}
+function speakSlow(){
+  const w = session.words[session.idx];
+  session.replays++;
+  if(!session.helpersUsed.includes("slow")) session.helpersUsed.push("slow");
+  if(!say(w.w, 0.5) || !speechAvailable()) showWordFallback();
+}
+function speakSentence(){
+  const w = session.words[session.idx];
+  if(!session.helpersUsed.includes("sentence")) session.helpersUsed.push("sentence");
+  const h = document.getElementById("helperText");
+  // The sentence is shown with the word blanked out so it doesn't give away the spelling.
+  const blanked = w.s.replace(new RegExp(w.w, "ig"), "_".repeat(w.w.length));
+  h.innerHTML = "💬 <strong>In a sentence:</strong> " + escapeHtml(blanked);
+  h.classList.add("show");
+  say(w.s, 0.9);
+}
+function speakDefinition(){
+  const w = session.words[session.idx];
+  if(!session.helpersUsed.includes("definition")) session.helpersUsed.push("definition");
+  const h = document.getElementById("helperText");
+  h.innerHTML = "📖 <strong>Definition:</strong> " + escapeHtml(w.def);
+  h.classList.add("show");
+  say(w.def, 0.9);
+}
+function showWordFallback(){
+  const w = session.words[session.idx];
+  const h = document.getElementById("helperText");
+  h.innerHTML = "🔇 No audio available — the word is: <strong>" + escapeHtml(w.w) + "</strong>";
+  h.classList.add("show");
+}
+
+/* Grading: exact match, case-insensitive, surrounding whitespace ignored. */
+function normalize(s){ return String(s==null?"":s).trim().replace(/\s+/g," ").toLowerCase(); }
+function isCorrect(typed, word){ return normalize(typed) === normalize(word); }
+
+function makeRecord(w, typed, right, skipped){
+  return {
+    word: w.w, pattern: w.p, patternName: PATTERN_NAMES[w.p], difficulty: w.d,
+    order: session.idx + 1,
+    typed: skipped ? null : String(typed),
+    correct: right, skipped: skipped,
+    seconds: Math.round((Date.now() - session.qStart)/1000),
+    replays: session.replays, helpers: session.helpersUsed.slice(),
+    sentence: w.s, definition: w.def
+  };
+}
+function submitAnswer(){
+  const w = session.words[session.idx];
+  const box = document.getElementById("answerBox");
+  const typed = box.value;
+  if(!typed.trim()){ box.focus(); return; }
+  const right = isCorrect(typed, w.w);
+  session.results.push(makeRecord(w, typed, right, false));
+  box.disabled = true;
+  box.className = right ? "correct" : "wrong";
+  const banner = document.getElementById("feedbackBanner");
+  banner.style.display = "block";
+  const panda = document.getElementById("climbPanda");
+  if(right){
+    session.correct++;
+    banner.textContent = pick(["🎉 Correct! Up the stalk!","✨ Perfect spelling!","🐾 Nailed it! Climb, panda, climb!"]);
+    banner.style.color = "var(--green-dark)";
+    panda.classList.remove("hop"); void panda.offsetWidth; panda.classList.add("hop");
+    movePanda();
+  } else {
+    banner.textContent = "😢 Not quite — we'll review this word at the end.";
+    banner.style.color = "var(--red)";
+    panda.classList.remove("sad"); void panda.offsetWidth; panda.classList.add("sad");
+  }
+  document.getElementById("scoreCount").textContent = `✅ ${session.correct} correct`;
+  afterAnswer();
+}
+function skipWord(){
+  const w = session.words[session.idx];
+  session.results.push(makeRecord(w, null, false, true));
+  const box = document.getElementById("answerBox");
+  box.disabled = true;
+  const banner = document.getElementById("feedbackBanner");
+  banner.style.display = "block"; banner.style.color = "var(--blue)";
+  banner.textContent = "⏭️ Skipped — we'll review this word at the end.";
+  afterAnswer();
+}
+function afterAnswer(){
+  if(synth) synth.cancel();
+  document.getElementById("submitBtn").style.display = "none";
+  document.getElementById("skipBtn").style.display = "none";
+  const last = session.idx === TOTAL - 1;
+  const btn = document.getElementById(last ? "finishBtn" : "nextBtn");
+  btn.style.display = "";
+  btn.focus();
+}
+function nextWord(){ session.idx++; renderWord(false); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+function movePanda(){
+  const track = document.querySelector(".climb-track");
+  const panda = document.getElementById("climbPanda");
+  const max = track.clientHeight - 62;
+  const frac = Math.min(session.correct / WIN_COUNT, 1);
+  panda.style.bottom = (6 + frac * max) + "px";
+  const left = WIN_COUNT - session.correct;
+  document.getElementById("climbLabel").textContent = left > 0
+    ? `🎋 ${left} more correct word${left===1?"":"s"} to reach the leaves!`
+    : "🎋 The panda reached the leaves! Keep going for the bonus treat! 🎂";
+}
+
+/* ================= TIMER ================= */
+function startTimer(){
+  renderTimer();
+  session.timerId = setInterval(()=>{
+    session.timeLeft--;
+    renderTimer();
+    if(session.timeLeft <= 0){ stopTimer(); timeUp(); }
+  }, 1000);
+}
+function stopTimer(){ if(session && session.timerId){ clearInterval(session.timerId); session.timerId = null; } }
+function renderTimer(){
+  const m = Math.floor(session.timeLeft/60), s = session.timeLeft%60;
+  document.getElementById("timerText").textContent = `${m}:${String(s).padStart(2,"0")}`;
+  document.getElementById("timerBox").classList.toggle("warn", session.timeLeft <= 60);
+}
+function addTime(){ session.timeLeft += 180; renderTimer(); }
+function timeUp(){ alert("⏰ Time's up! Let's see how the panda did…"); finishTest(); }
+
+/* ================= FINISH ================= */
+function finishTest(){
+  stopTimer();
+  if(synth) synth.cancel();
+  while(session.results.length < TOTAL){
+    session.idx = session.results.length;
+    session.results.push(makeRecord(session.words[session.idx], null, false, true));
+  }
+  const correct = session.results.filter(r=>r.correct).length;
+  const pct = Math.round(correct/TOTAL*100);
+  const win = pct >= 80, perfect = correct === TOTAL;
+  const patterns = {};
+  session.results.forEach(r=>{
+    const p = patterns[r.pattern] = patterns[r.pattern] || {c:0,t:0};
+    p.t++; if(r.correct) p.c++;
+  });
+  const prevBest = myApp().best || 0;
+  const rec = {
+    app: APP_ID, subject: "Spelling", gradeLevel: String(session.grade),
+    date: new Date().toISOString(),
+    player: currentUser, playerKey: TutorStore.keyOf(currentUser),
+    difficulty: session.diff, timed: session.timed, practiceMode: session.peek,
+    voice: chosenVoice ? chosenVoice.name : null,
+    timeLimitSec: session.timed ? TIMER_MIN[session.diff]*60 : null,
+    timeTakenSec: Math.round((Date.now()-session.startedAt)/1000),
+    score: correct, total: TOTAL, pct, win, perfect,
+    skippedCount: session.results.filter(r=>r.skipped).length,
+    topics: patterns,
+    answers: session.results
+  };
+  TutorStore.saveResult(currentUser, APP_ID, rec);
+
+  document.getElementById("scoreBig").textContent = `${correct} / ${TOTAL}  (${pct}%)`;
+  const msg = document.getElementById("resultMsg");
+  if(perfect){
+    msg.textContent = "PERFECT SPELLING! The panda feasts and earns the bonus cake! 🎆";
+    launchFireworks(); setTimeout(launchConfetti, 1200);
+  } else if(win){
+    msg.textContent = "You did it! Watch the panda enjoy the bamboo! 🎊 (Spell all 20 for a bonus treat…)";
+    launchConfetti();
+  } else {
+    msg.textContent = `So close! The panda needs ${WIN_COUNT} correct (80%). Review the words below and try again!`;
+  }
+  document.getElementById("bestBanner").style.display =
+    (pct > prevBest && myApp().history.length > 1) ? "block" : "none";
+
+  buildReview();
+  playEatAnimation(win, perfect);
+  renderBars("testPatternBars", patterns, true);
+  renderBars("masteryBars", aggregatePatterns(myApp()), false);
+  show("scr-results");
+}
+
+/* Letter-by-letter diff so she can see exactly which letters went wrong. */
+function spellDiff(typed, correctWord){
+  const t = String(typed==null?"":typed).trim(), c = correctWord;
+  let out = "";
+  const n = Math.max(t.length, c.length);
+  for(let i=0;i<n;i++){
+    const tc = t[i], cc = c[i];
+    if(tc === undefined) out += `<span class="miss">${escapeHtml(cc)}</span>`;
+    else if(cc === undefined) out += `<span class="bad">${escapeHtml(tc)}</span>`;
+    else if(tc.toLowerCase() === cc.toLowerCase()) out += `<span class="ok">${escapeHtml(tc)}</span>`;
+    else out += `<span class="bad">${escapeHtml(tc)}</span>`;
+  }
+  return out;
+}
+function buildReview(){
+  const missed = session.results.filter(r=>!r.correct);
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+  if(!missed.length){
+    list.innerHTML = "<p style='font-size:1rem'>🌟 Nothing to review — every word spelled correctly! Amazing!</p>";
+    return;
+  }
+  missed.forEach((r,n)=>{
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-word">
+        <strong>${n+1}. ${escapeHtml(r.word)}</strong>
+        <span class="pattern-badge" style="float:right">${r.patternName}</span>
+      </div>
+      ${r.skipped
+        ? `<div style="color:var(--blue);font-size:.92rem;margin-bottom:8px">⏭️ You skipped this word</div>`
+        : `<div style="font-size:.85rem;color:#8a8371;margin-bottom:4px">You typed:</div>
+           <div class="spell-diff">${spellDiff(r.typed, r.word)}</div>
+           <div class="diff-legend">Red = wrong letter · Blue = missing letter</div>`}
+      <div style="margin-top:10px;font-size:.85rem;color:#8a8371">Correct spelling:</div>
+      <div class="spell-diff"><span class="ok">${escapeHtml(r.word)}</span>
+        <button class="replay-btn" onclick="say('${escapeHtml(r.word).replace(/'/g,"")}', 0.8)">🔊 Hear it</button></div>
+      <div style="margin-top:10px;font-size:.9rem"><strong>💬</strong> ${escapeHtml(r.sentence)}</div>
+      <div style="margin-top:4px;font-size:.9rem"><strong>📖</strong> ${escapeHtml(r.definition)}</div>`;
+    list.appendChild(div);
+  });
+}
+
+/* ================= EATING ANIMATION ================= */
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+let eatToken = 0;
+async function playEatAnimation(win, perfect){
+  const my = ++eatToken;
+  const panda = document.getElementById("eatPanda"), bamboo = document.getElementById("eatBamboo");
+  const cake = document.getElementById("eatCake"), bubble = document.getElementById("chompBubble");
+  const scene = document.getElementById("eatScene");
+  panda.style.transition = "none"; panda.style.left = "10px";
+  panda.textContent = "🐼"; panda.classList.remove("chomp");
+  bamboo.textContent = "🎋"; cake.style.opacity = 0; bubble.style.opacity = 0;
+  void panda.offsetWidth;
+  if(!win){
+    bubble.textContent = "💭 I'll reach the leaves next time!";
+    bubble.style.left = "20px"; bubble.style.opacity = 1;
+    return;
+  }
+  await sleep(500); if(my!==eatToken) return;
+  const target = Math.max(scene.clientWidth - 150, 120);
+  panda.style.transition = "left 1.5s ease-in-out";
+  panda.style.left = target + "px";
+  await sleep(1650); if(my!==eatToken) return;
+  const stages = ["🎋","🎍","🌿","🍃",""];
+  bubble.style.left = Math.max(target-40, 60) + "px";
+  for(let i=1;i<stages.length;i++){
+    bubble.textContent = "CHOMP!"; bubble.style.opacity = 1;
+    panda.classList.add("chomp");
+    await sleep(330); if(my!==eatToken) return;
+    bamboo.textContent = stages[i];
+    panda.classList.remove("chomp"); bubble.style.opacity = 0;
+    await sleep(300); if(my!==eatToken) return;
+  }
+  panda.textContent = "🐼💚";
+  if(perfect){
+    await sleep(450); if(my!==eatToken) return;
+    cake.style.opacity = 1;
+    bubble.textContent = "BONUS TREAT!"; bubble.style.opacity = 1;
+    await sleep(800); if(my!==eatToken) return;
+    for(let i=0;i<2;i++){
+      bubble.textContent = "NOM NOM!"; bubble.style.opacity = 1;
+      panda.classList.add("chomp");
+      await sleep(330); if(my!==eatToken) return;
+      panda.classList.remove("chomp"); bubble.style.opacity = 0;
+      await sleep(260); if(my!==eatToken) return;
+    }
+    cake.style.opacity = 0;
+    panda.textContent = "🐼✨🎂✨";
+  }
+}
+
+/* ================= BARS & DASHBOARD ================= */
+function aggregatePatterns(u){
+  const agg = {};
+  (u.history||[]).forEach(h=>{
+    Object.entries(h.topics||{}).forEach(([p,v])=>{
+      const a = agg[p] = agg[p] || {c:0,t:0};
+      a.c += v.c; a.t += v.t;
+    });
+  });
+  return agg;
+}
+function masteryClass(pct){
+  if(pct >= 85) return ["bar-excel","🌟 Excels"];
+  if(pct >= 60) return ["bar-ok","👍 Doing OK"];
+  return ["bar-need","💪 Needs practice"];
+}
+function renderBars(elId, pats, showCount){
+  const el = document.getElementById(elId);
+  el.innerHTML = "";
+  const keys = Object.keys(PATTERN_NAMES).filter(k=>pats[k]);
+  if(!keys.length){ el.innerHTML = "<p class='small-note'>No data yet — take a test!</p>"; return; }
+  keys.sort((a,b)=> (pats[a].c/pats[a].t) - (pats[b].c/pats[b].t));
+  keys.forEach(k=>{
+    const v = pats[k], pct = Math.round(v.c/v.t*100);
+    const [cls, tag] = masteryClass(pct);
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    row.innerHTML = `<span class="bar-label">${PATTERN_NAMES[k]}</span>
+      <div class="bar-outer"><div class="bar-inner ${cls}" style="width:0%">${showCount ? v.c+"/"+v.t : pct+"%"}</div></div>
+      <span class="bar-tag">${tag}</span>`;
+    el.appendChild(row);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      row.querySelector(".bar-inner").style.width = Math.max(pct,8) + "%";
+    }));
+  });
+}
+function showDashboard(){
+  stopTimer();
+  if(synth) synth.cancel();
+  const u = myApp();
+  document.getElementById("dashTitle").textContent = `📊 ${currentUser}'s Spelling Progress`;
+  renderBars("dashMastery", aggregatePatterns(u), false);
+
+  // Words missed most often
+  const miss = {};
+  (u.history||[]).forEach(h=>(h.answers||[]).forEach(a=>{
+    if(!a.correct){ const m = miss[a.word] = miss[a.word] || {n:0, pat:a.patternName}; m.n++; }
+  }));
+  const tw = document.getElementById("troubleWords");
+  const entries = Object.entries(miss).sort((a,b)=>b[1].n - a[1].n).slice(0,12);
+  tw.innerHTML = entries.length
+    ? entries.map(([w,m])=>`<span class="chip" style="cursor:default">${escapeHtml(w)} <small>×${m.n}</small></span>`).join(" ")
+    : "<p class='small-note'>No missed words yet — nice!</p>";
+
+  const hist = document.querySelector("#historyTable tbody");
+  hist.innerHTML = "";
+  [...(u.history||[])].reverse().forEach(h=>{
+    const tr = document.createElement("tr");
+    const wrong = (h.answers||[]).filter(a=>!a.correct).length;
+    tr.innerHTML = `
+      <td><input type="checkbox" class="hist-check" data-date="${escapeHtml(h.date)}"
+                 onchange="syncSelection()" aria-label="select this test"></td>
+      <td>${new Date(h.date).toLocaleDateString()}<br><span style="font-size:.72rem;color:#8a8371">${new Date(h.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></td>
+      <td>Gr ${escapeHtml(h.gradeLevel||"?")} · ${cap(h.difficulty||"medium")}${h.timed?" ⏱️":""}${h.practiceMode?" 👀":""}</td>
+      <td>${h.score}/${h.total} (${h.pct}%)</td>
+      <td>${h.perfect?"🎂 Perfect!":h.win?"🎋 Panda fed!":"💪 Practice"}</td>
+      <td>${wrong?`<button class="rev-btn" onclick="reviewTest('${escapeHtml(h.date)}')">Review ${wrong}</button>`:""}</td>`;
+    hist.appendChild(tr);
+  });
+  if(!(u.history||[]).length) hist.innerHTML = "<tr><td colspan=6>No tests yet!</td></tr>";
+  buildReviewPicker();
+  syncSelection();
+
+  const tops = TutorStore.allResults(APP_ID);
+  tops.sort((a,b)=> b.pct - a.pct || new Date(a.date) - new Date(b.date));
+  const tt = document.querySelector("#topScoresTable tbody");
+  tt.innerHTML = "";
+  const medals = ["🥇","🥈","🥉","🏅","🏅"];
+  tops.slice(0,5).forEach((t,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="medal">${medals[i]}</td><td>${escapeHtml(t.name)}</td>
+      <td>${t.score}/${t.total} (${t.pct}%)</td><td>${cap(t.difficulty||"medium")}</td>
+      <td>${new Date(t.date).toLocaleDateString()}</td>`;
+    tt.appendChild(tr);
+  });
+  if(!tops.length) tt.innerHTML = "<tr><td colspan=5>No scores yet!</td></tr>";
+  show("scr-dash");
+}
+function cap(s){ return String(s).charAt(0).toUpperCase()+String(s).slice(1); }
+
+/* ================= REVIEW PAST MISTAKES ================= */
+function buildReviewPicker(){
+  const sel = document.getElementById("reviewPick");
+  const hist = [...(myApp().history||[])].reverse()
+    .filter(h => (h.answers||[]).some(a=>!a.correct));
+  if(!hist.length){
+    sel.innerHTML = "<option value=''>No misspellings recorded yet 🎉</option>";
+    document.getElementById("pastReview").innerHTML =
+      "<p class='rev-empty'>Nothing to review — every word so far has been spelled correctly!</p>";
+    return;
+  }
+  sel.innerHTML = hist.map(h=>{
+    const n = h.answers.filter(a=>!a.correct).length;
+    return `<option value="${escapeHtml(h.date)}">${new Date(h.date).toLocaleString()} — Grade ${escapeHtml(h.gradeLevel||"?")}, ${h.pct}% · ${n} to review</option>`;
+  }).join("");
+  renderPastReview();
+}
+function renderPastReview(){ renderReviewFor(document.getElementById("reviewPick").value); }
+function reviewTest(date){
+  const sel = document.getElementById("reviewPick");
+  if([...sel.options].some(o=>o.value===date)) sel.value = date;
+  renderReviewFor(date);
+  document.getElementById("pastReview").scrollIntoView({behavior:"smooth", block:"center"});
+}
+function renderReviewFor(date){
+  const host = document.getElementById("pastReview");
+  const rec = (myApp().history||[]).find(h=>h.date===date);
+  if(!rec){ host.innerHTML = "<p class='rev-empty'>Pick a test above.</p>"; return; }
+  const missed = (rec.answers||[]).filter(a=>!a.correct);
+  if(!missed.length){ host.innerHTML = "<p class='rev-empty'>🌟 Nothing wrong in that test!</p>"; return; }
+  host.innerHTML = missed.map((r,n)=>`
+    <div class="rev-item">
+      <div class="review-word"><strong>${n+1}. ${escapeHtml(r.word)}</strong>
+        <span class="pattern-badge" style="float:right">${escapeHtml(r.patternName||"")}</span></div>
+      <div class="rev-meta">${escapeHtml(r.difficulty||"")}${r.seconds!=null?" · "+r.seconds+"s":""}${r.replays?" · "+r.replays+" replays":""}</div>
+      ${r.skipped
+        ? `<div style="color:var(--blue);font-size:.92rem;margin-bottom:8px">⏭️ Skipped this word</div>`
+        : `<div style="font-size:.85rem;color:#8a8371;margin-bottom:4px">She typed:</div>
+           <div class="spell-diff">${spellDiff(r.typed, r.word)}</div>
+           <div class="diff-legend">Red = wrong letter · Blue = missing letter</div>`}
+      <div style="margin-top:10px;font-size:.85rem;color:#8a8371">Correct spelling:</div>
+      <div class="spell-diff"><span class="ok">${escapeHtml(r.word)}</span>
+        <button class="replay-btn" onclick="say('${escapeHtml(r.word).replace(/'/g,"")}', 0.8)">🔊 Hear it</button></div>
+      <div style="margin-top:10px;font-size:.9rem"><strong>💬</strong> ${escapeHtml(r.sentence||"")}</div>
+      <div style="margin-top:4px;font-size:.9rem"><strong>📖</strong> ${escapeHtml(r.definition||"")}</div>
+    </div>`).join("");
+}
+
+/* ================= SELECTIVE DELETE ================= */
+function selectedDates(){
+  return [...document.querySelectorAll(".hist-check:checked")].map(c=>c.dataset.date);
+}
+function syncSelection(){
+  const n = selectedDates().length;
+  document.getElementById("selBar").classList.toggle("on", n>0);
+  document.getElementById("selCount").textContent = n+" test"+(n===1?"":"s")+" selected";
+}
+function clearSelection(){
+  document.querySelectorAll(".hist-check").forEach(c=>c.checked=false);
+  syncSelection();
+}
+function confirmDeleteSelected(){
+  const n = selectedDates().length;
+  if(!n) return;
+  pendingDelete = "selected";
+  document.getElementById("deleteModalText").textContent = `Delete ${n} selected test${n===1?"":"s"}?`;
+  document.getElementById("deleteModalBody").textContent =
+    "Only these tests are removed. The rest of the history stays, and the removed tests move to the Deleted Data page.";
+  document.getElementById("deleteModal").classList.add("show");
+}
+
+/* ================= DELETE / ARCHIVE ================= */
+let pendingDelete = "all";
+function confirmDelete(){
+  pendingDelete = "all";
+  document.getElementById("deleteModalBody").textContent =
+    "Every spelling test is removed. Your data moves to the Deleted Data page, not erased.";
+  document.getElementById("deleteModalText").textContent = `Delete ALL spelling progress for ${currentUser}?`;
+  document.getElementById("deleteModal").classList.add("show");
+}
+function closeModal(){ document.getElementById("deleteModal").classList.remove("show"); }
+function doDelete(){
+  if(pendingDelete === "selected"){
+    TutorStore.deleteResults(currentUser, APP_ID, selectedDates());   // archives first
+    closeModal();
+    showDashboard();          // stay on the page; only some rows went away
+    return;
+  }
+  TutorStore.deleteUser(currentUser, APP_ID);
+  closeModal(); switchUser();
+}
+function showArchive(){
+  const el = document.getElementById("archiveList");
+  el.innerHTML = "";
+  const del = TutorStore.deleted();
+  if(!del.length) el.innerHTML = "<div class='card center'>Nothing here — no data has been deleted. 🐼</div>";
+  del.forEach(d=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    const data = d.data || {};
+    div.innerHTML = `<h2>🐾 ${escapeHtml(d.name)}</h2>
+      <p style="font-size:.9rem">App: ${escapeHtml(d.app||"spelling")} · Deleted: ${new Date(d.deletedAt).toLocaleString()}
+      · Tests: ${(data.history||[]).length} · Best: ${data.best||0}%</p>`;
+    el.appendChild(div);
+  });
+  show("scr-archive");
+}
+
+/* ================= FX ================= */
+const fx = document.getElementById("fxCanvas"), ctx = fx.getContext("2d");
+let particles = [], fxRunning = false, fxTimeout = null;
+function sizeFx(){ fx.width = innerWidth; fx.height = innerHeight; }
+addEventListener("resize", sizeFx); sizeFx();
+const COLORS = ["#e05252","#f5c542","#4a8f3c","#4a7fb5","#9b59b6","#e67e22","#1abc9c","#ff7eb9"];
+function launchConfetti(){
+  for(let i=0;i<220;i++) particles.push({type:"c", x:Math.random()*fx.width, y:-20-Math.random()*fx.height*0.5,
+    vx:(Math.random()-.5)*2.4, vy:2+Math.random()*3.5, size:6+Math.random()*7,
+    color:COLORS[Math.floor(Math.random()*COLORS.length)], rot:Math.random()*Math.PI, vr:(Math.random()-.5)*.25, life:99999});
+  runFx(6000);
+}
+function launchFireworks(){
+  let bursts = 0;
+  const iv = setInterval(()=>{
+    const cx = fx.width*(0.15+Math.random()*0.7), cy = fx.height*(0.15+Math.random()*0.4);
+    const col = COLORS[Math.floor(Math.random()*COLORS.length)];
+    for(let i=0;i<70;i++){
+      const ang = Math.PI*2*i/70, sp = 2+Math.random()*4;
+      particles.push({type:"f", x:cx, y:cy, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
+        size:2.5+Math.random()*2, color:col, life:60+Math.random()*30});
+    }
+    if(++bursts >= 8) clearInterval(iv);
+  }, 450);
+  runFx(8000);
+}
+function runFx(ms){
+  if(fxTimeout) clearTimeout(fxTimeout);
+  fxTimeout = setTimeout(()=>{ particles = []; }, ms);
+  if(!fxRunning){ fxRunning = true; requestAnimationFrame(tickFx); }
+}
+function tickFx(){
+  ctx.clearRect(0,0,fx.width,fx.height);
+  particles = particles.filter(p=> p.life > 0 && p.y < fx.height + 30);
+  particles.forEach(p=>{
+    p.x += p.vx; p.y += p.vy; p.life--;
+    if(p.type==="c"){ p.vy += 0.03; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2); ctx.restore();
+    } else { p.vy += 0.05; ctx.globalAlpha = Math.max(p.life/90,0);
+      ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,7); ctx.fill(); ctx.globalAlpha = 1; }
+  });
+  if(particles.length) requestAnimationFrame(tickFx);
+  else { fxRunning = false; ctx.clearRect(0,0,fx.width,fx.height); }
+}
+
+/* ================= INIT ================= */
+if(window.TutorNav) TutorNav.init({app: APP_ID});
+renderChips();
+document.getElementById("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") login(); });
+document.getElementById("answerBox").addEventListener("keydown", e=>{
+  if(e.key === "Enter"){
+    e.preventDefault();
+    const nb = document.getElementById("nextBtn"), fb = document.getElementById("finishBtn");
+    if(nb.style.display !== "none") nextWord();
+    else if(fb.style.display !== "none") finishTest();
+    else submitAnswer();
+  }
+});
+if(synth){
+  loadVoices();
+  if(typeof synth.addEventListener === "function") synth.addEventListener("voiceschanged", loadVoices);
+  else synth.onvoiceschanged = loadVoices;
+}
+</script>
+</body>
+</html>

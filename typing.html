@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🕊️ The Wind Courier — Typing Journey</title>
+<style>
+:root{
+  --sky:#a8d8ea; --sky2:#d7eef7; --grass:#7fb069; --grass2:#a7c957;
+  --cream:#fdf6e3; --paper:#fffdf6; --bark:#6b4f3a; --ink:#33403a;
+  --sun:#f4c95d; --peach:#f2a65a; --rose:#e08e79; --deep:#4a7c59;
+  --shadow:rgba(74,124,89,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Trebuchet MS",Verdana,sans-serif;color:var(--ink);min-height:100vh;
+  background:linear-gradient(180deg,var(--sky) 0%,var(--sky2) 30%,var(--cream) 62%);
+  overflow-x:hidden}
+/* drifting clouds + hills, pure CSS so the file stays portable */
+.sceneback{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
+.cloud{position:absolute;font-size:2.6rem;opacity:.75;animation:drift linear infinite}
+@keyframes drift{from{transform:translateX(-18vw)}to{transform:translateX(118vw)}}
+.hills{position:fixed;left:0;right:0;bottom:0;height:150px;z-index:-2;pointer-events:none}
+.wrap{max-width:880px;margin:0 auto;padding:16px 16px 80px;position:relative;z-index:1}
+.screen{display:none}.screen.on{display:block}
+h1{color:var(--deep);text-align:center;font-size:1.95rem;margin-bottom:4px}
+h2{color:var(--deep);font-size:1.15rem;margin-bottom:10px}
+.sub{text-align:center;color:var(--bark);margin-bottom:20px}
+.panel{background:var(--paper);border-radius:22px;padding:22px;margin-bottom:16px;
+  box-shadow:0 5px 18px var(--shadow);border:1px solid #efe4cd}
+button{font-family:inherit;font-size:1rem;font-weight:bold;border:none;border-radius:16px;
+  padding:12px 22px;cursor:pointer;transition:transform .1s,box-shadow .1s}
+button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 5px 12px rgba(0,0,0,.14)}
+button:disabled{opacity:.42;cursor:not-allowed}
+.b-main{background:var(--deep);color:#fff}
+.b-soft{background:#efe7d4;color:var(--ink)}
+.b-warn{background:var(--rose);color:#fff}
+.b-sm{padding:8px 15px;font-size:.85rem}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+input[type=text]{font-family:inherit;font-size:1.05rem;padding:12px 16px;border:2px solid #e2d5b8;
+  border-radius:14px;width:100%;outline:none;background:#fff}
+input[type=text]:focus{border-color:var(--deep)}
+.note{font-size:.78rem;color:#a3937a;text-align:center;margin-top:10px}
+.mid{text-align:center}
+/* top bar */
+.topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--paper);
+  border-radius:18px;padding:12px 16px;margin-bottom:16px;box-shadow:0 3px 12px var(--shadow);padding-left:64px}
+.brand{font-weight:bold;color:var(--deep)}
+.brand small{display:block;font-size:.7rem;color:#a3937a;font-weight:normal}
+.spacer{flex:1}
+.pill{background:#f3ead6;border-radius:999px;padding:6px 14px;font-size:.85rem;font-weight:bold;color:var(--deep)}
+#who{font-size:.75rem;color:var(--deep);font-weight:bold}
+/* login */
+#login{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:linear-gradient(180deg,var(--sky),var(--cream))}
+#loginbox{background:var(--paper);border:2px solid var(--grass);border-radius:24px;padding:34px 30px;
+  max-width:430px;width:100%;text-align:center;box-shadow:0 10px 30px var(--shadow)}
+#chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px}
+.chip{background:#eef6e6;border:2px solid var(--grass);color:var(--deep);border-radius:999px;
+  padding:7px 15px;font-size:.85rem;cursor:pointer}
+.chip:hover{background:var(--grass);color:#fff}
+/* map */
+.chapterhead{font-weight:bold;color:var(--deep);margin:18px 0 8px;font-size:.95rem;
+  border-bottom:2px dashed var(--grass2);padding-bottom:5px}
+.mapgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px}
+.node{background:var(--paper);border:2px solid #e8dcc0;border-radius:18px;padding:13px;cursor:pointer;transition:transform .12s}
+.node:hover{transform:translateY(-3px)}
+.node .nico{font-size:1.7rem}
+.node .nname{font-weight:bold;font-size:.9rem;margin-top:4px}
+.node .nstat{font-size:.72rem;color:#a3937a;margin-top:3px}
+.node.done{border-color:var(--grass);background:#f4faef}
+.node.now{border-color:var(--sun);box-shadow:0 0 0 3px rgba(244,201,93,.22)}
+.node.locked{opacity:.45;cursor:not-allowed;background:#f6f2e6}
+.mode-tag{display:inline-block;font-size:.62rem;font-weight:bold;border-radius:999px;padding:2px 8px;margin-top:5px}
+.m-see{background:#dff0d8;color:#3d6b2e}
+.m-hear{background:#fde4d3;color:#a35a22}
+.m-both{background:#e0e7f7;color:#3a5490}
+/* ── the typing stage ── */
+.stage{position:relative}
+.margin-friends{position:fixed;top:120px;bottom:60px;width:70px;z-index:0;pointer-events:none;
+  display:flex;flex-direction:column;justify-content:space-around;align-items:center}
+.margin-friends.left{left:6px}.margin-friends.right{right:6px}
+.friend{font-size:2rem;opacity:.9;animation:bob 3s ease-in-out infinite}
+.friend:nth-child(2){animation-delay:.4s}.friend:nth-child(3){animation-delay:.9s}
+.friend:nth-child(4){animation-delay:1.3s}.friend:nth-child(5){animation-delay:1.7s}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-11px) rotate(3deg)}}
+.friend.cheering{animation:jump .55s ease-in-out 2}
+@keyframes jump{40%{transform:translateY(-22px) scale(1.22) rotate(-8deg)}}
+@media (max-width:1080px){.margin-friends{display:none}}
+.cheerbubble{position:fixed;left:50%;top:88px;transform:translateX(-50%) scale(.7);z-index:40;
+  background:var(--sun);color:#5a4200;font-weight:bold;border-radius:999px;padding:7px 18px;
+  opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,.16)}
+.cheerbubble.on{opacity:1;transform:translateX(-50%) scale(1)}
+.prompt{font-family:"Courier New",monospace;font-size:1.5rem;line-height:1.95;letter-spacing:1px;
+  background:#fffef9;border:2px dashed #e2d5b8;border-radius:16px;padding:18px 20px;
+  margin-bottom:14px;word-break:break-word;min-height:76px}
+.prompt .ch{padding:1px 0;border-radius:3px}
+.prompt .ok{color:var(--deep);background:#e6f4e0}
+.prompt .bad{color:#fff;background:var(--rose)}
+.prompt .cur{background:var(--sun);border-radius:3px;animation:blink 1s step-end infinite}
+@keyframes blink{50%{background:transparent}}
+.prompt .todo{color:#b4a88c}
+.hidden-prompt{display:flex;align-items:center;justify-content:center;gap:12px;
+  font-size:1.15rem;color:#a3937a;font-style:italic}
+#typeIn{font-family:"Courier New",monospace;font-size:1.25rem;letter-spacing:1px}
+.hud{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.hud .stat{background:#f3ead6;border-radius:14px;padding:8px 16px;font-weight:bold;color:var(--deep);font-size:.92rem}
+.keyhint{text-align:center;font-size:.82rem;color:#a3937a;margin-top:6px}
+.linebar{height:9px;background:#eee3cd;border-radius:999px;overflow:hidden;margin-bottom:14px}
+.linebar > div{height:100%;background:var(--grass);transition:width .3s}
+.blurb{background:#f6fbef;border-left:5px solid var(--grass);border-radius:12px;
+  padding:13px 16px;margin-bottom:14px;line-height:1.55;font-size:.95rem}
+/* keyboard guide */
+.kbd{display:flex;flex-direction:column;gap:5px;align-items:center;margin-top:14px}
+.kbd .krow{display:flex;gap:5px}
+.kbd .key{width:31px;height:31px;border-radius:7px;background:#f0e8d6;border:1px solid #ddd0b4;
+  display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:bold;color:#8a7a5e}
+.kbd .key.lit{background:var(--sun);color:#5a4200;border-color:#d9a93a}
+.kbd .key.home{box-shadow:inset 0 -3px 0 var(--grass)}
+/* result */
+.bigscore{font-size:2.7rem;font-weight:bold;text-align:center;color:var(--deep)}
+.cheerart{font-size:3.4rem;text-align:center;margin:8px 0}
+.cheerart.pop{animation:pop .7s}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.24)}100%{transform:scale(1)}}
+.errline{font-family:"Courier New",monospace;font-size:1.05rem;letter-spacing:1px;margin:4px 0}
+.errline .bad{background:var(--rose);color:#fff;border-radius:3px;padding:0 2px}
+.errline .miss{background:#7c93c9;color:#fff;border-radius:3px;padding:0 2px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid #eee3cd}
+th{color:var(--deep)}
+.hist-check{width:18px;height:18px;accent-color:var(--rose);cursor:pointer}
+.rev-btn{background:var(--deep);color:#fff;border-radius:9px;padding:5px 11px;font-size:.78rem;border:none;cursor:pointer}
+.sel-bar{display:none;align-items:center;gap:10px;flex-wrap:wrap;background:#fdeeea;
+  border:2px solid var(--rose);border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.sel-bar.on{display:flex}
+.sel-bar .cnt{font-weight:bold;color:var(--rose)}
+.rev-item{border:2px solid #eee3cd;border-radius:14px;padding:13px 15px;margin-bottom:11px}
+.rev-empty{text-align:center;color:#a3937a;padding:18px}
+select.pick{font-family:inherit;font-size:.95rem;padding:10px 12px;border:2px solid #e2d5b8;
+  border-radius:12px;width:100%;margin-bottom:12px;background:#fff;color:var(--ink)}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:50}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;align-items:center;justify-content:center}
+.modal-back.on{display:flex}
+.modal{background:#fff;border-radius:20px;padding:26px;max-width:420px;text-align:center}
+.warnbox{display:none;background:#fff4e0;border-left:5px solid var(--sun);border-radius:12px;
+  padding:12px 16px;margin-bottom:14px;font-size:.88rem;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="sceneback" id="clouds"></div>
+<svg class="hills" viewBox="0 0 1200 150" preserveAspectRatio="none">
+  <path fill="#a7c957" opacity=".55" d="M0,90 Q150,40 300,80 T600,70 T900,85 T1200,60 L1200,150 L0,150 Z"/>
+  <path fill="#7fb069" opacity=".75" d="M0,115 Q200,70 420,105 T820,100 T1200,110 L1200,150 L0,150 Z"/>
+</svg>
+<canvas id="fx"></canvas>
+<div class="cheerbubble" id="cheerBubble"></div>
+<div class="margin-friends left" id="friendsL"></div>
+<div class="margin-friends right" id="friendsR"></div>
+
+<!-- LOGIN -->
+<div id="login">
+  <div id="loginbox">
+    <div style="font-size:3.2rem">🕊️</div>
+    <h2 style="margin:8px 0 4px">The Wind Courier</h2>
+    <p style="color:var(--bark);font-size:.92rem;margin-bottom:6px">A typing journey across the valley.</p>
+    <p style="color:#a3937a;font-size:.8rem;margin-bottom:18px">Who is carrying the letters today?</p>
+    <input type="text" id="nameIn" placeholder="Type your name…" maxlength="20" autocomplete="off">
+    <button class="b-main" style="width:100%;margin-top:14px" onclick="login()">Begin the journey 🌾</button>
+    <div id="chips"></div>
+    <p class="note">Progress is saved on this computer.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">🕊️ The Wind Courier<small>Typing, one letter at a time · <span id="who"></span></small></div>
+    <div class="spacer"></div>
+    <div class="pill">🌿 <span id="leaves">0</span></div>
+    <div class="pill">✉️ <span id="doneN">0</span>/<span id="totalN">12</span></div>
+    <button class="b-soft b-sm" onclick="go('map')">🗺️ Map</button>
+  </div>
+
+  <!-- MAP -->
+  <div id="s-map" class="screen on">
+    <h1>The Courier's Route</h1>
+    <p class="sub">Twelve stops. Start with your fingers on home row, finish typing whole letters by ear.</p>
+    <div class="warnbox" id="voiceWarn">
+      🔇 <strong>No speech voices found in this browser.</strong> The listening stops will show the words instead
+      so you can still practise. Chrome or Safari usually have voices available.
+    </div>
+    <div id="mapBody"></div>
+    <div class="row">
+      <button class="b-soft" onclick="go('progress')">📊 My Progress</button>
+      <button class="b-soft" onclick="switchUser()">👋 Switch courier</button>
+    </div>
+  </div>
+
+  <!-- TYPING STAGE -->
+  <div id="s-type" class="screen">
+    <div class="linebar"><div id="lineBar" style="width:0%"></div></div>
+    <h2 id="tName"></h2>
+    <div class="blurb" id="tBlurb"></div>
+    <div class="panel stage">
+      <div class="prompt" id="promptBox"></div>
+      <input type="text" id="typeIn" autocomplete="off" autocorrect="off" autocapitalize="off"
+             spellcheck="false" placeholder="type here…">
+      <div class="hud">
+        <span class="stat">⏱️ <span id="hWpm">0</span> wpm</span>
+        <span class="stat">🎯 <span id="hAcc">100</span>%</span>
+        <span class="stat">✉️ <span id="hLine">1</span>/<span id="hLines">5</span></span>
+      </div>
+      <div class="row" id="audioRow" style="display:none">
+        <button class="b-main" onclick="speakLine()">🔊 Hear it</button>
+        <button class="b-soft b-sm" onclick="speakLine(0.6)">🐢 Slower</button>
+        <button class="b-soft b-sm" onclick="revealLine()" id="revealBtn">👀 Show me</button>
+      </div>
+      <div class="keyhint" id="keyHint"></div>
+      <div class="kbd" id="kbd"></div>
+      <div class="row">
+        <button class="b-soft" onclick="go('map')">Leave</button>
+        <button class="b-main" id="nextLineBtn" onclick="nextLine()" disabled>Next line ➡️</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="s-result" class="screen">
+    <div class="panel mid">
+      <div class="cheerart" id="rArt">🎉</div>
+      <div class="bigscore" id="rScore"></div>
+      <h2 id="rTitle" style="margin-top:10px"></h2>
+      <p id="rMsg" style="line-height:1.55;margin-top:8px"></p>
+      <div class="hud" style="margin-top:16px">
+        <span class="stat">⏱️ <span id="rWpm">0</span> wpm</span>
+        <span class="stat">🎯 <span id="rAcc">0</span>% accurate</span>
+        <span class="stat">⌫ <span id="rErr">0</span> slips</span>
+      </div>
+      <p class="note" id="rTip"></p>
+    </div>
+    <div class="panel" id="rReviewWrap">
+      <h2>🔍 Where the wind caught you</h2>
+      <div id="rReview"></div>
+    </div>
+    <div class="row">
+      <button class="b-main" onclick="go('map')">Back to the map 🗺️</button>
+      <button class="b-soft" onclick="retryLesson()">Type it again 🔁</button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="s-progress" class="screen">
+    <h1>📊 Courier's Log</h1>
+    <div class="panel">
+      <h2>Best run per stop</h2>
+      <table id="progTable"><thead><tr><th>Stop</th><th>Lesson</th><th>Best wpm</th><th>Best accuracy</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="panel">
+      <h2>🔍 Review past slips</h2>
+      <p style="font-size:.82rem;color:#a3937a;margin-bottom:10px">
+        Every line you mistyped, showing exactly which keystrokes went astray.</p>
+      <select id="reviewPick" class="pick" onchange="renderPastReview()"></select>
+      <div id="pastReview"></div>
+    </div>
+    <div class="panel">
+      <h2>📜 Run history</h2>
+      <div class="sel-bar" id="selBar">
+        <span class="cnt" id="selCount">0 selected</span>
+        <button class="b-warn b-sm" onclick="confirmDeleteSelected()">🗑️ Delete selected</button>
+        <button class="b-soft b-sm" onclick="clearSelection()">Clear</button>
+      </div>
+      <table id="histTable"><thead><tr><th style="width:30px"></th><th>Date</th><th>Stop</th><th>wpm</th><th>Accuracy</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="panel">
+      <h2>🏆 Fastest couriers</h2>
+      <table id="lbTable"><thead><tr><th></th><th>Courier</th><th>wpm</th><th>Accuracy</th><th>Stop</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="row">
+      <button class="b-main" onclick="go('map')">⬅️ Back</button>
+      <button class="b-warn" onclick="askDelete()">🗑️ Delete ALL my progress</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-back" id="delModal">
+  <div class="modal">
+    <div style="font-size:2.6rem">🕊️❓</div>
+    <h2 id="delText">Delete progress?</h2>
+    <p id="delBody" style="margin:10px 0 18px;font-size:.9rem;color:#666">Your data moves to the deleted-data archive, not erased.</p>
+    <div class="row">
+      <button class="b-soft" onclick="closeDel()">Cancel</button>
+      <button class="b-warn" onclick="doDelete()">Yes, delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="tutor-store.js"></script>
+<script src="tutor-nav.js"></script>
+<script>
+/* ================= CURRICULUM ================= */
+/* ============================================================
+   TYPING CURRICULUM — "The Wind Courier"
+
+   A studio-Ghibli-flavoured journey: you are a young courier
+   carrying letters across a valley, and every lesson is a leg of
+   the trip. Fundamentals first (home row, eyes on screen), then
+   rote drills, then the real test — typing from the ear alone.
+
+   mode:
+     'see'   text is shown on screen; copy it
+     'hear'  text is spoken aloud only; type what you hear
+     'both'  spoken AND shown — the bridge between the two
+
+   Each lesson: id, icon, chapter, name, blurb, keys (finger hint),
+   mode, and lines[] to type.
+   ============================================================ */
+const CURRICULUM = [
+
+/* ══════ CHAPTER 1 · THE HOME ROW ══════ */
+{ id:'t1', icon:'🌾', chapter:'Chapter 1 · Leaving the Valley', name:'Finding Home Row',
+  mode:'see', keys:'asdf jkl;',
+  blurb:'Rest your left fingers on <b>a s d f</b> and your right on <b>j k l ;</b>. Feel the little bumps on F and J — those are your anchors. You never have to look down again.',
+  lines:['asdf jkl;','asdf jkl; asdf jkl;','aaa sss ddd fff','jjj kkk lll ;;;','asdf jkl; fdsa ;lkj'] },
+
+{ id:'t2', icon:'🍃', chapter:'Chapter 1 · Leaving the Valley', name:'Home Row Words',
+  mode:'see', keys:'asdf jkl; + g h',
+  blurb:'Stretch your index fingers to <b>g</b> and <b>h</b> without moving your hands. Now real words appear.',
+  lines:['dad sad lad had','gash lash flask','a lad had a flask','all glad lads dash','half a flask; a glad dad'] },
+
+{ id:'t3', icon:'🌤️', chapter:'Chapter 1 · Leaving the Valley', name:'The Top Row',
+  mode:'see', keys:'qwerty uiop',
+  blurb:'Reach <b>up</b> and come straight back to home row. Your fingers should always return to the bumps.',
+  lines:['the quiet trees','we料 wait for the wind'.replace('料',''),'type our route here','power the little kite','a quiet purple twilight'] },
+
+{ id:'t4', icon:'🌱', chapter:'Chapter 1 · Leaving the Valley', name:'The Bottom Row',
+  mode:'see', keys:'zxcv bnm',
+  blurb:'Reach <b>down</b>, then home again. Bottom row is the trickiest — go slowly and let accuracy lead.',
+  lines:['zinc box vibe','many brave cats','move the van back','a calm brown mouse','climb, then breathe' ] },
+
+/* ══════ CHAPTER 2 · ROTE PRACTICE ══════ */
+{ id:'t5', icon:'🌸', chapter:'Chapter 2 · The Long Road', name:'Whole Alphabet',
+  mode:'see', keys:'all letters',
+  blurb:'Every letter now. These sentences use the full alphabet — pangrams, the classic way to practise.',
+  lines:['the quick brown fox jumps over the lazy dog',
+         'pack my box with five dozen liquid jugs',
+         'sphinx of black quartz, judge my vow',
+         'how vexingly quick daft zebras jump'] },
+
+{ id:'t6', icon:'☁️', chapter:'Chapter 2 · The Long Road', name:'Capitals & Punctuation',
+  mode:'see', keys:'shift , . ! ?',
+  blurb:'Hold <b>shift</b> with the opposite hand from the letter. Left shift for right-hand letters, right shift for left-hand ones.',
+  lines:['The wind is rising.','Have you packed the letters?','Mei ran, then stopped.','What a bright, clear morning!',
+         'Slow down. Breathe. Begin again.'] },
+
+{ id:'t7', icon:'🏮', chapter:'Chapter 2 · The Long Road', name:'Numbers & Symbols',
+  mode:'see', keys:'1234567890',
+  blurb:'The number row is a long reach. Keep your wrists still and let the fingers travel.',
+  lines:['12 letters, 3 parcels','room 47, floor 2','the 9:15 train','pay 8 coins for 6 apples','1 kite, 2 strings, 30 metres'] },
+
+{ id:'t8', icon:'🌊', chapter:'Chapter 2 · The Long Road', name:'Common Words, Fast',
+  mode:'see', keys:'speed drill',
+  blurb:'These are the most common words in English. Typing them without thinking is how speed is built.',
+  lines:['the and that have with this from they',
+         'when what your which their would there',
+         'about could other after first never',
+         'because through between another'] },
+
+/* ══════ CHAPTER 3 · LISTEN AND TYPE ══════ */
+{ id:'t9', icon:'🔔', chapter:'Chapter 3 · Carrying the Message', name:'Listen, See, Type',
+  mode:'both', keys:'ears + eyes',
+  blurb:'Now the courier bell rings. You will <b>hear</b> each line and also see it. Listen first, then type — get used to the sound leading your hands.',
+  lines:['the wind carries the letter','a small bird follows the path',
+         'the river bends to the east','warm bread and cold water','the lantern stays lit'] },
+
+{ id:'t10', icon:'🎐', chapter:'Chapter 3 · Carrying the Message', name:'Short Lines by Ear',
+  mode:'hear', keys:'ears only',
+  blurb:'The text is hidden now. Listen to the line and type what you hear. Press <b>replay</b> as many times as you need — no penalty.',
+  lines:['open the window','the sky turns gold','she waits by the gate','follow the quiet road','the cat sleeps'] },
+
+{ id:'t11', icon:'🌙', chapter:'Chapter 3 · Carrying the Message', name:'Longer Lines by Ear',
+  mode:'hear', keys:'ears only',
+  blurb:'Longer messages now. Hold the whole line in your head before you start, then type it in one flow.',
+  lines:['the courier climbed the hill before dawn',
+         'a letter can travel further than a person',
+         'the forest was quiet and full of light',
+         'she folded the paper and tied it with string'] },
+
+{ id:'t12', icon:'🕊️', chapter:'Chapter 3 · Carrying the Message', name:'The Final Delivery',
+  mode:'hear', keys:'everything',
+  blurb:'The last leg. Full sentences with capitals and punctuation, by ear alone. You have carried the message all the way home.',
+  lines:['The wind was kind that morning.',
+         'She left the letter on the wooden table.',
+         'Thank you for carrying it so far!',
+         'Every journey begins with one quiet step.'] }
+];
+
+/* Cheering companions who appear in the margins as you type. */
+const COMPANIONS = ['🦊','🐰','🦉','🐿️','🦋','🐸','🦔','🐦','🐻','🦌','🐱','🌾'];
+
+const CHEERS = [
+  'Beautiful!','Keep going!','You are flying!','So steady!','Lovely rhythm!',
+  'The wind is with you!','Almost there!','Look at you go!','Perfect touch!','Nearly home!'
+];
+
+const REST_TIPS = [
+  'Sit tall — shoulders down, wrists floating.',
+  'Eyes on the screen, never on your hands.',
+  'Accuracy first. Speed follows on its own.',
+  'Feel for the bumps on F and J to find home.',
+  'Breathe. A calm typist is a fast typist.',
+  'Mistakes are fine. Fix and carry on.'
+];
+
+
+const TOTAL = CURRICULUM.length;
+const APP_ID = 'typing';
+const PASS_ACC = 90;          /* accuracy needed to clear a stop */
+
+let currentUser = null;
+let S = { done:[], leaves:0, best:{} };     /* best: {lessonId:{wpm,acc}} */
+let L = null;                                /* active lesson run */
+
+function myApp(){ return TutorStore.app(currentUser, APP_ID); }
+function save(){
+  if(!currentUser) return;
+  TutorStore.setAppField(currentUser, APP_ID, 'progress', S);
+  TutorStore.setAppField(currentUser, APP_ID, 'best', Math.round(S.done.length/TOTAL*100));
+}
+function esc(s){ const d=document.createElement('div'); d.textContent=String(s==null?'':s); return d.innerHTML; }
+
+/* ================= SPEECH ================= */
+const synth = window.speechSynthesis || null;
+let voices = [], voice = null;
+function loadVoices(){
+  if(!synth){ document.getElementById('voiceWarn').style.display='block'; return; }
+  voices = (synth.getVoices()||[]).filter(v=>/^en/i.test(v.lang));
+  if(!voices.length) voices = synth.getVoices()||[];
+  if(!voices.length){ document.getElementById('voiceWarn').style.display='block'; return; }
+  document.getElementById('voiceWarn').style.display='none';
+  const pref = voices.findIndex(v=>/samantha|karen|daniel|google us|natural|zira/i.test(v.name));
+  voice = voices[pref>=0?pref:0];
+}
+function speechOk(){ return !!(synth && voices.length); }
+function say(text, rate){
+  if(!synth || !text) return false;
+  try{
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if(voice) u.voice = voice;
+    u.rate = rate || 0.9; u.pitch = 1;
+    synth.speak(u);
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ================= SCREENS ================= */
+function go(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+screen).classList.add('on');
+  window.scrollTo(0,0);
+  if(synth) synth.cancel();
+  if(screen==='map') drawMap();
+  if(screen==='progress') drawProgress();
+}
+function syncTop(){
+  document.getElementById('leaves').textContent = S.leaves;
+  document.getElementById('doneN').textContent = S.done.length;
+  document.getElementById('totalN').textContent = TOTAL;
+}
+
+/* ================= SCENERY & COMPANIONS ================= */
+function buildScenery(){
+  const box = document.getElementById('clouds');
+  for(let i=0;i<5;i++){
+    const c=document.createElement('div');
+    c.className='cloud'; c.textContent='☁️';
+    c.style.top=(4+i*11)+'%';
+    c.style.animationDuration=(45+i*13)+'s';
+    c.style.animationDelay=(-i*9)+'s';
+    box.appendChild(c);
+  }
+  const pick = COMPANIONS.slice().sort(()=>Math.random()-0.5);
+  ['friendsL','friendsR'].forEach((id,side)=>{
+    const host=document.getElementById(id);
+    host.innerHTML='';
+    pick.slice(side*5, side*5+5).forEach(e=>{
+      const f=document.createElement('div'); f.className='friend'; f.textContent=e; host.appendChild(f);
+    });
+  });
+}
+function cheer(msg){
+  const b=document.getElementById('cheerBubble');
+  b.textContent = msg || CHEERS[Math.floor(Math.random()*CHEERS.length)];
+  b.classList.add('on');
+  document.querySelectorAll('.friend').forEach(f=>{
+    f.classList.remove('cheering'); void f.offsetWidth; f.classList.add('cheering');
+  });
+  clearTimeout(cheer._t);
+  cheer._t = setTimeout(()=>b.classList.remove('on'), 1500);
+}
+
+/* ================= LOGIN ================= */
+function renderChips(){
+  const box=document.getElementById('chips');
+  const users=TutorStore.users();
+  box.innerHTML = users.length ? "<span style='width:100%;font-size:.78rem;color:#a3937a'>Or tap your name:</span>" : '';
+  users.forEach(u=>{
+    const c=document.createElement('span');
+    c.className='chip'; c.textContent='🌾 '+u.displayName;
+    c.onclick=()=>{ document.getElementById('nameIn').value=u.displayName; login(); };
+    box.appendChild(c);
+  });
+}
+function login(){
+  const typed=document.getElementById('nameIn').value.trim();
+  if(!typed){ document.getElementById('nameIn').focus(); return; }
+  currentUser = TutorStore.login(typed).displayName;
+  const p = myApp().progress;
+  S = p ? {done:p.done||[], leaves:p.leaves||0, best:p.best||{}} : {done:[], leaves:0, best:{}};
+  document.getElementById('who').textContent='👤 '+currentUser;
+  document.getElementById('login').style.display='none';
+  if(window.TutorNav) TutorNav.setUser(currentUser);
+  loadVoices(); syncTop(); go('map');
+}
+function switchUser(){ currentUser=null; document.getElementById('nameIn').value='';
+  renderChips(); document.getElementById('login').style.display='flex'; }
+
+/* ================= MAP ================= */
+const MODE_LABEL = {see:'👀 copy it', hear:'🔊 by ear', both:'👂 listen + see'};
+function drawMap(){
+  syncTop();
+  let html='', ch=null;
+  CURRICULUM.forEach((les,i)=>{
+    if(les.chapter!==ch){
+      if(ch!==null) html+='</div>';
+      ch=les.chapter;
+      html+=`<div class="chapterhead">${esc(ch)}</div><div class="mapgrid">`;
+    }
+    const done=S.done.includes(les.id);
+    const open=i===0||S.done.includes(CURRICULUM[i-1].id)||done;
+    const cls=done?'done':(open?'now':'locked');
+    const b=S.best[les.id];
+    html+=`<div class="node ${cls}" ${open?`onclick="startLesson(${i})" tabindex="0"`:''}>
+      <div class="nico">${done?'✅':(open?les.icon:'🔒')}</div>
+      <div class="nname">${esc(les.name)}</div>
+      <div class="nstat">${b?`${b.wpm} wpm · ${b.acc}%`:(open?'ready':'locked')}</div>
+      <span class="mode-tag m-${les.mode}">${MODE_LABEL[les.mode]}</span></div>`;
+  });
+  html+='</div>';
+  document.getElementById('mapBody').innerHTML=html;
+}
+
+/* ================= TYPING ENGINE ================= */
+function startLesson(i){
+  const les=CURRICULUM[i];
+  L={ idx:i, line:0, results:[], startedAt:null, revealed:false,
+      totalChars:0, totalErrors:0, totalMs:0 };
+  document.getElementById('tName').textContent = les.icon+' '+les.name;
+  document.getElementById('tBlurb').innerHTML = les.blurb;
+  document.getElementById('hLines').textContent = les.lines.length;
+  drawKeyboard(les.keys);
+  loadLine(); go('type');
+}
+function loadLine(){
+  const les=CURRICULUM[L.idx];
+  L.startedAt=null; L.revealed=false;
+  const box=document.getElementById('typeIn');
+  box.value=''; box.disabled=false;
+  document.getElementById('nextLineBtn').disabled=true;
+  document.getElementById('hLine').textContent=L.line+1;
+  document.getElementById('lineBar').style.width=(L.line/les.lines.length*100)+'%';
+  document.getElementById('keyHint').textContent='Keys: '+les.keys;
+  document.getElementById('audioRow').style.display = les.mode==='see' ? 'none' : '';
+  document.getElementById('revealBtn').style.display = les.mode==='hear' ? '' : 'none';
+  renderPrompt();
+  if(les.mode!=='see'){
+    // browsers need a gesture before audio, so the first line waits for a click
+    if(L.line>0) speakLine();
+  }
+  box.focus();
+}
+function target(){ return CURRICULUM[L.idx].lines[L.line]; }
+function renderPrompt(){
+  const les=CURRICULUM[L.idx], t=target(), typed=document.getElementById('typeIn').value;
+  const box=document.getElementById('promptBox');
+  const hide = les.mode==='hear' && !L.revealed;
+  if(hide){
+    box.className='prompt hidden-prompt';
+    box.innerHTML = `<span>🎧</span><span>Listen, then type what you hear</span>`;
+    return;
+  }
+  box.className='prompt';
+  let html='';
+  for(let i=0;i<t.length;i++){
+    const c = t[i]==='' ? '' : t[i];
+    const disp = c===' ' ? '&nbsp;' : esc(c);
+    if(i<typed.length)      html+=`<span class="ch ${typed[i]===t[i]?'ok':'bad'}">${disp}</span>`;
+    else if(i===typed.length) html+=`<span class="ch cur">${disp}</span>`;
+    else                    html+=`<span class="ch todo">${disp}</span>`;
+  }
+  box.innerHTML=html;
+}
+function speakLine(rate){
+  if(!say(target(), rate||0.85) || !speechOk()) revealLine();
+}
+function revealLine(){
+  L.revealed=true;
+  renderPrompt();
+}
+/* live typing */
+function onType(){
+  const les=CURRICULUM[L.idx], t=target();
+  const box=document.getElementById('typeIn');
+  if(L.startedAt===null && box.value.length>0) L.startedAt=Date.now();
+  if(box.value.length>t.length) box.value=box.value.slice(0,t.length);
+  renderPrompt();
+  liveStats();
+  if(box.value.length===t.length){
+    finishLine();
+  }
+}
+function liveStats(){
+  const t=target(), typed=document.getElementById('typeIn').value;
+  let wrong=0;
+  for(let i=0;i<typed.length;i++) if(typed[i]!==t[i]) wrong++;
+  const acc = typed.length ? Math.round((typed.length-wrong)/typed.length*100) : 100;
+  document.getElementById('hAcc').textContent=acc;
+  if(L.startedAt){
+    const mins=(Date.now()-L.startedAt)/60000;
+    // standard: one "word" is five characters
+    const wpm = mins>0 ? Math.round((typed.length/5)/mins) : 0;
+    document.getElementById('hWpm').textContent = Math.min(wpm, 250);
+  }
+}
+function finishLine(){
+  const les=CURRICULUM[L.idx], t=target();
+  const typed=document.getElementById('typeIn').value;
+  const ms = L.startedAt ? Date.now()-L.startedAt : 0;
+  let wrong=0;
+  for(let i=0;i<t.length;i++) if(typed[i]!==t[i]) wrong++;
+  const acc = Math.round((t.length-wrong)/t.length*100);
+  const mins = ms/60000;
+  const wpm = mins>0 ? Math.min(Math.round((t.length/5)/mins), 250) : 0;
+
+  L.results.push({ line:L.line+1, target:t, typed, errors:wrong, acc, wpm,
+                   seconds:Math.round(ms/1000), mode:les.mode, revealed:L.revealed });
+  L.totalChars += t.length; L.totalErrors += wrong; L.totalMs += ms;
+
+  document.getElementById('typeIn').disabled=true;
+  document.getElementById('nextLineBtn').disabled=false;
+  document.getElementById('nextLineBtn').textContent =
+    L.line===les.lines.length-1 ? 'Finish the leg 🏁' : 'Next line ➡️';
+  document.getElementById('nextLineBtn').focus();
+  document.getElementById('lineBar').style.width=((L.line+1)/les.lines.length*100)+'%';
+  if(wrong===0) cheer();
+  else if(acc>=90) cheer('So close — keep going!');
+}
+function nextLine(){
+  const les=CURRICULUM[L.idx];
+  if(L.line < les.lines.length-1){ L.line++; loadLine(); }
+  else finishLesson();
+}
+
+/* ================= KEYBOARD GUIDE ================= */
+const KROWS=[['Q','W','E','R','T','Y','U','I','O','P'],
+             ['A','S','D','F','G','H','J','K','L',';'],
+             ['Z','X','C','V','B','N','M',',','.','/']];
+const HOME=new Set(['A','S','D','F','J','K','L',';']);
+function drawKeyboard(keysStr){
+  const lit=new Set(keysStr.toUpperCase().replace(/[^A-Z;,./0-9]/g,'').split(''));
+  const host=document.getElementById('kbd');
+  host.innerHTML = KROWS.map(r=>`<div class="krow">${
+    r.map(k=>`<div class="key ${lit.has(k)?'lit':''} ${HOME.has(k)?'home':''}">${k}</div>`).join('')
+  }</div>`).join('');
+}
+
+/* ================= FINISH ================= */
+function finishLesson(){
+  const les=CURRICULUM[L.idx];
+  const acc = Math.round((L.totalChars-L.totalErrors)/L.totalChars*100);
+  const mins = L.totalMs/60000;
+  const wpm = mins>0 ? Math.min(Math.round((L.totalChars/5)/mins), 250) : 0;
+  const passed = acc >= PASS_ACC;
+  const first = !S.done.includes(les.id);
+
+  if(passed && first){ S.done.push(les.id); S.leaves += 5; }
+  else if(passed){ S.leaves += 2; }
+  const prev=S.best[les.id];
+  if(!prev || wpm>prev.wpm || (wpm===prev.wpm && acc>prev.acc)) S.best[les.id]={wpm,acc};
+  save(); syncTop();
+
+  TutorStore.saveResult(currentUser, APP_ID, {
+    app:APP_ID, subject:'Typing', gradeLevel:null,
+    date:new Date().toISOString(),
+    player:currentUser, playerKey:TutorStore.keyOf(currentUser),
+    lessonId:les.id, lessonName:les.name, chapter:les.chapter, mode:les.mode,
+    wpm, accuracy:acc, errors:L.totalErrors, characters:L.totalChars,
+    seconds:Math.round(L.totalMs/1000),
+    score:L.totalChars-L.totalErrors, total:L.totalChars, pct:acc,
+    win:passed, perfect:L.totalErrors===0,
+    firstCompletion: passed && first,
+    lessonsComplete:S.done.length, lessonsTotal:TOTAL,
+    answers:L.results
+  });
+
+  document.getElementById('rScore').textContent = `${wpm} wpm · ${acc}% accurate`;
+  document.getElementById('rWpm').textContent = wpm;
+  document.getElementById('rAcc').textContent = acc;
+  document.getElementById('rErr').textContent = L.totalErrors;
+  document.getElementById('rTip').textContent = '💡 ' + REST_TIPS[Math.floor(Math.random()*REST_TIPS.length)];
+
+  const art=document.getElementById('rArt');
+  art.classList.remove('pop'); void art.offsetWidth; art.classList.add('pop');
+  const allDone = S.done.length>=TOTAL;
+
+  if(L.totalErrors===0){
+    art.textContent='🕊️✨🌾';
+    document.getElementById('rTitle').textContent = allDone ? 'The last letter is delivered!' : 'Flawless!';
+    document.getElementById('rMsg').textContent = allDone
+      ? 'You started with eight fingers on eight keys and finished typing whole letters by ear. The whole valley is cheering.'
+      : 'Not one slip in the whole leg. The wind was definitely with you.';
+    fireworks(); setTimeout(confetti, 900); cheer('Perfect delivery!');
+  } else if(passed){
+    art.textContent='🎉';
+    document.getElementById('rTitle').textContent='Leg complete!';
+    document.getElementById('rMsg').textContent='The letters arrived safely. The next stop is open — look below at the words that tripped you.';
+    confetti(); cheer('Well carried!');
+  } else {
+    art.textContent='🌧️';
+    document.getElementById('rTitle').textContent='The wind got a bit wild';
+    document.getElementById('rMsg').textContent=
+      `You need ${PASS_ACC}% accuracy to clear this stop and you had ${acc}%. Slow right down — speed comes on its own once the fingers know the way.`;
+  }
+
+  const miss=L.results.filter(r=>r.errors>0);
+  const wrap=document.getElementById('rReviewWrap'), host=document.getElementById('rReview');
+  if(!miss.length){ wrap.style.display='none'; }
+  else{
+    wrap.style.display='';
+    host.innerHTML = miss.map(r=>`
+      <div style="border:2px solid #eee3cd;border-radius:14px;padding:13px;margin-bottom:10px">
+        <div style="font-size:.8rem;color:#a3937a;margin-bottom:5px">Line ${r.line} · ${r.errors} slip${r.errors>1?'s':''} · ${r.acc}%</div>
+        <div style="font-size:.78rem;color:#a3937a">you typed</div>
+        <div class="errline">${diffHtml(r.typed, r.target)}</div>
+        <div style="font-size:.78rem;color:#a3937a;margin-top:6px">the line was</div>
+        <div class="errline" style="color:var(--deep)">${esc(r.target)}</div>
+      </div>`).join('');
+  }
+  go('result');
+}
+/* character-level diff so slips are obvious */
+function diffHtml(typed, t){
+  let out='';
+  const n=Math.max(typed.length, t.length);
+  for(let i=0;i<n;i++){
+    const a=typed[i], b=t[i];
+    const disp=(a===undefined?b:a)===' ' ? '&nbsp;' : esc(a===undefined?b:a);
+    if(a===undefined)      out+=`<span class="miss">${disp}</span>`;
+    else if(a===b)         out+=disp;
+    else                   out+=`<span class="bad">${disp}</span>`;
+  }
+  return out;
+}
+function retryLesson(){ startLesson(L.idx); }
+
+/* ================= PROGRESS ================= */
+function drawProgress(){
+  const tb=document.querySelector('#progTable tbody');
+  tb.innerHTML = CURRICULUM.map((les,i)=>{
+    const b=S.best[les.id];
+    return `<tr><td>${i+1}</td><td>${les.icon} ${esc(les.name)}</td>
+      <td>${b?b.wpm:'—'}</td><td>${b?b.acc+'%':'—'}</td></tr>`;
+  }).join('');
+  const tops=TutorStore.allResults(APP_ID)
+    .filter(r=>typeof r.wpm==='number')
+    .sort((a,b)=> b.wpm-a.wpm || b.accuracy-a.accuracy);
+  const lb=document.querySelector('#lbTable tbody');
+  const medals=['🥇','🥈','🥉','🏅','🏅'];
+  lb.innerHTML = tops.slice(0,5).map((t,i)=>
+    `<tr><td>${medals[i]}</td><td>${esc(t.name)}</td><td>${t.wpm}</td>
+     <td>${t.accuracy}%</td><td>${esc(t.lessonName||'')}</td></tr>`).join('')
+    || '<tr><td colspan=5>No runs yet!</td></tr>';
+
+  const hist=[...(myApp().history||[])].reverse();
+  const hb=document.querySelector('#histTable tbody');
+  hb.innerHTML = hist.length ? hist.map(h=>{
+    const slips=(h.answers||[]).filter(a=>a.errors>0).length;
+    return `<tr>
+      <td><input type="checkbox" class="hist-check" data-date="${esc(h.date)}"
+                 onchange="syncSelection()" aria-label="select this run"></td>
+      <td>${new Date(h.date).toLocaleDateString()}<br><span style="font-size:.72rem;color:#a3937a">${new Date(h.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></td>
+      <td>${esc(h.lessonName||'')}</td>
+      <td>${h.wpm}</td><td>${h.accuracy}%</td>
+      <td>${slips?`<button class="rev-btn" onclick="reviewRun('${esc(h.date)}')">Review ${slips}</button>`:''}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan=6>No runs yet!</td></tr>';
+
+  buildReviewPicker();
+  syncSelection();
+}
+
+/* ================= REVIEW PAST SLIPS ================= */
+function buildReviewPicker(){
+  const sel=document.getElementById('reviewPick');
+  const hist=[...(myApp().history||[])].reverse()
+    .filter(h=>(h.answers||[]).some(a=>a.errors>0));
+  if(!hist.length){
+    sel.innerHTML="<option value=''>No slips recorded yet 🎉</option>";
+    document.getElementById('pastReview').innerHTML=
+      "<p class='rev-empty'>Nothing to review — every line so far has been typed perfectly!</p>";
+    return;
+  }
+  sel.innerHTML=hist.map(h=>{
+    const n=h.answers.filter(a=>a.errors>0).length;
+    return `<option value="${esc(h.date)}">${new Date(h.date).toLocaleString()} — ${esc(h.lessonName||'')}, ${h.wpm} wpm · ${n} line${n===1?'':'s'} to review</option>`;
+  }).join('');
+  renderPastReview();
+}
+function renderPastReview(){ renderReviewFor(document.getElementById('reviewPick').value); }
+function reviewRun(date){
+  const sel=document.getElementById('reviewPick');
+  if([...sel.options].some(o=>o.value===date)) sel.value=date;
+  renderReviewFor(date);
+  document.getElementById('pastReview').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function renderReviewFor(date){
+  const host=document.getElementById('pastReview');
+  const rec=(myApp().history||[]).find(h=>h.date===date);
+  if(!rec){ host.innerHTML="<p class='rev-empty'>Pick a run above.</p>"; return; }
+  const miss=(rec.answers||[]).filter(a=>a.errors>0);
+  if(!miss.length){ host.innerHTML="<p class='rev-empty'>🌟 No slips in that run!</p>"; return; }
+  host.innerHTML=miss.map(r=>`
+    <div class="rev-item">
+      <div style="font-size:.78rem;color:#a3937a;margin-bottom:5px">
+        Line ${r.line} · ${r.errors} slip${r.errors>1?'s':''} · ${r.acc}% · ${r.wpm} wpm${r.revealed?' · peeked':''}</div>
+      <div style="font-size:.78rem;color:#a3937a">you typed</div>
+      <div class="errline">${diffHtml(r.typed, r.target)}</div>
+      <div style="font-size:.78rem;color:#a3937a;margin-top:6px">the line was</div>
+      <div class="errline" style="color:var(--deep)">${esc(r.target)}</div>
+    </div>`).join('');
+}
+
+/* ================= SELECTIVE DELETE ================= */
+function selectedDates(){
+  return [...document.querySelectorAll('.hist-check:checked')].map(c=>c.dataset.date);
+}
+function syncSelection(){
+  const n=selectedDates().length;
+  document.getElementById('selBar').classList.toggle('on', n>0);
+  document.getElementById('selCount').textContent=n+' run'+(n===1?'':'s')+' selected';
+}
+function clearSelection(){
+  document.querySelectorAll('.hist-check').forEach(c=>c.checked=false);
+  syncSelection();
+}
+function confirmDeleteSelected(){
+  const n=selectedDates().length;
+  if(!n) return;
+  pendingDelete='selected';
+  document.getElementById('delText').textContent=`Delete ${n} selected run${n===1?'':'s'}?`;
+  document.getElementById('delBody').textContent=
+    'Only these runs are removed. Your stop unlocks and best scores per stop stay as they are.';
+  document.getElementById('delModal').classList.add('on');
+}
+let pendingDelete='all';
+function askDelete(){
+  pendingDelete='all';
+  document.getElementById('delText').textContent=`Delete ALL typing progress for ${currentUser}?`;
+  document.getElementById('delBody').textContent=
+    'Every run and all stop unlocks are removed. Your data moves to the deleted-data archive, not erased.';
+  document.getElementById('delModal').classList.add('on');
+}
+function closeDel(){ document.getElementById('delModal').classList.remove('on'); }
+function doDelete(){
+  if(pendingDelete==='selected'){
+    TutorStore.deleteResults(currentUser, APP_ID, selectedDates());   // archives first
+    closeDel();
+    drawProgress();          // stay put; only some rows went away
+    return;
+  }
+  TutorStore.deleteUser(currentUser, APP_ID);
+  closeDel(); switchUser();
+}
+
+/* ================= FX ================= */
+const fx=document.getElementById('fx'), ctx=fx.getContext('2d');
+let parts=[], running=false, fxT=null;
+function sizeFx(){ fx.width=innerWidth; fx.height=innerHeight; }
+addEventListener('resize', sizeFx); sizeFx();
+const COLORS=['#f4c95d','#7fb069','#e08e79','#a8d8ea','#f2a65a','#a7c957'];
+function confetti(){
+  for(let i=0;i<210;i++) parts.push({t:'c',x:Math.random()*fx.width,y:-20-Math.random()*fx.height*.5,
+    vx:(Math.random()-.5)*2.2,vy:2+Math.random()*3.3,size:6+Math.random()*7,
+    color:COLORS[Math.floor(Math.random()*COLORS.length)],rot:Math.random()*Math.PI,vr:(Math.random()-.5)*.24,life:99999});
+  run(6000);
+}
+function fireworks(){
+  let n=0;
+  const iv=setInterval(()=>{
+    const cx=fx.width*(.15+Math.random()*.7), cy=fx.height*(.15+Math.random()*.4);
+    const col=COLORS[Math.floor(Math.random()*COLORS.length)];
+    for(let i=0;i<66;i++){ const a=Math.PI*2*i/66, sp=2+Math.random()*3.6;
+      parts.push({t:'f',x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,size:2.4+Math.random()*2,color:col,life:60+Math.random()*28}); }
+    if(++n>=7) clearInterval(iv);
+  },430);
+  run(7500);
+}
+function run(ms){ if(fxT) clearTimeout(fxT); fxT=setTimeout(()=>{parts=[];},ms);
+  if(!running){ running=true; requestAnimationFrame(tick); } }
+function tick(){
+  ctx.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.life>0&&p.y<fx.height+30);
+  parts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.life--;
+    if(p.t==='c'){ p.vy+=.03; p.rot+=p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle=p.color; ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2); ctx.restore();
+    } else { p.vy+=.05; ctx.globalAlpha=Math.max(p.life/88,0);
+      ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,7); ctx.fill(); ctx.globalAlpha=1; }
+  });
+  if(parts.length) requestAnimationFrame(tick);
+  else{ running=false; ctx.clearRect(0,0,fx.width,fx.height); }
+}
+
+/* ================= INIT ================= */
+if(window.TutorNav) TutorNav.init({app:APP_ID});
+buildScenery();
+renderChips();
+document.getElementById('nameIn').addEventListener('keydown',e=>{ if(e.key==='Enter') login(); });
+document.getElementById('typeIn').addEventListener('input', onType);
+document.getElementById('typeIn').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    e.preventDefault();
+    const b=document.getElementById('nextLineBtn');
+    if(!b.disabled) nextLine();
+  }
+});
+document.getElementById('totalN').textContent = TOTAL;
+if(synth){
+  loadVoices();
+  if(typeof synth.addEventListener==='function') synth.addEventListener('voiceschanged', loadVoices);
+  else synth.onvoiceschanged = loadVoices;
+}
+document.getElementById('nameIn').focus();
+</script>
+</body>
+</html>

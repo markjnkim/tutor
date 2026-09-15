@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐼 Panda Spelling Bee — Grade 5-6</title>
+<style>
+:root{
+  --green:#4a8f3c; --green-dark:#2e6323; --green-light:#e8f5e0;
+  --cream:#fdf9ef; --brown:#7a5c3e; --red:#e05252; --red-light:#fdeaea;
+  --yellow:#f5c542; --blue:#4a7fb5; --ink:#2d2a26;
+  --ok-green:#dff3d6; --card:#ffffff;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:"Trebuchet MS","Comic Sans MS",Verdana,sans-serif;
+  background:linear-gradient(180deg,#eaf6e2 0%,var(--cream) 40%);
+  min-height:100vh; color:var(--ink);
+}
+.screen{display:none; max-width:820px; margin:0 auto; padding:24px 16px 60px;}
+.screen.active{display:block;}
+h1{color:var(--green-dark); text-align:center; font-size:2rem; margin-bottom:4px;}
+h2{color:var(--green-dark); margin-bottom:12px; font-size:1.2rem;}
+.subtitle{text-align:center; color:var(--brown); margin-bottom:24px;}
+.card{background:var(--card); border-radius:20px; padding:24px; box-shadow:0 4px 14px rgba(60,90,40,.12); margin-bottom:18px;}
+button{font-family:inherit; font-size:1rem; font-weight:bold; border:none; border-radius:14px;
+  padding:12px 22px; cursor:pointer; transition:transform .1s, box-shadow .1s;}
+button:hover:not(:disabled){transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,.15);}
+button:disabled{opacity:.45; cursor:not-allowed;}
+.btn-primary{background:var(--green); color:#fff;}
+.btn-secondary{background:#e9e4d8; color:var(--ink);}
+.btn-danger{background:var(--red); color:#fff;}
+.btn-small{padding:8px 15px; font-size:.85rem;}
+input[type=text]{font-family:inherit; font-size:1.1rem; padding:12px 16px; border:2px solid #cfe3c2;
+  border-radius:14px; width:100%; outline:none;}
+input[type=text]:focus{border-color:var(--green);}
+select{font-family:inherit; font-size:.95rem; padding:9px 12px; border:2px solid #cfe3c2;
+  border-radius:12px; background:#fff; width:100%; outline:none;}
+.big-panda{font-size:4.5rem; text-align:center; display:block; animation:bob 2.5s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.user-chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+.chip{background:var(--green-light); border:2px solid var(--green); color:var(--green-dark);
+  border-radius:999px; padding:8px 18px; font-weight:bold; cursor:pointer;}
+.chip:hover{background:var(--green); color:#fff;}
+.row-buttons{display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px;}
+.small-note{font-size:.78rem; color:#8a8371; text-align:center; margin-top:10px;}
+.center{text-align:center;}
+
+.grade-row{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 4px;}
+.grade-card{flex:1 1 62px; min-width:62px; border:3px solid #ddd; border-radius:14px;
+  padding:10px 4px; text-align:center; cursor:pointer; background:#fff;}
+.grade-card.selected{border-color:var(--green); background:var(--green-light);}
+.grade-card.disabled{opacity:.4; cursor:not-allowed; background:#f4f2ec;}
+.grade-card .g-num{font-weight:bold; font-size:1.15rem;}
+.grade-card .g-lbl{font-size:.62rem; color:#888;}
+/* setup */
+.diff-row{display:flex; gap:12px; margin:10px 0 4px;}
+.diff-card{flex:1; border:3px solid #ddd; border-radius:16px; padding:14px 8px; text-align:center; cursor:pointer; background:#fff;}
+.diff-card.selected{border-color:var(--green); background:var(--green-light);}
+.diff-card .d-emoji{font-size:1.8rem;}
+.diff-card .d-name{font-weight:bold; margin:4px 0;}
+.diff-card .d-desc{font-size:.75rem; color:#777;}
+.toggle-row{display:flex; align-items:center; justify-content:space-between; margin-top:16px; gap:12px;}
+.switch{position:relative; width:58px; height:30px; flex-shrink:0;}
+.switch input{opacity:0; width:0; height:0;}
+.slider{position:absolute; inset:0; background:#ccc; border-radius:999px; transition:.25s; cursor:pointer;}
+.slider:before{content:""; position:absolute; height:24px; width:24px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.25s;}
+.switch input:checked + .slider{background:var(--green);}
+.switch input:checked + .slider:before{transform:translateX(28px);}
+.voice-row{margin-top:16px;}
+.voice-row label{display:block; font-weight:bold; margin-bottom:6px; font-size:.9rem;}
+/* quiz */
+.quiz-header{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;}
+.q-count{font-weight:bold; color:var(--green-dark);}
+.timer-box{background:#fff; border:2px solid var(--yellow); border-radius:12px; padding:6px 12px; font-weight:bold; display:flex; align-items:center; gap:8px;}
+.timer-box.warn{border-color:var(--red); color:var(--red); animation:pulse 1s infinite;}
+@keyframes pulse{50%{opacity:.55}}
+/* bamboo climb */
+.climb-track{position:relative; height:150px; background:linear-gradient(180deg,#cfe9f7,#e6f4d9);
+  border-radius:16px; margin-bottom:16px; overflow:hidden; border:2px solid #a9cf92;}
+.stalk{position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:26px; height:100%;
+  background:repeating-linear-gradient(180deg,#7cb342 0 26px,#689f38 26px 30px);}
+#climbPanda{position:absolute; left:50%; transform:translateX(-50%); bottom:6px; font-size:2.4rem;
+  transition:bottom .7s cubic-bezier(.34,1.56,.64,1); z-index:2;}
+#climbPanda.hop{animation:hopA .6s;}
+@keyframes hopA{40%{transform:translateX(-50%) scale(1.25) rotate(-8deg)}}
+#climbPanda.sad{animation:shakeA .5s;}
+@keyframes shakeA{25%,75%{transform:translateX(-62%)}50%{transform:translateX(-38%)}}
+#leafTop{position:absolute; top:6px; left:50%; transform:translateX(-50%); font-size:2rem;}
+.climb-label{position:absolute; top:8px; left:10px; font-size:.75rem; color:var(--green-dark); font-weight:bold;}
+/* speak panel */
+.speak-panel{text-align:center; padding:10px 0 4px;}
+.speak-big{background:var(--green); color:#fff; font-size:1.3rem; padding:18px 40px; border-radius:18px;}
+.helper-row{display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:14px 0 4px;}
+.helper-text{background:#fff8dc; border-left:5px solid var(--yellow); border-radius:10px;
+  padding:12px 16px; margin:12px 0; line-height:1.5; display:none; text-align:left;}
+.helper-text.show{display:block; animation:fadein .3s;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px)}}
+#answerBox{font-size:1.6rem; text-align:center; letter-spacing:2px; margin-top:8px;}
+#answerBox.correct{border-color:var(--green); background:var(--ok-green);}
+#answerBox.wrong{border-color:var(--red); background:var(--red-light);}
+.feedback-banner{display:none; text-align:center; font-size:1.25rem; font-weight:bold; margin:12px 0 4px;}
+.pattern-badge{display:inline-block; background:var(--blue); color:#fff; font-size:.75rem; font-weight:bold;
+  border-radius:999px; padding:4px 12px;}
+.quiz-buttons{display:flex; gap:10px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap;}
+/* results */
+.eat-scene{position:relative; height:120px; background:linear-gradient(180deg,#d8eec9,#c2e2ad);
+  border-radius:16px; border:2px solid #a9cf92; overflow:hidden; margin-bottom:14px;}
+.scene-ground{position:absolute; bottom:0; width:100%; height:16px; background:#8fbc74;}
+#eatPanda{position:absolute; bottom:12px; left:10px; font-size:3.4rem; z-index:2;}
+#eatPanda.chomp{animation:chompA .3s;}
+@keyframes chompA{50%{transform:rotate(-14deg) scale(1.18)}}
+#eatBamboo{position:absolute; bottom:12px; right:26px; font-size:3.2rem;}
+#eatCake{position:absolute; bottom:12px; right:80px; font-size:2.6rem; opacity:0; transition:opacity .5s;}
+#chompBubble{position:absolute; top:8px; left:50%; background:#fff; border:2px solid var(--green);
+  border-radius:999px; padding:4px 12px; font-weight:bold; font-size:.85rem; color:var(--green-dark);
+  opacity:0; transition:opacity .15s; z-index:3; white-space:nowrap;}
+.score-big{font-size:3.2rem; font-weight:bold; text-align:center; color:var(--green-dark);}
+.result-msg{text-align:center; font-size:1.25rem; font-weight:bold; margin-bottom:14px;}
+.best-banner{display:none; text-align:center; background:var(--yellow); color:#6b4e00; font-weight:bold;
+  border-radius:999px; padding:8px 20px; margin:0 auto 14px; width:fit-content; animation:popbest .8s;}
+@keyframes popbest{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.review-item{border:2px solid #eee3cf; border-radius:14px; padding:14px 16px; margin-bottom:12px;}
+.review-word{font-size:1.15rem; margin-bottom:8px;}
+.spell-diff{font-family:"Courier New",monospace; font-size:1.35rem; letter-spacing:3px; font-weight:bold;}
+.spell-diff .ok{color:var(--green-dark);}
+.spell-diff .bad{color:#fff; background:var(--red); border-radius:4px; padding:0 3px;}
+.spell-diff .miss{color:#fff; background:var(--blue); border-radius:4px; padding:0 3px;}
+.diff-legend{font-size:.75rem; color:#8a8371; margin-top:6px;}
+.replay-btn{background:var(--blue); color:#fff; border-radius:10px; padding:5px 12px; font-size:.8rem; margin-left:8px;}
+/* review + selective delete */
+.hist-check{width:18px;height:18px;accent-color:var(--red);cursor:pointer}
+.rev-btn{background:var(--blue);color:#fff;border-radius:9px;padding:5px 11px;font-size:.78rem}
+.sel-bar{display:none;align-items:center;gap:10px;flex-wrap:wrap;background:var(--red-light);
+  border:2px solid var(--red);border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.sel-bar.on{display:flex}
+.sel-bar .cnt{font-weight:bold;color:var(--red)}
+.rev-item{border:2px solid #eee3cf;border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.rev-meta{font-size:.78rem;color:#8a8371;margin-bottom:8px}
+.rev-empty{text-align:center;color:#8a8371;padding:18px}
+/* bars */
+.bar-row{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+.bar-label{width:160px; font-size:.9rem; font-weight:bold;}
+.bar-outer{flex:1; height:22px; background:#eee7d8; border-radius:999px; overflow:hidden;}
+.bar-inner{height:100%; border-radius:999px; transition:width .8s; display:flex; align-items:center;
+  justify-content:flex-end; padding-right:8px; font-size:.72rem; color:#fff; font-weight:bold; min-width:34px;}
+.bar-excel{background:var(--green);} .bar-ok{background:var(--yellow);} .bar-need{background:var(--red);}
+.bar-tag{width:110px; font-size:.8rem; font-weight:bold; text-align:right;}
+table{width:100%; border-collapse:collapse; font-size:.9rem;}
+th,td{padding:8px 10px; text-align:left; border-bottom:1px solid #eee3cf;}
+th{color:var(--green-dark);}
+.medal{font-size:1.1rem;}
+#fxCanvas{position:fixed; inset:0; pointer-events:none; z-index:50;}
+.modal-back{display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:60; align-items:center; justify-content:center;}
+.modal-back.show{display:flex;}
+.modal{background:#fff; border-radius:18px; padding:26px; max-width:420px; text-align:center;}
+.warn-box{background:#fff4e5; border-left:5px solid var(--yellow); border-radius:10px; padding:12px 16px;
+  margin-bottom:14px; font-size:.88rem; line-height:1.5; display:none;}
+</style>
+</head>
+<body>
+<canvas id="fxCanvas"></canvas>
+
+<!-- ============ LOGIN ============ -->
+<div class="screen active" id="scr-login">
+  <span class="big-panda">🐼🐝</span>
+  <h1>Panda Spelling Bee</h1>
+  <p class="subtitle">Grade 5–6 · Listen to the word, then type it. Help the panda climb to the bamboo leaves!</p>
+  <div class="card">
+    <h2>Who's spelling today?</h2>
+    <input type="text" id="nameInput" placeholder="Type your name…" maxlength="20">
+    <div class="row-buttons"><button class="btn-primary" onclick="login()">Let's Go! 🎋</button></div>
+    <div class="user-chips" id="userChips"></div>
+  </div>
+  <p class="small-note">Progress is saved on this computer for each name.</p>
+</div>
+
+<!-- ============ SETUP ============ -->
+<div class="screen" id="scr-setup">
+  <span class="big-panda">🐼🐝</span>
+  <h1 id="helloName">Hi!</h1>
+  <p class="subtitle">20 words read aloud. Spell 80% right and the panda reaches the leaves! 🎋<br>100% earns a special bonus treat… 🎂</p>
+  <div class="warn-box" id="voiceWarn">
+    🔇 <strong>No speech voices found.</strong> This browser can't read words aloud.
+    Try Chrome or Safari. You can still take the test — each word will be shown as a hint you can reveal.
+  </div>
+  <div class="card">
+    <h2>Grade level</h2>
+    <div class="grade-row" id="gradeRow"></div>
+    <p class="small-note" id="gradeNote" style="text-align:left"></p>
+    <h2 style="margin-top:18px">Difficulty <span style="font-weight:normal;font-size:.8rem;color:#777">— within that grade</span></h2>
+    <div class="diff-row">
+      <div class="diff-card" data-diff="easy" onclick="pickDiff('easy')">
+        <div class="d-emoji">🌱</div><div class="d-name">Easy</div><div class="d-desc">Shorter words · 15 min</div>
+      </div>
+      <div class="diff-card selected" data-diff="medium" onclick="pickDiff('medium')">
+        <div class="d-emoji">🎋</div><div class="d-name">Medium</div><div class="d-desc">Grade level · 12 min</div>
+      </div>
+      <div class="diff-card" data-diff="hard" onclick="pickDiff('hard')">
+        <div class="d-emoji">🔥</div><div class="d-name">Hard</div><div class="d-desc">Spelling bee · 10 min</div>
+      </div>
+    </div>
+    <div class="voice-row">
+      <label for="voiceSelect">🔊 Reading voice</label>
+      <select id="voiceSelect"></select>
+      <div class="row-buttons" style="margin-top:10px">
+        <button class="btn-secondary btn-small" onclick="testVoice()">▶️ Test this voice</button>
+      </div>
+    </div>
+    <div class="toggle-row">
+      <div><strong>⏱️ Timer</strong> <span style="font-size:.85rem;color:#777">(add time anytime)</span></div>
+      <label class="switch"><input type="checkbox" id="timerToggle" checked><span class="slider"></span></label>
+    </div>
+    <div class="toggle-row">
+      <div><strong>👀 Show the word</strong> <span style="font-size:.85rem;color:#777">(practice mode — not a real test)</span></div>
+      <label class="switch"><input type="checkbox" id="peekToggle"><span class="slider"></span></label>
+    </div>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" style="font-size:1.2rem" onclick="startTest()">Start the Bee! 🚀</button>
+    <button class="btn-secondary" onclick="showDashboard()">📊 My Progress</button>
+    <button class="btn-secondary" onclick="switchUser()">👋 Switch player</button>
+  </div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div class="screen" id="scr-quiz">
+  <div class="quiz-header">
+    <span class="q-count" id="qCount">Word 1 of 20</span>
+    <span class="q-count" id="scoreCount">✅ 0 correct</span>
+    <div class="timer-box" id="timerBox" style="display:none">
+      <span id="timerText">12:00</span>
+      <button class="btn-secondary btn-small" onclick="addTime()">+3 min</button>
+    </div>
+  </div>
+  <div class="climb-track">
+    <span class="climb-label" id="climbLabel">🎋 16 correct words to reach the leaves!</span>
+    <div class="stalk"></div>
+    <span id="leafTop">🎋</span>
+    <span id="climbPanda">🐼</span>
+  </div>
+  <div class="card">
+    <div class="center"><span class="pattern-badge" id="patternBadge">Silent letters</span></div>
+    <div class="speak-panel">
+      <button class="btn-primary speak-big" id="speakBtn" onclick="speakWord()">🔊 Hear the word</button>
+      <div class="helper-row">
+        <button class="btn-secondary btn-small" onclick="speakWord()">🔁 Repeat</button>
+        <button class="btn-secondary btn-small" onclick="speakSlow()">🐢 Say it slowly</button>
+        <button class="btn-secondary btn-small" onclick="speakSentence()">💬 In a sentence</button>
+        <button class="btn-secondary btn-small" onclick="speakDefinition()">📖 Definition</button>
+      </div>
+      <div class="helper-text" id="helperText"></div>
+      <label for="answerBox" style="display:block;font-weight:bold;margin-top:14px;font-size:.9rem">Type the word:</label>
+      <input type="text" id="answerBox" autocomplete="off" autocorrect="off" autocapitalize="off"
+             spellcheck="false" placeholder="spell it here…">
+    </div>
+    <div class="feedback-banner" id="feedbackBanner"></div>
+    <div class="quiz-buttons">
+      <button class="btn-secondary" id="skipBtn" onclick="skipWord()">Skip ⏭️</button>
+      <button class="btn-primary" id="submitBtn" onclick="submitAnswer()">Check Spelling ✔️</button>
+      <button class="btn-primary" id="nextBtn" onclick="nextWord()" style="display:none">Next Word ➡️</button>
+      <button class="btn-primary" id="finishBtn" onclick="finishTest()" style="display:none">Finish &amp; See Results 🏁</button>
+    </div>
+    <p class="small-note">Tip: press <strong>Enter</strong> to check your spelling.</p>
+  </div>
+</div>
+
+<!-- ============ RESULTS ============ -->
+<div class="screen" id="scr-results">
+  <h1>Spelling Bee Complete!</h1>
+  <div class="best-banner" id="bestBanner">🌟 NEW PERSONAL BEST! 🌟</div>
+  <div class="card center">
+    <div class="eat-scene" id="eatScene">
+      <span id="chompBubble">CHOMP!</span>
+      <span id="eatPanda">🐼</span>
+      <span id="eatBamboo">🎋</span>
+      <span id="eatCake">🎂</span>
+      <div class="scene-ground"></div>
+    </div>
+    <div class="score-big" id="scoreBig">0 / 20</div>
+    <div class="result-msg" id="resultMsg"></div>
+  </div>
+  <div class="card">
+    <h2>📚 Review — let's learn these!</h2>
+    <div id="reviewList"></div>
+  </div>
+  <div class="card">
+    <h2>📈 This test by spelling pattern</h2>
+    <div id="testPatternBars"></div>
+  </div>
+  <div class="card">
+    <h2>🧠 Overall mastery</h2>
+    <div id="masteryBars"></div>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" onclick="showSetup()">Play Again 🔁</button>
+    <button class="btn-secondary" onclick="showDashboard()">📊 Full Progress</button>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="screen" id="scr-dash">
+  <h1 id="dashTitle">📊 Progress</h1>
+  <div class="card">
+    <h2>🧠 Mastery by spelling pattern</h2>
+    <div id="dashMastery"></div>
+    <p class="small-note">🌟 Excels ≥ 85% · 👍 Doing OK 60–84% · 💪 Needs practice &lt; 60%</p>
+  </div>
+  <div class="card">
+    <h2>🐝 Words to practice</h2>
+    <div id="troubleWords"></div>
+  </div>
+  <div class="card">
+    <h2>🏆 Top scores (all players)</h2>
+    <table id="topScoresTable"><thead><tr><th></th><th>Player</th><th>Score</th><th>Level</th><th>Date</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="card">
+    <h2>🔍 Review past mistakes</h2>
+    <p class="small-note" style="text-align:left;margin-top:0">
+      Every word she misspelled or skipped, with the correct spelling, a sentence and the meaning.</p>
+    <select id="reviewPick" onchange="renderPastReview()" style="font-family:inherit;font-size:.95rem;
+      padding:10px 12px;border:2px solid #cfe3c2;border-radius:12px;width:100%;margin-bottom:12px"></select>
+    <div id="pastReview"></div>
+  </div>
+  <div class="card">
+    <h2>📜 Test history</h2>
+    <div class="sel-bar" id="selBar">
+      <span class="cnt" id="selCount">0 selected</span>
+      <button class="btn-danger btn-small" onclick="confirmDeleteSelected()">🗑️ Delete selected</button>
+      <button class="btn-secondary btn-small" onclick="clearSelection()">Clear</button>
+    </div>
+    <table id="historyTable"><thead><tr><th style="width:30px"></th><th>Date</th><th>Level</th><th>Score</th><th>Result</th><th></th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="row-buttons">
+    <button class="btn-primary" onclick="showSetup()">⬅️ Back</button>
+    <button class="btn-danger" onclick="confirmDelete()">🗑️ Delete ALL my progress</button>
+    <button class="btn-secondary" onclick="showArchive()">🗂️ Deleted data page</button>
+  </div>
+</div>
+
+<!-- ============ ARCHIVE ============ -->
+<div class="screen" id="scr-archive">
+  <h1>🗂️ Deleted Data</h1>
+  <p class="subtitle">Removed records are kept here for reference — nothing is lost silently.</p>
+  <div id="archiveList"></div>
+  <div class="row-buttons"><button class="btn-primary" onclick="showDashboard()">⬅️ Back</button></div>
+</div>
+
+<div class="modal-back" id="deleteModal">
+  <div class="modal">
+    <div style="font-size:3rem">🐼❓</div>
+    <h2 id="deleteModalText">Delete progress?</h2>
+    <p id="deleteModalBody" style="margin:10px 0 18px; font-size:.9rem; color:#666">Your data moves to the Deleted Data page, not erased.</p>
+    <div class="row-buttons">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" onclick="doDelete()">Yes, delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="tutor-store.js"></script>
+<script src="tutor-nav.js"></script>
+<script>
+/* ================= WORD BANK ================= */
+const WORD_BANK = [{"w": "catch", "p": "tricky", "d": "easy", "g": 3, "s": "Try to catch the ball with both hands.", "def": "To take hold of something moving."}, {"w": "knock", "p": "silent", "d": "easy", "g": 3, "s": "Please knock before you open the door.", "def": "To hit something to make a sound."}, {"w": "write", "p": "silent", "d": "easy", "g": 3, "s": "Write your name at the top of the page.", "def": "To form letters or words."}, {"w": "lamb", "p": "silent", "d": "easy", "g": 3, "s": "The little lamb followed its mother.", "def": "A baby sheep."}, {"w": "comb", "p": "silent", "d": "easy", "g": 3, "s": "Use a comb to fix your hair.", "def": "A tool with teeth for tidying hair."}, {"w": "half", "p": "silent", "d": "easy", "g": 3, "s": "She ate half of the sandwich.", "def": "One of two equal parts."}, {"w": "talk", "p": "silent", "d": "easy", "g": 3, "s": "We like to talk during lunch.", "def": "To speak to someone."}, {"w": "ghost", "p": "silent", "d": "medium", "g": 3, "s": "He dressed as a ghost for the parade.", "def": "A spirit some people believe appears after death."}, {"w": "little", "p": "double", "d": "easy", "g": 3, "s": "A little bird landed on the fence.", "def": "Small in size."}, {"w": "happy", "p": "double", "d": "easy", "g": 3, "s": "She felt happy on her birthday.", "def": "Feeling glad or pleased."}, {"w": "yellow", "p": "double", "d": "easy", "g": 3, "s": "The bus is painted bright yellow.", "def": "The color of a lemon."}, {"w": "kitten", "p": "double", "d": "easy", "g": 3, "s": "The kitten chased a ball of yarn.", "def": "A baby cat."}, {"w": "sudden", "p": "double", "d": "medium", "g": 3, "s": "A sudden noise made him jump.", "def": "Happening quickly and without warning."}, {"w": "pretty", "p": "double", "d": "medium", "g": 3, "s": "She drew a pretty picture of a garden.", "def": "Pleasant to look at."}, {"w": "funny", "p": "double", "d": "easy", "g": 3, "s": "That joke was very funny.", "def": "Making people laugh."}, {"w": "letter", "p": "double", "d": "medium", "g": 3, "s": "He mailed a letter to his grandma.", "def": "A written message, or a symbol of the alphabet."}, {"w": "jumped", "p": "suffix", "d": "easy", "g": 3, "s": "The frog jumped into the pond.", "def": "Past tense of jump."}, {"w": "helpful", "p": "suffix", "d": "medium", "g": 3, "s": "Her advice was very helpful.", "def": "Giving useful help."}, {"w": "slowly", "p": "suffix", "d": "easy", "g": 3, "s": "The turtle walked slowly across the path.", "def": "In a slow way."}, {"w": "painter", "p": "suffix", "d": "medium", "g": 3, "s": "The painter finished the wall today.", "def": "A person who paints."}, {"w": "sadness", "p": "suffix", "d": "medium", "g": 3, "s": "A feeling of sadness came over him.", "def": "The state of being sad."}, {"w": "playing", "p": "suffix", "d": "easy", "g": 3, "s": "The children are playing outside.", "def": "Taking part in a game."}, {"w": "careless", "p": "suffix", "d": "hard", "g": 3, "s": "A careless mistake cost him the point.", "def": "Not paying enough attention."}, {"w": "brightest", "p": "suffix", "d": "hard", "g": 3, "s": "That is the brightest star in the sky.", "def": "The most bright of all."}, {"w": "unlock", "p": "prefix", "d": "easy", "g": 3, "s": "Use this key to unlock the door.", "def": "To open a lock."}, {"w": "redo", "p": "prefix", "d": "easy", "g": 3, "s": "He had to redo the messy drawing.", "def": "To do something again."}, {"w": "untie", "p": "prefix", "d": "medium", "g": 3, "s": "Please untie the knot in the rope.", "def": "To loosen something that was tied."}, {"w": "preheat", "p": "prefix", "d": "medium", "g": 3, "s": "Preheat the oven before baking.", "def": "To heat something ahead of time."}, {"w": "outside", "p": "prefix", "d": "easy", "g": 3, "s": "We ate lunch outside on the grass.", "def": "Not inside; in the open air."}, {"w": "rebuild", "p": "prefix", "d": "hard", "g": 3, "s": "They will rebuild the fort next spring.", "def": "To build something again."}, {"w": "chief", "p": "ie-ei", "d": "medium", "g": 3, "s": "The fire chief visited our classroom.", "def": "The leader of a group."}, {"w": "field", "p": "ie-ei", "d": "easy", "g": 3, "s": "Cows grazed in the open field.", "def": "An open area of land."}, {"w": "friend", "p": "ie-ei", "d": "easy", "g": 3, "s": "My friend sits beside me at lunch.", "def": "A person you like and trust."}, {"w": "eight", "p": "ie-ei", "d": "easy", "g": 3, "s": "There are eight crayons in the box.", "def": "The number after seven."}, {"w": "believe", "p": "ie-ei", "d": "hard", "g": 3, "s": "I believe you told the truth.", "def": "To accept that something is true."}, {"w": "weigh", "p": "ie-ei", "d": "hard", "g": 3, "s": "Please weigh the apples on the scale.", "def": "To measure how heavy something is."}, {"w": "nation", "p": "endings", "d": "medium", "g": 3, "s": "Our nation celebrates in July.", "def": "A country and its people."}, {"w": "action", "p": "endings", "d": "easy", "g": 3, "s": "She took quick action to help.", "def": "The process of doing something."}, {"w": "motion", "p": "endings", "d": "medium", "g": 3, "s": "The rocking motion made him sleepy.", "def": "The act of moving."}, {"w": "station", "p": "endings", "d": "easy", "g": 3, "s": "The train stopped at the station.", "def": "A place where trains or buses stop."}, {"w": "mission", "p": "endings", "d": "hard", "g": 3, "s": "Their mission was to plant ten trees.", "def": "An important job or task."}, {"w": "caption", "p": "endings", "d": "hard", "g": 3, "s": "Read the caption under the photo.", "def": "Words printed under a picture."}, {"w": "to", "p": "homophone", "d": "easy", "g": 3, "s": "We walked to the park after school.", "def": "Toward a place. Not 'too' and not 'two'."}, {"w": "too", "p": "homophone", "d": "easy", "g": 3, "s": "The soup was too hot to eat.", "def": "More than enough, or also. Not 'to' or 'two'."}, {"w": "hear", "p": "homophone", "d": "medium", "g": 3, "s": "Did you hear the bell ring?", "def": "To take in sound with your ears. Not 'here'."}, {"w": "here", "p": "homophone", "d": "medium", "g": 3, "s": "Please put your backpack here.", "def": "In this place. Not 'hear'."}, {"w": "knew", "p": "homophone", "d": "hard", "g": 3, "s": "She knew the answer right away.", "def": "Past tense of know. Not 'new'."}, {"w": "blue", "p": "homophone", "d": "hard", "g": 3, "s": "The sky turned a deep blue.", "def": "The color of a clear sky. Not 'blew'."}, {"w": "through", "p": "silent", "d": "easy", "g": 4, "s": "We walked through the tunnel.", "def": "From one side to the other. Not 'threw'."}, {"w": "answer", "p": "silent", "d": "easy", "g": 4, "s": "Write your answer on the line.", "def": "A reply or solution."}, {"w": "castle", "p": "silent", "d": "easy", "g": 4, "s": "The old castle sits on a hill.", "def": "A large fortified building."}, {"w": "whistle", "p": "silent", "d": "medium", "g": 4, "s": "The referee blew his whistle.", "def": "A device that makes a high sound."}, {"w": "fasten", "p": "silent", "d": "medium", "g": 4, "s": "Please fasten your seatbelt.", "def": "To close or attach securely."}, {"w": "knight", "p": "silent", "d": "medium", "g": 4, "s": "The knight rode toward the castle.", "def": "A soldier of high rank long ago."}, {"w": "wrinkle", "p": "silent", "d": "hard", "g": 4, "s": "There was a wrinkle in the paper.", "def": "A small fold or crease."}, {"w": "climbing", "p": "silent", "d": "hard", "g": 4, "s": "They are climbing the rope in gym class.", "def": "Going up using hands and feet."}, {"w": "address", "p": "double", "d": "medium", "g": 4, "s": "Write your address on the envelope.", "def": "The place where someone lives."}, {"w": "success", "p": "double", "d": "medium", "g": 4, "s": "The bake sale was a big success.", "def": "Achieving what you hoped for."}, {"w": "village", "p": "double", "d": "easy", "g": 4, "s": "A small village sits by the river.", "def": "A very small town."}, {"w": "cabbage", "p": "double", "d": "easy", "g": 4, "s": "He chopped the cabbage for the salad.", "def": "A round leafy vegetable."}, {"w": "beginner", "p": "double", "d": "hard", "g": 4, "s": "She is a beginner at the piano.", "def": "A person just starting to learn."}, {"w": "different", "p": "double", "d": "medium", "g": 4, "s": "These two shells are different sizes.", "def": "Not the same."}, {"w": "planning", "p": "double", "d": "hard", "g": 4, "s": "We are planning a trip to the museum.", "def": "Deciding ahead what to do."}, {"w": "arrive", "p": "double", "d": "easy", "g": 4, "s": "The bus should arrive at noon.", "def": "To reach a place."}, {"w": "question", "p": "endings", "d": "easy", "g": 4, "s": "Raise your hand if you have a question.", "def": "A sentence that asks for information."}, {"w": "direction", "p": "endings", "d": "medium", "g": 4, "s": "Follow the direction on the map.", "def": "The way something points or moves."}, {"w": "collection", "p": "endings", "d": "medium", "g": 4, "s": "He showed us his rock collection.", "def": "A group of things gathered together."}, {"w": "education", "p": "endings", "d": "hard", "g": 4, "s": "A good education opens many doors.", "def": "The process of learning and teaching."}, {"w": "division", "p": "endings", "d": "hard", "g": 4, "s": "We practiced long division today.", "def": "Splitting into parts, or a math operation."}, {"w": "attention", "p": "endings", "d": "medium", "g": 4, "s": "Please pay attention to the directions.", "def": "Careful thought or focus."}, {"w": "vacation", "p": "endings", "d": "easy", "g": 4, "s": "We go camping every summer vacation.", "def": "Time away from school or work."}, {"w": "invention", "p": "endings", "d": "hard", "g": 4, "s": "The electric light bulb was a famous invention.", "def": "Something new that someone creates."}, {"w": "disappear", "p": "prefix", "d": "medium", "g": 4, "s": "The coin seemed to disappear from his hand.", "def": "To go out of sight."}, {"w": "incorrect", "p": "prefix", "d": "medium", "g": 4, "s": "That answer is incorrect.", "def": "Not right."}, {"w": "rearrange", "p": "prefix", "d": "hard", "g": 4, "s": "Let's rearrange the desks in a circle.", "def": "To put in a different order."}, {"w": "underline", "p": "prefix", "d": "easy", "g": 4, "s": "Underline the title of the book.", "def": "To draw a line beneath words."}, {"w": "forever", "p": "prefix", "d": "easy", "g": 4, "s": "The friends promised to stay close forever.", "def": "For all time."}, {"w": "impatient", "p": "prefix", "d": "hard", "g": 4, "s": "He grew impatient waiting in line.", "def": "Not willing to wait calmly."}, {"w": "careful", "p": "suffix", "d": "easy", "g": 4, "s": "Be careful crossing the street.", "def": "Taking care to avoid mistakes."}, {"w": "thoughtful", "p": "suffix", "d": "medium", "g": 4, "s": "That was a thoughtful gift.", "def": "Showing care for others."}, {"w": "happiness", "p": "suffix", "d": "medium", "g": 4, "s": "Her happiness showed on her face.", "def": "The state of being happy."}, {"w": "comfortable", "p": "suffix", "d": "hard", "g": 4, "s": "This chair is very comfortable.", "def": "Pleasant and easy to be in."}, {"w": "dangerous", "p": "suffix", "d": "hard", "g": 4, "s": "Thin ice is dangerous to walk on.", "def": "Likely to cause harm."}, {"w": "quickly", "p": "suffix", "d": "easy", "g": 4, "s": "He quickly finished his homework.", "def": "In a fast way."}, {"w": "movement", "p": "suffix", "d": "medium", "g": 4, "s": "A small movement caught her eye.", "def": "The act of moving."}, {"w": "peaceful", "p": "suffix", "d": "medium", "g": 4, "s": "The lake was quiet and peaceful.", "def": "Calm and free from trouble."}, {"w": "piece", "p": "ie-ei", "d": "easy", "g": 4, "s": "He saved one piece of cake.", "def": "A part of something. Not 'peace'."}, {"w": "receive", "p": "ie-ei", "d": "hard", "g": 4, "s": "Did you receive my letter?", "def": "To get something given or sent."}, {"w": "ceiling", "p": "ie-ei", "d": "hard", "g": 4, "s": "A spider crawled across the ceiling.", "def": "The upper surface inside a room."}, {"w": "neighbor", "p": "ie-ei", "d": "medium", "g": 4, "s": "Our neighbor waters our plants.", "def": "A person who lives next to you."}, {"w": "niece", "p": "ie-ei", "d": "easy", "g": 4, "s": "My niece just turned six.", "def": "The daughter of your brother or sister."}, {"w": "height", "p": "ie-ei", "d": "medium", "g": 4, "s": "Measure the height of the doorway.", "def": "How tall something is."}, {"w": "their", "p": "homophone", "d": "easy", "g": 4, "s": "The students brought their notebooks.", "def": "Belonging to them. Not 'there' or 'they're'."}, {"w": "there", "p": "homophone", "d": "easy", "g": 4, "s": "Put the box over there by the door.", "def": "In that place. Not 'their' or 'they're'."}, {"w": "threw", "p": "homophone", "d": "medium", "g": 4, "s": "She threw the ball across the yard.", "def": "Past tense of throw. Not 'through'."}, {"w": "weather", "p": "homophone", "d": "medium", "g": 4, "s": "The weather turned cold and rainy.", "def": "The condition of the air outside. Not 'whether'."}, {"w": "principal", "p": "homophone", "d": "hard", "g": 4, "s": "The principal spoke at the assembly.", "def": "The head of a school. Not 'principle'."}, {"w": "peace", "p": "homophone", "d": "hard", "g": 4, "s": "The two countries signed a treaty of peace.", "def": "Freedom from war. Not 'piece'."}, {"w": "knight", "p": "silent", "d": "easy", "s": "The brave knight rode his horse to the castle.", "def": "A soldier of high rank who served a king long ago.", "g": 5}, {"w": "wrist", "p": "silent", "d": "easy", "s": "She wears her watch on her left wrist.", "def": "The joint between your hand and your arm.", "g": 5}, {"w": "climb", "p": "silent", "d": "easy", "s": "We like to climb the big tree in the yard.", "def": "To go up something using your hands and feet.", "g": 5}, {"w": "thumb", "p": "silent", "d": "easy", "s": "He hurt his thumb while closing the door.", "def": "The short, thick finger on the side of your hand.", "g": 5}, {"w": "knee", "p": "silent", "d": "easy", "s": "She scraped her knee falling off the bike.", "def": "The joint in the middle of your leg.", "g": 5}, {"w": "listen", "p": "silent", "d": "easy", "s": "Please listen carefully to the directions.", "def": "To pay attention to a sound.", "g": 5}, {"w": "island", "p": "silent", "d": "easy", "s": "They sailed to a small island in the bay.", "def": "A piece of land with water all around it.", "g": 5}, {"w": "wrong", "p": "silent", "d": "easy", "s": "I got only one answer wrong on the quiz.", "def": "Not correct.", "g": 5}, {"w": "knuckle", "p": "silent", "d": "medium", "s": "He cracked a knuckle on his right hand.", "def": "A joint in your finger.", "g": 5}, {"w": "wrestle", "p": "silent", "d": "medium", "s": "The puppies like to wrestle on the carpet.", "def": "To struggle or grapple with someone.", "g": 5}, {"w": "scissors", "p": "silent", "d": "medium", "s": "Use the scissors to cut along the line.", "def": "A tool with two blades used for cutting.", "g": 5}, {"w": "rhythm", "p": "silent", "d": "medium", "s": "The drummer kept a steady rhythm.", "def": "A regular repeated pattern of sound or movement.", "g": 5}, {"w": "column", "p": "silent", "d": "medium", "s": "Add the numbers in the first column.", "def": "An upright pillar, or a vertical list.", "g": 5}, {"w": "honest", "p": "silent", "d": "medium", "s": "An honest person tells the truth.", "def": "Truthful and fair.", "g": 5}, {"w": "muscle", "p": "silent", "d": "medium", "s": "Running builds muscle in your legs.", "def": "Tissue in the body that makes it move.", "g": 5}, {"w": "doubt", "p": "silent", "d": "medium", "s": "I have no doubt that she will win.", "def": "A feeling of not being sure.", "g": 5}, {"w": "knowledge", "p": "silent", "d": "hard", "s": "Her knowledge of astronomy impressed the teacher.", "def": "Information and understanding you have gained.", "g": 5}, {"w": "silhouette", "p": "silent", "d": "hard", "s": "We saw the silhouette of a bird against the sunset.", "def": "A dark outline of something seen against light.", "g": 5}, {"w": "pneumonia", "p": "silent", "d": "hard", "s": "The doctor treated his pneumonia with medicine.", "def": "An illness that causes the lungs to become infected.", "g": 5}, {"w": "subtle", "p": "silent", "d": "hard", "s": "There was a subtle change in the color of the sky.", "def": "So slight it is hard to notice.", "g": 5}, {"w": "conscience", "p": "silent", "d": "hard", "s": "His conscience told him to return the wallet.", "def": "The inner sense of right and wrong.", "g": 5}, {"w": "handkerchief", "p": "silent", "d": "hard", "s": "He kept a clean handkerchief in his pocket.", "def": "A small square of cloth used for wiping your face.", "g": 5}, {"w": "gnaw", "p": "silent", "d": "hard", "s": "The beaver will gnaw through the small tree.", "def": "To bite or chew on something over and over.", "g": 5}, {"w": "solemn", "p": "silent", "d": "hard", "s": "The ceremony was quiet and solemn.", "def": "Very serious in manner.", "g": 5}, {"w": "happen", "p": "double", "d": "easy", "s": "What will happen if we mix the two colors?", "def": "To take place or occur.", "g": 5}, {"w": "dinner", "p": "double", "d": "easy", "s": "We eat dinner together every evening.", "def": "The main meal of the day.", "g": 5}, {"w": "summer", "p": "double", "d": "easy", "s": "They swim at the lake all summer.", "def": "The warmest season of the year.", "g": 5}, {"w": "button", "p": "double", "d": "easy", "s": "One button fell off his shirt.", "def": "A small disk used to fasten clothing.", "g": 5}, {"w": "rabbit", "p": "double", "d": "easy", "s": "A rabbit hopped across the garden path.", "def": "A small furry animal with long ears.", "g": 5}, {"w": "puzzle", "p": "double", "d": "easy", "s": "She finished the jigsaw puzzle in one hour.", "def": "A game or problem that tests your cleverness.", "g": 5}, {"w": "middle", "p": "double", "d": "easy", "s": "Please sit in the middle seat.", "def": "The center point or part.", "g": 5}, {"w": "lesson", "p": "double", "d": "easy", "s": "Today's lesson is about fractions.", "def": "Something taught or learned.", "g": 5}, {"w": "beginning", "p": "double", "d": "medium", "s": "The beginning of the story was exciting.", "def": "The first part or the start.", "g": 5}, {"w": "stopped", "p": "double", "d": "medium", "s": "The bus stopped at the corner.", "def": "Past tense of stop; came to an end.", "g": 5}, {"w": "shimmer", "p": "double", "d": "medium", "s": "We watched the lake shimmer in the sunlight.", "def": "To shine with a soft wavering light.", "g": 5}, {"w": "embarrass", "p": "double", "d": "medium", "s": "Do not embarrass your friend in front of others.", "def": "To make someone feel awkward or ashamed.", "g": 5}, {"w": "occurred", "p": "double", "d": "medium", "s": "The storm occurred late in the night.", "def": "Happened or took place.", "g": 5}, {"w": "committee", "p": "double", "d": "medium", "s": "The committee met to plan the school fair.", "def": "A group of people chosen to do a job together.", "g": 5}, {"w": "swimming", "p": "double", "d": "medium", "s": "She goes swimming every Tuesday.", "def": "Moving through water using your arms and legs.", "g": 5}, {"w": "gallop", "p": "double", "d": "medium", "s": "We watched the horse gallop across the field.", "def": "To run fast, the way a horse does.", "g": 5}, {"w": "accommodate", "p": "double", "d": "hard", "s": "The hotel can accommodate forty guests.", "def": "To provide room or space for.", "g": 5}, {"w": "necessary", "p": "double", "d": "hard", "s": "It is necessary to bring a pencil to the test.", "def": "Needed; required.", "g": 5}, {"w": "parallel", "p": "double", "d": "hard", "s": "The two parallel lines never meet.", "def": "Side by side and always the same distance apart.", "g": 5}, {"w": "millennium", "p": "double", "d": "hard", "s": "A millennium is one thousand years.", "def": "A period of one thousand years.", "g": 5}, {"w": "exaggerate", "p": "double", "d": "hard", "s": "Do not exaggerate how big the fish was.", "def": "To make something seem larger than it really is.", "g": 5}, {"w": "possession", "p": "double", "d": "hard", "s": "That old book is her favorite possession.", "def": "Something that a person owns.", "g": 5}, {"w": "broccoli", "p": "double", "d": "hard", "s": "He ate the broccoli with his dinner.", "def": "A green vegetable with a thick stalk.", "g": 5}, {"w": "appropriate", "p": "double", "d": "hard", "s": "Wear appropriate shoes for the hike.", "def": "Suitable or right for the situation.", "g": 5}, {"w": "action", "p": "endings", "d": "easy", "s": "She took quick action to help.", "def": "The process of doing something.", "g": 5}, {"w": "station", "p": "endings", "d": "easy", "s": "The train pulled into the station.", "def": "A place where trains or buses stop.", "g": 5}, {"w": "question", "p": "endings", "d": "easy", "s": "Raise your hand if you have a question.", "def": "A sentence that asks for information.", "g": 5}, {"w": "mission", "p": "endings", "d": "easy", "s": "Their mission was to plant one hundred trees.", "def": "An important job or task.", "g": 5}, {"w": "vacation", "p": "endings", "d": "easy", "s": "We go to the beach every summer vacation.", "def": "A period of time away from school or work.", "g": 5}, {"w": "motion", "p": "endings", "d": "easy", "s": "The gentle motion of the boat made her sleepy.", "def": "The act of moving.", "g": 5}, {"w": "section", "p": "endings", "d": "easy", "s": "Read the first section of the chapter.", "def": "One part of something larger.", "g": 5}, {"w": "nation", "p": "endings", "d": "easy", "s": "Canada is a large nation.", "def": "A country and its people.", "g": 5}, {"w": "decision", "p": "endings", "d": "medium", "s": "Making that decision took a long time.", "def": "A choice you make after thinking.", "g": 5}, {"w": "attention", "p": "endings", "d": "medium", "s": "Please pay attention to the instructions.", "def": "Careful thought or focus.", "g": 5}, {"w": "invitation", "p": "endings", "d": "medium", "s": "She mailed an invitation to every classmate.", "def": "A written or spoken request to attend something.", "g": 5}, {"w": "conclusion", "p": "endings", "d": "medium", "s": "The conclusion of the story surprised me.", "def": "The end, or a judgment you reach.", "g": 5}, {"w": "celebration", "p": "endings", "d": "medium", "s": "The whole town joined the celebration.", "def": "A party or event held to honor something.", "g": 5}, {"w": "expression", "p": "endings", "d": "medium", "s": "A puzzled expression crossed his face.", "def": "A look on the face, or a way of saying something.", "g": 5}, {"w": "population", "p": "endings", "d": "medium", "s": "The population of the city keeps growing.", "def": "The number of people living in a place.", "g": 5}, {"w": "description", "p": "endings", "d": "medium", "s": "Write a description of your favorite place.", "def": "An account in words of what something is like.", "g": 5}, {"w": "pronunciation", "p": "endings", "d": "hard", "s": "The pronunciation of that word is tricky.", "def": "The way a word is spoken.", "g": 5}, {"w": "comprehension", "p": "endings", "d": "hard", "s": "The reading comprehension test had ten passages.", "def": "The ability to understand something.", "g": 5}, {"w": "transmission", "p": "endings", "d": "hard", "s": "The transmission of the signal was clear.", "def": "The act of sending something from one place to another.", "g": 5}, {"w": "exhibition", "p": "endings", "d": "hard", "s": "The museum opened a dinosaur exhibition.", "def": "A public display of art or objects.", "g": 5}, {"w": "persuasion", "p": "endings", "d": "hard", "s": "It took gentle persuasion to change his mind.", "def": "The act of convincing someone.", "g": 5}, {"w": "acquisition", "p": "endings", "d": "hard", "s": "The library announced the acquisition of rare maps.", "def": "Something gained or bought.", "g": 5}, {"w": "suspicion", "p": "endings", "d": "hard", "s": "She had a suspicion that the cat took the yarn.", "def": "A feeling that something may be true without proof.", "g": 5}, {"w": "dimension", "p": "endings", "d": "hard", "s": "Measure every dimension of the box.", "def": "A measurement such as length, width, or height.", "g": 5}, {"w": "their", "p": "homophone", "d": "easy", "s": "The students brought their notebooks to class.", "def": "Belonging to them. Not 'there' and not 'they're'.", "g": 5}, {"w": "there", "p": "homophone", "d": "easy", "s": "Put the box over there by the door.", "def": "In that place. Not 'their' and not 'they're'.", "g": 5}, {"w": "weather", "p": "homophone", "d": "easy", "s": "The weather turned cold and rainy.", "def": "The condition of the air outside. Not 'whether'.", "g": 5}, {"w": "whether", "p": "homophone", "d": "easy", "s": "I cannot decide whether to go or stay.", "def": "A word showing a choice between options. Not 'weather'.", "g": 5}, {"w": "principal", "p": "homophone", "d": "easy", "s": "The principal of our school gave a speech.", "def": "The head of a school. Not 'principle'.", "g": 5}, {"w": "peace", "p": "homophone", "d": "easy", "s": "The two countries signed a treaty of peace.", "def": "Freedom from war or noise. Not 'piece'.", "g": 5}, {"w": "shield", "p": "ie-ei", "d": "easy", "s": "The knight raised his shield to block the blow.", "def": "A broad piece of armor held to protect the body.", "g": 5}, {"w": "aloud", "p": "homophone", "d": "easy", "s": "Please read the poem aloud to the class.", "def": "Out loud, so others can hear. Not 'allowed'.", "g": 5}, {"w": "principle", "p": "homophone", "d": "medium", "s": "Honesty is an important principle to live by.", "def": "A basic rule or belief. Not 'principal'.", "g": 5}, {"w": "allowed", "p": "homophone", "d": "medium", "s": "We are allowed to eat lunch outside.", "def": "Permitted. Not 'aloud'.", "g": 5}, {"w": "capital", "p": "homophone", "d": "medium", "s": "Paris is the capital of France.", "def": "A city where a government sits. Not 'capitol'.", "g": 5}, {"w": "stationary", "p": "homophone", "d": "medium", "s": "The parked car stayed stationary.", "def": "Not moving. Not 'stationery'.", "g": 5}, {"w": "stationery", "p": "homophone", "d": "medium", "s": "She bought stationery to write letters.", "def": "Paper and envelopes for writing. Not 'stationary'.", "g": 5}, {"w": "complement", "p": "homophone", "d": "medium", "s": "The red scarf is a complement to her coat.", "def": "Something that completes or goes well with. Not 'compliment'.", "g": 5}, {"w": "compliment", "p": "homophone", "d": "medium", "s": "He gave her a kind compliment about her drawing.", "def": "A polite expression of praise. Not 'complement'.", "g": 5}, {"w": "desert", "p": "homophone", "d": "medium", "s": "Camels can cross the hot desert.", "def": "A dry sandy region. Not 'dessert', the sweet treat.", "g": 5}, {"w": "conscious", "p": "homophone", "d": "hard", "s": "She was conscious of the noise behind her.", "def": "Awake and aware. Not 'conscience'.", "g": 5}, {"w": "discreet", "p": "homophone", "d": "hard", "s": "He was discreet about the surprise party.", "def": "Careful not to reveal something. Not 'discrete'.", "g": 5}, {"w": "discrete", "p": "homophone", "d": "hard", "s": "The data came in discrete groups.", "def": "Separate and distinct. Not 'discreet'.", "g": 5}, {"w": "altar", "p": "homophone", "d": "hard", "s": "Flowers were placed on the altar.", "def": "A raised table used in ceremonies. Not 'alter'.", "g": 5}, {"w": "alter", "p": "homophone", "d": "hard", "s": "We may alter the plan if it rains.", "def": "To change something. Not 'altar'.", "g": 5}, {"w": "cite", "p": "homophone", "d": "hard", "s": "Remember to cite the book you used.", "def": "To quote or name a source. Not 'site' or 'sight'.", "g": 5}, {"w": "elicit", "p": "homophone", "d": "hard", "s": "The question will elicit a thoughtful answer.", "def": "To draw out a response. Not 'illicit'.", "g": 5}, {"w": "affect", "p": "homophone", "d": "hard", "s": "Rain will affect our picnic plans.", "def": "To influence something. Usually a verb, unlike 'effect'.", "g": 5}, {"w": "unhappy", "p": "prefix", "d": "easy", "s": "He was unhappy about losing the game.", "def": "Not happy.", "g": 5}, {"w": "rewrite", "p": "prefix", "d": "easy", "s": "Please rewrite the messy paragraph.", "def": "To write again.", "g": 5}, {"w": "preview", "p": "prefix", "d": "easy", "s": "We watched a preview of the movie.", "def": "A look at something before it is shown fully.", "g": 5}, {"w": "disagree", "p": "prefix", "d": "easy", "s": "They politely disagree about the answer.", "def": "To have a different opinion.", "g": 5}, {"w": "midnight", "p": "prefix", "d": "easy", "s": "The clock struck midnight.", "def": "Twelve o'clock at night.", "g": 5}, {"w": "nonsense", "p": "prefix", "d": "easy", "s": "His silly story was complete nonsense.", "def": "Words or ideas that make no sense.", "g": 5}, {"w": "unable", "p": "prefix", "d": "easy", "s": "She was unable to reach the top shelf.", "def": "Not able to do something.", "g": 5}, {"w": "subway", "p": "prefix", "d": "easy", "s": "We rode the subway across the city.", "def": "An underground train.", "g": 5}, {"w": "international", "p": "prefix", "d": "medium", "s": "The international contest had teams from ten countries.", "def": "Between or among different nations.", "g": 5}, {"w": "misunderstand", "p": "prefix", "d": "medium", "s": "Do not misunderstand what I meant.", "def": "To fail to understand correctly.", "g": 5}, {"w": "transport", "p": "prefix", "d": "medium", "s": "Trucks transport goods across the country.", "def": "To carry something from one place to another.", "g": 5}, {"w": "submarine", "p": "prefix", "d": "medium", "s": "The submarine dove beneath the waves.", "def": "A ship that travels underwater.", "g": 5}, {"w": "overestimate", "p": "prefix", "d": "medium", "s": "Do not overestimate how much time is left.", "def": "To guess that something is larger than it is.", "g": 5}, {"w": "antifreeze", "p": "prefix", "d": "medium", "s": "Dad poured antifreeze into the car.", "def": "A liquid that keeps something from freezing.", "g": 5}, {"w": "multiply", "p": "prefix", "d": "medium", "s": "Multiply seven by eight to get the answer.", "def": "To increase a number a certain number of times.", "g": 5}, {"w": "impossible", "p": "prefix", "d": "medium", "s": "Climbing that wall seemed impossible.", "def": "Not able to happen or be done.", "g": 5}, {"w": "circumference", "p": "prefix", "d": "hard", "s": "Measure the circumference of the circle.", "def": "The distance around a circle.", "g": 5}, {"w": "extraordinary", "p": "prefix", "d": "hard", "s": "Her memory for names is extraordinary.", "def": "Very unusual or remarkable.", "g": 5}, {"w": "hemisphere", "p": "prefix", "d": "hard", "s": "Australia is in the southern hemisphere.", "def": "One half of the earth or of a sphere.", "g": 5}, {"w": "contradict", "p": "prefix", "d": "hard", "s": "The two reports contradict each other.", "def": "To say the opposite of something.", "g": 5}, {"w": "unnecessary", "p": "prefix", "d": "hard", "s": "Bringing an umbrella was unnecessary.", "def": "Not needed.", "g": 5}, {"w": "interrupt", "p": "prefix", "d": "hard", "s": "Try not to interrupt while she is speaking.", "def": "To break into someone's speech or action.", "g": 5}, {"w": "microscopic", "p": "prefix", "d": "hard", "s": "The microscopic creatures live in pond water.", "def": "So small it can only be seen with a microscope.", "g": 5}, {"w": "transparent", "p": "prefix", "d": "hard", "s": "The window glass is completely transparent.", "def": "Clear enough to see through.", "g": 5}, {"w": "careful", "p": "suffix", "d": "easy", "s": "Be careful crossing the street.", "def": "Taking care to avoid mistakes or danger.", "g": 5}, {"w": "kindness", "p": "suffix", "d": "easy", "s": "Her kindness made everyone feel welcome.", "def": "The quality of being kind.", "g": 5}, {"w": "quickly", "p": "suffix", "d": "easy", "s": "He quickly finished his homework.", "def": "In a fast way.", "g": 5}, {"w": "useless", "p": "suffix", "d": "easy", "s": "A broken pencil is useless.", "def": "Having no use at all.", "g": 5}, {"w": "friendly", "p": "suffix", "d": "easy", "s": "The friendly dog wagged its tail.", "def": "Kind and pleasant to others.", "g": 5}, {"w": "enjoyment", "p": "suffix", "d": "easy", "s": "She reads for pure enjoyment.", "def": "The feeling of enjoying something.", "g": 5}, {"w": "famous", "p": "suffix", "d": "easy", "s": "That painter is famous around the world.", "def": "Known by many people.", "g": 5}, {"w": "darkness", "p": "suffix", "d": "easy", "s": "The darkness of the cave surprised them.", "def": "The state of having no light.", "g": 5}, {"w": "comfortable", "p": "suffix", "d": "medium", "s": "This chair is very comfortable.", "def": "Pleasant and easy to be in.", "g": 5}, {"w": "responsible", "p": "suffix", "d": "medium", "s": "She is responsible for feeding the cat.", "def": "Having a duty to take care of something.", "g": 5}, {"w": "dangerous", "p": "suffix", "d": "medium", "s": "Thin ice is dangerous to walk on.", "def": "Likely to cause harm.", "g": 5}, {"w": "valuable", "p": "suffix", "d": "medium", "s": "That old coin is quite valuable.", "def": "Worth a lot of money or importance.", "g": 5}, {"w": "terrible", "p": "suffix", "d": "medium", "s": "The storm caused terrible damage.", "def": "Very bad or awful.", "g": 5}, {"w": "curious", "p": "suffix", "d": "medium", "s": "The curious kitten explored the box.", "def": "Eager to learn or know something.", "g": 5}, {"w": "peaceful", "p": "suffix", "d": "medium", "s": "The lake was quiet and peaceful.", "def": "Calm and free from noise or trouble.", "g": 5}, {"w": "treatment", "p": "suffix", "d": "medium", "s": "The doctor explained the treatment.", "def": "The care given to help someone get better.", "g": 5}, {"w": "irresistible", "p": "suffix", "d": "hard", "s": "The smell of fresh bread was irresistible.", "def": "Too tempting to refuse.", "g": 5}, {"w": "knowledgeable", "p": "suffix", "d": "hard", "s": "Our guide was knowledgeable about birds.", "def": "Knowing a lot about a subject.", "g": 5}, {"w": "mysterious", "p": "suffix", "d": "hard", "s": "A mysterious light appeared in the sky.", "def": "Strange and hard to explain.", "g": 5}, {"w": "perishable", "p": "suffix", "d": "hard", "s": "Milk is a perishable food.", "def": "Likely to spoil or go bad quickly.", "g": 5}, {"w": "conscientious", "p": "suffix", "d": "hard", "s": "He is a conscientious student who checks his work.", "def": "Careful and thorough in doing what is right.", "g": 5}, {"w": "advantageous", "p": "suffix", "d": "hard", "s": "Studying early is advantageous before a test.", "def": "Giving a benefit or helpful edge.", "g": 5}, {"w": "noticeable", "p": "suffix", "d": "hard", "s": "There was a noticeable change in her tone.", "def": "Easy to see or notice.", "g": 5}, {"w": "tremendous", "p": "suffix", "d": "hard", "s": "They made a tremendous effort to finish.", "def": "Very great in size or amount.", "g": 5}, {"w": "believe", "p": "ie-ei", "d": "easy", "s": "I believe you told the truth.", "def": "To accept that something is true.", "g": 5}, {"w": "friend", "p": "ie-ei", "d": "easy", "s": "My best friend lives next door.", "def": "A person you like and trust.", "g": 5}, {"w": "piece", "p": "ie-ei", "d": "easy", "s": "He saved one piece of cake for later.", "def": "A part broken or cut from something.", "g": 5}, {"w": "field", "p": "ie-ei", "d": "easy", "s": "The horses ran across the open field.", "def": "An open area of land.", "g": 5}, {"w": "chief", "p": "ie-ei", "d": "easy", "s": "The fire chief spoke to our class.", "def": "The leader of a group.", "g": 5}, {"w": "eight", "p": "ie-ei", "d": "easy", "s": "There are eight crayons in the box.", "def": "The number after seven.", "g": 5}, {"w": "niece", "p": "ie-ei", "d": "easy", "s": "My niece just turned six years old.", "def": "The daughter of your brother or sister.", "g": 5}, {"w": "thief", "p": "ie-ei", "d": "easy", "s": "The thief was caught by the police.", "def": "A person who steals.", "g": 5}, {"w": "receive", "p": "ie-ei", "d": "medium", "s": "Did you receive my letter?", "def": "To get something that is given or sent.", "g": 5}, {"w": "ceiling", "p": "ie-ei", "d": "medium", "s": "A spider crawled across the ceiling.", "def": "The upper surface inside a room.", "g": 5}, {"w": "neighbor", "p": "ie-ei", "d": "medium", "s": "Our neighbor waters our plants.", "def": "A person who lives next to you.", "g": 5}, {"w": "achieve", "p": "ie-ei", "d": "medium", "s": "She worked hard to achieve her goal.", "def": "To succeed in doing something.", "g": 5}, {"w": "weird", "p": "ie-ei", "d": "medium", "s": "That was a weird dream last night.", "def": "Strange or unusual.", "g": 5}, {"w": "height", "p": "ie-ei", "d": "medium", "s": "Measure the height of the doorway.", "def": "How tall something is.", "g": 5}, {"w": "deceive", "p": "ie-ei", "d": "medium", "s": "Do not let the trick deceive you.", "def": "To make someone believe something untrue.", "g": 5}, {"w": "foreign", "p": "ie-ei", "d": "medium", "s": "She is learning a foreign language.", "def": "From another country.", "g": 5}, {"w": "perceive", "p": "ie-ei", "d": "hard", "s": "Can you perceive the faint sound?", "def": "To become aware of through the senses.", "g": 5}, {"w": "efficient", "p": "ie-ei", "d": "hard", "s": "The new method is more efficient.", "def": "Working well without wasting time or effort.", "g": 5}, {"w": "sufficient", "p": "ie-ei", "d": "hard", "s": "We have sufficient supplies for the trip.", "def": "Enough for what is needed.", "g": 5}, {"w": "counterfeit", "p": "ie-ei", "d": "hard", "s": "The bank spotted the counterfeit bill.", "def": "A fake copy made to fool people.", "g": 5}, {"w": "seize", "p": "ie-ei", "d": "hard", "s": "The eagle will seize the fish in its claws.", "def": "To grab something suddenly and firmly.", "g": 5}, {"w": "leisure", "p": "ie-ei", "d": "hard", "s": "He reads during his leisure time.", "def": "Free time when you can relax.", "g": 5}, {"w": "mischief", "p": "ie-ei", "d": "hard", "s": "The kittens got into mischief again.", "def": "Playful behavior that causes small trouble.", "g": 5}, {"w": "protein", "p": "ie-ei", "d": "hard", "s": "Beans are a good source of protein.", "def": "A nutrient the body needs to grow.", "g": 5}, {"w": "because", "p": "tricky", "d": "easy", "s": "We stayed inside because it rained.", "def": "For the reason that.", "g": 5}, {"w": "February", "p": "tricky", "d": "easy", "s": "February is the shortest month.", "def": "The second month of the year.", "g": 5}, {"w": "Wednesday", "p": "tricky", "d": "easy", "s": "We have music class on Wednesday.", "def": "The day between Tuesday and Thursday.", "g": 5}, {"w": "favorite", "p": "tricky", "d": "easy", "s": "Blue is her favorite color.", "def": "The one you like best.", "g": 5}, {"w": "different", "p": "tricky", "d": "easy", "s": "These two shells are different sizes.", "def": "Not the same.", "g": 5}, {"w": "probably", "p": "tricky", "d": "easy", "s": "It will probably snow tonight.", "def": "Most likely.", "g": 5}, {"w": "library", "p": "tricky", "d": "easy", "s": "She borrowed three books from the library.", "def": "A place where books are kept for borrowing.", "g": 5}, {"w": "answer", "p": "tricky", "d": "easy", "s": "Write your answer on the line.", "def": "A reply or solution.", "g": 5}, {"w": "separate", "p": "tricky", "d": "medium", "s": "Please separate the red beads from the blue ones.", "def": "To divide or keep apart.", "g": 5}, {"w": "definitely", "p": "tricky", "d": "medium", "s": "I will definitely be at the game.", "def": "Without any doubt.", "g": 5}, {"w": "restaurant", "p": "tricky", "d": "medium", "s": "We ate dinner at a new restaurant.", "def": "A place where meals are served.", "g": 5}, {"w": "calendar", "p": "tricky", "d": "medium", "s": "Mark the date on the calendar.", "def": "A chart showing the days of the year.", "g": 5}, {"w": "government", "p": "tricky", "d": "medium", "s": "The government passed a new law.", "def": "The group that runs a country or state.", "g": 5}, {"w": "familiar", "p": "tricky", "d": "medium", "s": "That song sounds familiar to me.", "def": "Well known or often seen before.", "g": 5}, {"w": "temperature", "p": "tricky", "d": "medium", "s": "The temperature dropped below freezing.", "def": "A measure of how hot or cold something is.", "g": 5}, {"w": "experience", "p": "tricky", "d": "medium", "s": "Camping was a new experience for him.", "def": "Something you have done or lived through.", "g": 5}, {"w": "rhythmically", "p": "tricky", "d": "hard", "s": "The waves rolled in rhythmically.", "def": "In a regular repeating pattern.", "g": 5}, {"w": "bureaucracy", "p": "tricky", "d": "hard", "s": "The permit was delayed by bureaucracy.", "def": "A system of many official rules and offices.", "g": 5}, {"w": "questionnaire", "p": "tricky", "d": "hard", "s": "Each student filled out a questionnaire.", "def": "A written list of questions to answer.", "g": 5}, {"w": "maintenance", "p": "tricky", "d": "hard", "s": "The bridge requires yearly maintenance.", "def": "The work of keeping something in good condition.", "g": 5}, {"w": "acknowledge", "p": "tricky", "d": "hard", "s": "Please acknowledge that you received the message.", "def": "To admit or confirm something is true.", "g": 5}, {"w": "vacuum", "p": "tricky", "d": "hard", "s": "He used a vacuum to clean the rug.", "def": "A space with no air, or a machine that sucks up dirt.", "g": 5}, {"w": "privilege", "p": "tricky", "d": "hard", "s": "Driving a car is a privilege, not a right.", "def": "A special right or advantage.", "g": 5}, {"w": "guarantee", "p": "tricky", "d": "hard", "s": "The store offers a guarantee on the bike.", "def": "A promise that something will work or be done.", "g": 5}, {"w": "knight", "p": "silent", "d": "easy", "s": "The brave knight rode his horse to the castle.", "def": "A soldier of high rank who served a king long ago.", "g": 6}, {"w": "wrist", "p": "silent", "d": "easy", "s": "She wears her watch on her left wrist.", "def": "The joint between your hand and your arm.", "g": 6}, {"w": "climb", "p": "silent", "d": "easy", "s": "We like to climb the big tree in the yard.", "def": "To go up something using your hands and feet.", "g": 6}, {"w": "thumb", "p": "silent", "d": "easy", "s": "He hurt his thumb while closing the door.", "def": "The short, thick finger on the side of your hand.", "g": 6}, {"w": "knee", "p": "silent", "d": "easy", "s": "She scraped her knee falling off the bike.", "def": "The joint in the middle of your leg.", "g": 6}, {"w": "listen", "p": "silent", "d": "easy", "s": "Please listen carefully to the directions.", "def": "To pay attention to a sound.", "g": 6}, {"w": "island", "p": "silent", "d": "easy", "s": "They sailed to a small island in the bay.", "def": "A piece of land with water all around it.", "g": 6}, {"w": "wrong", "p": "silent", "d": "easy", "s": "I got only one answer wrong on the quiz.", "def": "Not correct.", "g": 6}, {"w": "knuckle", "p": "silent", "d": "medium", "s": "He cracked a knuckle on his right hand.", "def": "A joint in your finger.", "g": 6}, {"w": "wrestle", "p": "silent", "d": "medium", "s": "The puppies like to wrestle on the carpet.", "def": "To struggle or grapple with someone.", "g": 6}, {"w": "scissors", "p": "silent", "d": "medium", "s": "Use the scissors to cut along the line.", "def": "A tool with two blades used for cutting.", "g": 6}, {"w": "rhythm", "p": "silent", "d": "medium", "s": "The drummer kept a steady rhythm.", "def": "A regular repeated pattern of sound or movement.", "g": 6}, {"w": "column", "p": "silent", "d": "medium", "s": "Add the numbers in the first column.", "def": "An upright pillar, or a vertical list.", "g": 6}, {"w": "honest", "p": "silent", "d": "medium", "s": "An honest person tells the truth.", "def": "Truthful and fair.", "g": 6}, {"w": "muscle", "p": "silent", "d": "medium", "s": "Running builds muscle in your legs.", "def": "Tissue in the body that makes it move.", "g": 6}, {"w": "doubt", "p": "silent", "d": "medium", "s": "I have no doubt that she will win.", "def": "A feeling of not being sure.", "g": 6}, {"w": "knowledge", "p": "silent", "d": "hard", "s": "Her knowledge of astronomy impressed the teacher.", "def": "Information and understanding you have gained.", "g": 6}, {"w": "silhouette", "p": "silent", "d": "hard", "s": "We saw the silhouette of a bird against the sunset.", "def": "A dark outline of something seen against light.", "g": 6}, {"w": "pneumonia", "p": "silent", "d": "hard", "s": "The doctor treated his pneumonia with medicine.", "def": "An illness that causes the lungs to become infected.", "g": 6}, {"w": "subtle", "p": "silent", "d": "hard", "s": "There was a subtle change in the color of the sky.", "def": "So slight it is hard to notice.", "g": 6}, {"w": "conscience", "p": "silent", "d": "hard", "s": "His conscience told him to return the wallet.", "def": "The inner sense of right and wrong.", "g": 6}, {"w": "handkerchief", "p": "silent", "d": "hard", "s": "He kept a clean handkerchief in his pocket.", "def": "A small square of cloth used for wiping your face.", "g": 6}, {"w": "gnaw", "p": "silent", "d": "hard", "s": "The beaver will gnaw through the small tree.", "def": "To bite or chew on something over and over.", "g": 6}, {"w": "solemn", "p": "silent", "d": "hard", "s": "The ceremony was quiet and solemn.", "def": "Very serious in manner.", "g": 6}, {"w": "happen", "p": "double", "d": "easy", "s": "What will happen if we mix the two colors?", "def": "To take place or occur.", "g": 6}, {"w": "dinner", "p": "double", "d": "easy", "s": "We eat dinner together every evening.", "def": "The main meal of the day.", "g": 6}, {"w": "summer", "p": "double", "d": "easy", "s": "They swim at the lake all summer.", "def": "The warmest season of the year.", "g": 6}, {"w": "button", "p": "double", "d": "easy", "s": "One button fell off his shirt.", "def": "A small disk used to fasten clothing.", "g": 6}, {"w": "rabbit", "p": "double", "d": "easy", "s": "A rabbit hopped across the garden path.", "def": "A small furry animal with long ears.", "g": 6}, {"w": "puzzle", "p": "double", "d": "easy", "s": "She finished the jigsaw puzzle in one hour.", "def": "A game or problem that tests your cleverness.", "g": 6}, {"w": "middle", "p": "double", "d": "easy", "s": "Please sit in the middle seat.", "def": "The center point or part.", "g": 6}, {"w": "lesson", "p": "double", "d": "easy", "s": "Today's lesson is about fractions.", "def": "Something taught or learned.", "g": 6}, {"w": "beginning", "p": "double", "d": "medium", "s": "The beginning of the story was exciting.", "def": "The first part or the start.", "g": 6}, {"w": "stopped", "p": "double", "d": "medium", "s": "The bus stopped at the corner.", "def": "Past tense of stop; came to an end.", "g": 6}, {"w": "shimmer", "p": "double", "d": "medium", "s": "We watched the lake shimmer in the sunlight.", "def": "To shine with a soft wavering light.", "g": 6}, {"w": "embarrass", "p": "double", "d": "medium", "s": "Do not embarrass your friend in front of others.", "def": "To make someone feel awkward or ashamed.", "g": 6}, {"w": "occurred", "p": "double", "d": "medium", "s": "The storm occurred late in the night.", "def": "Happened or took place.", "g": 6}, {"w": "committee", "p": "double", "d": "medium", "s": "The committee met to plan the school fair.", "def": "A group of people chosen to do a job together.", "g": 6}, {"w": "swimming", "p": "double", "d": "medium", "s": "She goes swimming every Tuesday.", "def": "Moving through water using your arms and legs.", "g": 6}, {"w": "gallop", "p": "double", "d": "medium", "s": "We watched the horse gallop across the field.", "def": "To run fast, the way a horse does.", "g": 6}, {"w": "accommodate", "p": "double", "d": "hard", "s": "The hotel can accommodate forty guests.", "def": "To provide room or space for.", "g": 6}, {"w": "necessary", "p": "double", "d": "hard", "s": "It is necessary to bring a pencil to the test.", "def": "Needed; required.", "g": 6}, {"w": "parallel", "p": "double", "d": "hard", "s": "The two parallel lines never meet.", "def": "Side by side and always the same distance apart.", "g": 6}, {"w": "millennium", "p": "double", "d": "hard", "s": "A millennium is one thousand years.", "def": "A period of one thousand years.", "g": 6}, {"w": "exaggerate", "p": "double", "d": "hard", "s": "Do not exaggerate how big the fish was.", "def": "To make something seem larger than it really is.", "g": 6}, {"w": "possession", "p": "double", "d": "hard", "s": "That old book is her favorite possession.", "def": "Something that a person owns.", "g": 6}, {"w": "broccoli", "p": "double", "d": "hard", "s": "He ate the broccoli with his dinner.", "def": "A green vegetable with a thick stalk.", "g": 6}, {"w": "appropriate", "p": "double", "d": "hard", "s": "Wear appropriate shoes for the hike.", "def": "Suitable or right for the situation.", "g": 6}, {"w": "action", "p": "endings", "d": "easy", "s": "She took quick action to help.", "def": "The process of doing something.", "g": 6}, {"w": "station", "p": "endings", "d": "easy", "s": "The train pulled into the station.", "def": "A place where trains or buses stop.", "g": 6}, {"w": "question", "p": "endings", "d": "easy", "s": "Raise your hand if you have a question.", "def": "A sentence that asks for information.", "g": 6}, {"w": "mission", "p": "endings", "d": "easy", "s": "Their mission was to plant one hundred trees.", "def": "An important job or task.", "g": 6}, {"w": "vacation", "p": "endings", "d": "easy", "s": "We go to the beach every summer vacation.", "def": "A period of time away from school or work.", "g": 6}, {"w": "motion", "p": "endings", "d": "easy", "s": "The gentle motion of the boat made her sleepy.", "def": "The act of moving.", "g": 6}, {"w": "section", "p": "endings", "d": "easy", "s": "Read the first section of the chapter.", "def": "One part of something larger.", "g": 6}, {"w": "nation", "p": "endings", "d": "easy", "s": "Canada is a large nation.", "def": "A country and its people.", "g": 6}, {"w": "decision", "p": "endings", "d": "medium", "s": "Making that decision took a long time.", "def": "A choice you make after thinking.", "g": 6}, {"w": "attention", "p": "endings", "d": "medium", "s": "Please pay attention to the instructions.", "def": "Careful thought or focus.", "g": 6}, {"w": "invitation", "p": "endings", "d": "medium", "s": "She mailed an invitation to every classmate.", "def": "A written or spoken request to attend something.", "g": 6}, {"w": "conclusion", "p": "endings", "d": "medium", "s": "The conclusion of the story surprised me.", "def": "The end, or a judgment you reach.", "g": 6}, {"w": "celebration", "p": "endings", "d": "medium", "s": "The whole town joined the celebration.", "def": "A party or event held to honor something.", "g": 6}, {"w": "expression", "p": "endings", "d": "medium", "s": "A puzzled expression crossed his face.", "def": "A look on the face, or a way of saying something.", "g": 6}, {"w": "population", "p": "endings", "d": "medium", "s": "The population of the city keeps growing.", "def": "The number of people living in a place.", "g": 6}, {"w": "description", "p": "endings", "d": "medium", "s": "Write a description of your favorite place.", "def": "An account in words of what something is like.", "g": 6}, {"w": "pronunciation", "p": "endings", "d": "hard", "s": "The pronunciation of that word is tricky.", "def": "The way a word is spoken.", "g": 6}, {"w": "comprehension", "p": "endings", "d": "hard", "s": "The reading comprehension test had ten passages.", "def": "The ability to understand something.", "g": 6}, {"w": "transmission", "p": "endings", "d": "hard", "s": "The transmission of the signal was clear.", "def": "The act of sending something from one place to another.", "g": 6}, {"w": "exhibition", "p": "endings", "d": "hard", "s": "The museum opened a dinosaur exhibition.", "def": "A public display of art or objects.", "g": 6}, {"w": "persuasion", "p": "endings", "d": "hard", "s": "It took gentle persuasion to change his mind.", "def": "The act of convincing someone.", "g": 6}, {"w": "acquisition", "p": "endings", "d": "hard", "s": "The library announced the acquisition of rare maps.", "def": "Something gained or bought.", "g": 6}, {"w": "suspicion", "p": "endings", "d": "hard", "s": "She had a suspicion that the cat took the yarn.", "def": "A feeling that something may be true without proof.", "g": 6}, {"w": "dimension", "p": "endings", "d": "hard", "s": "Measure every dimension of the box.", "def": "A measurement such as length, width, or height.", "g": 6}, {"w": "their", "p": "homophone", "d": "easy", "s": "The students brought their notebooks to class.", "def": "Belonging to them. Not 'there' and not 'they're'.", "g": 6}, {"w": "there", "p": "homophone", "d": "easy", "s": "Put the box over there by the door.", "def": "In that place. Not 'their' and not 'they're'.", "g": 6}, {"w": "weather", "p": "homophone", "d": "easy", "s": "The weather turned cold and rainy.", "def": "The condition of the air outside. Not 'whether'.", "g": 6}, {"w": "whether", "p": "homophone", "d": "easy", "s": "I cannot decide whether to go or stay.", "def": "A word showing a choice between options. Not 'weather'.", "g": 6}, {"w": "principal", "p": "homophone", "d": "easy", "s": "The principal of our school gave a speech.", "def": "The head of a school. Not 'principle'.", "g": 6}, {"w": "peace", "p": "homophone", "d": "easy", "s": "The two countries signed a treaty of peace.", "def": "Freedom from war or noise. Not 'piece'.", "g": 6}, {"w": "shield", "p": "ie-ei", "d": "easy", "s": "The knight raised his shield to block the blow.", "def": "A broad piece of armor held to protect the body.", "g": 6}, {"w": "aloud", "p": "homophone", "d": "easy", "s": "Please read the poem aloud to the class.", "def": "Out loud, so others can hear. Not 'allowed'.", "g": 6}, {"w": "principle", "p": "homophone", "d": "medium", "s": "Honesty is an important principle to live by.", "def": "A basic rule or belief. Not 'principal'.", "g": 6}, {"w": "allowed", "p": "homophone", "d": "medium", "s": "We are allowed to eat lunch outside.", "def": "Permitted. Not 'aloud'.", "g": 6}, {"w": "capital", "p": "homophone", "d": "medium", "s": "Paris is the capital of France.", "def": "A city where a government sits. Not 'capitol'.", "g": 6}, {"w": "stationary", "p": "homophone", "d": "medium", "s": "The parked car stayed stationary.", "def": "Not moving. Not 'stationery'.", "g": 6}, {"w": "stationery", "p": "homophone", "d": "medium", "s": "She bought stationery to write letters.", "def": "Paper and envelopes for writing. Not 'stationary'.", "g": 6}, {"w": "complement", "p": "homophone", "d": "medium", "s": "The red scarf is a complement to her coat.", "def": "Something that completes or goes well with. Not 'compliment'.", "g": 6}, {"w": "compliment", "p": "homophone", "d": "medium", "s": "He gave her a kind compliment about her drawing.", "def": "A polite expression of praise. Not 'complement'.", "g": 6}, {"w": "desert", "p": "homophone", "d": "medium", "s": "Camels can cross the hot desert.", "def": "A dry sandy region. Not 'dessert', the sweet treat.", "g": 6}, {"w": "conscious", "p": "homophone", "d": "hard", "s": "She was conscious of the noise behind her.", "def": "Awake and aware. Not 'conscience'.", "g": 6}, {"w": "discreet", "p": "homophone", "d": "hard", "s": "He was discreet about the surprise party.", "def": "Careful not to reveal something. Not 'discrete'.", "g": 6}, {"w": "discrete", "p": "homophone", "d": "hard", "s": "The data came in discrete groups.", "def": "Separate and distinct. Not 'discreet'.", "g": 6}, {"w": "altar", "p": "homophone", "d": "hard", "s": "Flowers were placed on the altar.", "def": "A raised table used in ceremonies. Not 'alter'.", "g": 6}, {"w": "alter", "p": "homophone", "d": "hard", "s": "We may alter the plan if it rains.", "def": "To change something. Not 'altar'.", "g": 6}, {"w": "cite", "p": "homophone", "d": "hard", "s": "Remember to cite the book you used.", "def": "To quote or name a source. Not 'site' or 'sight'.", "g": 6}, {"w": "elicit", "p": "homophone", "d": "hard", "s": "The question will elicit a thoughtful answer.", "def": "To draw out a response. Not 'illicit'.", "g": 6}, {"w": "affect", "p": "homophone", "d": "hard", "s": "Rain will affect our picnic plans.", "def": "To influence something. Usually a verb, unlike 'effect'.", "g": 6}, {"w": "unhappy", "p": "prefix", "d": "easy", "s": "He was unhappy about losing the game.", "def": "Not happy.", "g": 6}, {"w": "rewrite", "p": "prefix", "d": "easy", "s": "Please rewrite the messy paragraph.", "def": "To write again.", "g": 6}, {"w": "preview", "p": "prefix", "d": "easy", "s": "We watched a preview of the movie.", "def": "A look at something before it is shown fully.", "g": 6}, {"w": "disagree", "p": "prefix", "d": "easy", "s": "They politely disagree about the answer.", "def": "To have a different opinion.", "g": 6}, {"w": "midnight", "p": "prefix", "d": "easy", "s": "The clock struck midnight.", "def": "Twelve o'clock at night.", "g": 6}, {"w": "nonsense", "p": "prefix", "d": "easy", "s": "His silly story was complete nonsense.", "def": "Words or ideas that make no sense.", "g": 6}, {"w": "unable", "p": "prefix", "d": "easy", "s": "She was unable to reach the top shelf.", "def": "Not able to do something.", "g": 6}, {"w": "subway", "p": "prefix", "d": "easy", "s": "We rode the subway across the city.", "def": "An underground train.", "g": 6}, {"w": "international", "p": "prefix", "d": "medium", "s": "The international contest had teams from ten countries.", "def": "Between or among different nations.", "g": 6}, {"w": "misunderstand", "p": "prefix", "d": "medium", "s": "Do not misunderstand what I meant.", "def": "To fail to understand correctly.", "g": 6}, {"w": "transport", "p": "prefix", "d": "medium", "s": "Trucks transport goods across the country.", "def": "To carry something from one place to another.", "g": 6}, {"w": "submarine", "p": "prefix", "d": "medium", "s": "The submarine dove beneath the waves.", "def": "A ship that travels underwater.", "g": 6}, {"w": "overestimate", "p": "prefix", "d": "medium", "s": "Do not overestimate how much time is left.", "def": "To guess that something is larger than it is.", "g": 6}, {"w": "antifreeze", "p": "prefix", "d": "medium", "s": "Dad poured antifreeze into the car.", "def": "A liquid that keeps something from freezing.", "g": 6}, {"w": "multiply", "p": "prefix", "d": "medium", "s": "Multiply seven by eight to get the answer.", "def": "To increase a number a certain number of times.", "g": 6}, {"w": "impossible", "p": "prefix", "d": "medium", "s": "Climbing that wall seemed impossible.", "def": "Not able to happen or be done.", "g": 6}, {"w": "circumference", "p": "prefix", "d": "hard", "s": "Measure the circumference of the circle.", "def": "The distance around a circle.", "g": 6}, {"w": "extraordinary", "p": "prefix", "d": "hard", "s": "Her memory for names is extraordinary.", "def": "Very unusual or remarkable.", "g": 6}, {"w": "hemisphere", "p": "prefix", "d": "hard", "s": "Australia is in the southern hemisphere.", "def": "One half of the earth or of a sphere.", "g": 6}, {"w": "contradict", "p": "prefix", "d": "hard", "s": "The two reports contradict each other.", "def": "To say the opposite of something.", "g": 6}, {"w": "unnecessary", "p": "prefix", "d": "hard", "s": "Bringing an umbrella was unnecessary.", "def": "Not needed.", "g": 6}, {"w": "interrupt", "p": "prefix", "d": "hard", "s": "Try not to interrupt while she is speaking.", "def": "To break into someone's speech or action.", "g": 6}, {"w": "microscopic", "p": "prefix", "d": "hard", "s": "The microscopic creatures live in pond water.", "def": "So small it can only be seen with a microscope.", "g": 6}, {"w": "transparent", "p": "prefix", "d": "hard", "s": "The window glass is completely transparent.", "def": "Clear enough to see through.", "g": 6}, {"w": "careful", "p": "suffix", "d": "easy", "s": "Be careful crossing the street.", "def": "Taking care to avoid mistakes or danger.", "g": 6}, {"w": "kindness", "p": "suffix", "d": "easy", "s": "Her kindness made everyone feel welcome.", "def": "The quality of being kind.", "g": 6}, {"w": "quickly", "p": "suffix", "d": "easy", "s": "He quickly finished his homework.", "def": "In a fast way.", "g": 6}, {"w": "useless", "p": "suffix", "d": "easy", "s": "A broken pencil is useless.", "def": "Having no use at all.", "g": 6}, {"w": "friendly", "p": "suffix", "d": "easy", "s": "The friendly dog wagged its tail.", "def": "Kind and pleasant to others.", "g": 6}, {"w": "enjoyment", "p": "suffix", "d": "easy", "s": "She reads for pure enjoyment.", "def": "The feeling of enjoying something.", "g": 6}, {"w": "famous", "p": "suffix", "d": "easy", "s": "That painter is famous around the world.", "def": "Known by many people.", "g": 6}, {"w": "darkness", "p": "suffix", "d": "easy", "s": "The darkness of the cave surprised them.", "def": "The state of having no light.", "g": 6}, {"w": "comfortable", "p": "suffix", "d": "medium", "s": "This chair is very comfortable.", "def": "Pleasant and easy to be in.", "g": 6}, {"w": "responsible", "p": "suffix", "d": "medium", "s": "She is responsible for feeding the cat.", "def": "Having a duty to take care of something.", "g": 6}, {"w": "dangerous", "p": "suffix", "d": "medium", "s": "Thin ice is dangerous to walk on.", "def": "Likely to cause harm.", "g": 6}, {"w": "valuable", "p": "suffix", "d": "medium", "s": "That old coin is quite valuable.", "def": "Worth a lot of money or importance.", "g": 6}, {"w": "terrible", "p": "suffix", "d": "medium", "s": "The storm caused terrible damage.", "def": "Very bad or awful.", "g": 6}, {"w": "curious", "p": "suffix", "d": "medium", "s": "The curious kitten explored the box.", "def": "Eager to learn or know something.", "g": 6}, {"w": "peaceful", "p": "suffix", "d": "medium", "s": "The lake was quiet and peaceful.", "def": "Calm and free from noise or trouble.", "g": 6}, {"w": "treatment", "p": "suffix", "d": "medium", "s": "The doctor explained the treatment.", "def": "The care given to help someone get better.", "g": 6}, {"w": "irresistible", "p": "suffix", "d": "hard", "s": "The smell of fresh bread was irresistible.", "def": "Too tempting to refuse.", "g": 6}, {"w": "knowledgeable", "p": "suffix", "d": "hard", "s": "Our guide was knowledgeable about birds.", "def": "Knowing a lot about a subject.", "g": 6}, {"w": "mysterious", "p": "suffix", "d": "hard", "s": "A mysterious light appeared in the sky.", "def": "Strange and hard to explain.", "g": 6}, {"w": "perishable", "p": "suffix", "d": "hard", "s": "Milk is a perishable food.", "def": "Likely to spoil or go bad quickly.", "g": 6}, {"w": "conscientious", "p": "suffix", "d": "hard", "s": "He is a conscientious student who checks his work.", "def": "Careful and thorough in doing what is right.", "g": 6}, {"w": "advantageous", "p": "suffix", "d": "hard", "s": "Studying early is advantageous before a test.", "def": "Giving a benefit or helpful edge.", "g": 6}, {"w": "noticeable", "p": "suffix", "d": "hard", "s": "There was a noticeable change in her tone.", "def": "Easy to see or notice.", "g": 6}, {"w": "tremendous", "p": "suffix", "d": "hard", "s": "They made a tremendous effort to finish.", "def": "Very great in size or amount.", "g": 6}, {"w": "believe", "p": "ie-ei", "d": "easy", "s": "I believe you told the truth.", "def": "To accept that something is true.", "g": 6}, {"w": "friend", "p": "ie-ei", "d": "easy", "s": "My best friend lives next door.", "def": "A person you like and trust.", "g": 6}, {"w": "piece", "p": "ie-ei", "d": "easy", "s": "He saved one piece of cake for later.", "def": "A part broken or cut from something.", "g": 6}, {"w": "field", "p": "ie-ei", "d": "easy", "s": "The horses ran across the open field.", "def": "An open area of land.", "g": 6}, {"w": "chief", "p": "ie-ei", "d": "easy", "s": "The fire chief spoke to our class.", "def": "The leader of a group.", "g": 6}, {"w": "eight", "p": "ie-ei", "d": "easy", "s": "There are eight crayons in the box.", "def": "The number after seven.", "g": 6}, {"w": "niece", "p": "ie-ei", "d": "easy", "s": "My niece just turned six years old.", "def": "The daughter of your brother or sister.", "g": 6}, {"w": "thief", "p": "ie-ei", "d": "easy", "s": "The thief was caught by the police.", "def": "A person who steals.", "g": 6}, {"w": "receive", "p": "ie-ei", "d": "medium", "s": "Did you receive my letter?", "def": "To get something that is given or sent.", "g": 6}, {"w": "ceiling", "p": "ie-ei", "d": "medium", "s": "A spider crawled across the ceiling.", "def": "The upper surface inside a room.", "g": 6}, {"w": "neighbor", "p": "ie-ei", "d": "medium", "s": "Our neighbor waters our plants.", "def": "A person who lives next to you.", "g": 6}, {"w": "achieve", "p": "ie-ei", "d": "medium", "s": "She worked hard to achieve her goal.", "def": "To succeed in doing something.", "g": 6}, {"w": "weird", "p": "ie-ei", "d": "medium", "s": "That was a weird dream last night.", "def": "Strange or unusual.", "g": 6}, {"w": "height", "p": "ie-ei", "d": "medium", "s": "Measure the height of the doorway.", "def": "How tall something is.", "g": 6}, {"w": "deceive", "p": "ie-ei", "d": "medium", "s": "Do not let the trick deceive you.", "def": "To make someone believe something untrue.", "g": 6}, {"w": "foreign", "p": "ie-ei", "d": "medium", "s": "She is learning a foreign language.", "def": "From another country.", "g": 6}, {"w": "perceive", "p": "ie-ei", "d": "hard", "s": "Can you perceive the faint sound?", "def": "To become aware of through the senses.", "g": 6}, {"w": "efficient", "p": "ie-ei", "d": "hard", "s": "The new method is more efficient.", "def": "Working well without wasting time or effort.", "g": 6}, {"w": "sufficient", "p": "ie-ei", "d": "hard", "s": "We have sufficient supplies for the trip.", "def": "Enough for what is needed.", "g": 6}, {"w": "counterfeit", "p": "ie-ei", "d": "hard", "s": "The bank spotted the counterfeit bill.", "def": "A fake copy made to fool people.", "g": 6}, {"w": "seize", "p": "ie-ei", "d": "hard", "s": "The eagle will seize the fish in its claws.", "def": "To grab something suddenly and firmly.", "g": 6}, {"w": "leisure", "p": "ie-ei", "d": "hard", "s": "He reads during his leisure time.", "def": "Free time when you can relax.", "g": 6}, {"w": "mischief", "p": "ie-ei", "d": "hard", "s": "The kittens got into mischief again.", "def": "Playful behavior that causes small trouble.", "g": 6}, {"w": "protein", "p": "ie-ei", "d": "hard", "s": "Beans are a good source of protein.", "def": "A nutrient the body needs to grow.", "g": 6}, {"w": "because", "p": "tricky", "d": "easy", "s": "We stayed inside because it rained.", "def": "For the reason that.", "g": 6}, {"w": "February", "p": "tricky", "d": "easy", "s": "February is the shortest month.", "def": "The second month of the year.", "g": 6}, {"w": "Wednesday", "p": "tricky", "d": "easy", "s": "We have music class on Wednesday.", "def": "The day between Tuesday and Thursday.", "g": 6}, {"w": "favorite", "p": "tricky", "d": "easy", "s": "Blue is her favorite color.", "def": "The one you like best.", "g": 6}, {"w": "different", "p": "tricky", "d": "easy", "s": "These two shells are different sizes.", "def": "Not the same.", "g": 6}, {"w": "probably", "p": "tricky", "d": "easy", "s": "It will probably snow tonight.", "def": "Most likely.", "g": 6}, {"w": "library", "p": "tricky", "d": "easy", "s": "She borrowed three books from the library.", "def": "A place where books are kept for borrowing.", "g": 6}, {"w": "answer", "p": "tricky", "d": "easy", "s": "Write your answer on the line.", "def": "A reply or solution.", "g": 6}, {"w": "separate", "p": "tricky", "d": "medium", "s": "Please separate the red beads from the blue ones.", "def": "To divide or keep apart.", "g": 6}, {"w": "definitely", "p": "tricky", "d": "medium", "s": "I will definitely be at the game.", "def": "Without any doubt.", "g": 6}, {"w": "restaurant", "p": "tricky", "d": "medium", "s": "We ate dinner at a new restaurant.", "def": "A place where meals are served.", "g": 6}, {"w": "calendar", "p": "tricky", "d": "medium", "s": "Mark the date on the calendar.", "def": "A chart showing the days of the year.", "g": 6}, {"w": "government", "p": "tricky", "d": "medium", "s": "The government passed a new law.", "def": "The group that runs a country or state.", "g": 6}, {"w": "familiar", "p": "tricky", "d": "medium", "s": "That song sounds familiar to me.", "def": "Well known or often seen before.", "g": 6}, {"w": "temperature", "p": "tricky", "d": "medium", "s": "The temperature dropped below freezing.", "def": "A measure of how hot or cold something is.", "g": 6}, {"w": "experience", "p": "tricky", "d": "medium", "s": "Camping was a new experience for him.", "def": "Something you have done or lived through.", "g": 6}, {"w": "rhythmically", "p": "tricky", "d": "hard", "s": "The waves rolled in rhythmically.", "def": "In a regular repeating pattern.", "g": 6}, {"w": "bureaucracy", "p": "tricky", "d": "hard", "s": "The permit was delayed by bureaucracy.", "def": "A system of many official rules and offices.", "g": 6}, {"w": "questionnaire", "p": "tricky", "d": "hard", "s": "Each student filled out a questionnaire.", "def": "A written list of questions to answer.", "g": 6}, {"w": "maintenance", "p": "tricky", "d": "hard", "s": "The bridge requires yearly maintenance.", "def": "The work of keeping something in good condition.", "g": 6}, {"w": "acknowledge", "p": "tricky", "d": "hard", "s": "Please acknowledge that you received the message.", "def": "To admit or confirm something is true.", "g": 6}, {"w": "vacuum", "p": "tricky", "d": "hard", "s": "He used a vacuum to clean the rug.", "def": "A space with no air, or a machine that sucks up dirt.", "g": 6}, {"w": "privilege", "p": "tricky", "d": "hard", "s": "Driving a car is a privilege, not a right.", "def": "A special right or advantage.", "g": 6}, {"w": "guarantee", "p": "tricky", "d": "hard", "s": "The store offers a guarantee on the bike.", "def": "A promise that something will work or be done.", "g": 6}, {"w": "debt", "p": "silent", "d": "medium", "g": 7, "s": "He paid off the debt in full.", "def": "Money that is owed to someone."}, {"w": "receipt", "p": "silent", "d": "medium", "g": 7, "s": "Keep the receipt in case you return it.", "def": "A paper showing what you paid."}, {"w": "aisle", "p": "silent", "d": "medium", "g": 7, "s": "The cereal is in the third aisle.", "def": "A walkway between rows of shelves or seats."}, {"w": "campaign", "p": "silent", "d": "hard", "g": 7, "s": "She ran a campaign for class president.", "def": "An organized effort to reach a goal."}, {"w": "foreign", "p": "silent", "d": "hard", "g": 7, "s": "He is studying a foreign language.", "def": "From another country."}, {"w": "indict", "p": "silent", "d": "hard", "g": 7, "s": "The grand jury voted to indict the suspect.", "def": "To formally charge with a crime."}, {"w": "yacht", "p": "silent", "d": "easy", "g": 7, "s": "A white yacht sailed past the harbor.", "def": "A large boat used for pleasure trips."}, {"w": "autumn", "p": "silent", "d": "easy", "g": 7, "s": "The leaves change color in autumn.", "def": "The season between summer and winter."}, {"w": "occasion", "p": "double", "d": "medium", "g": 7, "s": "Her graduation was a joyful occasion.", "def": "A special event or time."}, {"w": "immediately", "p": "double", "d": "hard", "g": 7, "s": "Please respond immediately.", "def": "Right away, without delay."}, {"w": "recommend", "p": "double", "d": "hard", "g": 7, "s": "I recommend reading that book.", "def": "To suggest as good or worthwhile."}, {"w": "assessment", "p": "double", "d": "medium", "g": 7, "s": "The teacher gave a short assessment.", "def": "A test or evaluation."}, {"w": "tomorrow", "p": "double", "d": "easy", "g": 7, "s": "The project is due tomorrow.", "def": "The day after today."}, {"w": "appreciate", "p": "double", "d": "medium", "g": 7, "s": "I appreciate all your help.", "def": "To be grateful for something."}, {"w": "aggressive", "p": "double", "d": "hard", "g": 7, "s": "The team played an aggressive game.", "def": "Forceful or ready to attack."}, {"w": "correspond", "p": "double", "d": "easy", "g": 7, "s": "The two lists correspond exactly.", "def": "To match, or to write letters back and forth."}, {"w": "opposition", "p": "endings", "d": "medium", "g": 7, "s": "The plan met strong opposition.", "def": "Resistance or disagreement."}, {"w": "competition", "p": "endings", "d": "medium", "g": 7, "s": "She won the spelling competition.", "def": "A contest between people."}, {"w": "exaggeration", "p": "endings", "d": "hard", "g": 7, "s": "Saying it took forever was an exaggeration.", "def": "A statement that makes something seem bigger than it is."}, {"w": "revolution", "p": "endings", "d": "easy", "g": 7, "s": "The revolution changed the country's government.", "def": "A complete change, often of a government."}, {"w": "observation", "p": "endings", "d": "medium", "g": 7, "s": "Her observation about the graph was sharp.", "def": "Something noticed by watching carefully."}, {"w": "illustration", "p": "endings", "d": "hard", "g": 7, "s": "The illustration helped explain the text.", "def": "A picture that explains or decorates."}, {"w": "corrosion", "p": "endings", "d": "hard", "g": 7, "s": "Salt water speeds up corrosion of metal.", "def": "The slow wearing away of metal."}, {"w": "omission", "p": "endings", "d": "easy", "g": 7, "s": "The omission of his name was an accident.", "def": "Something left out."}, {"w": "anticipate", "p": "prefix", "d": "medium", "g": 7, "s": "We anticipate a large crowd.", "def": "To expect something ahead of time."}, {"w": "contemporary", "p": "prefix", "d": "hard", "g": 7, "s": "The museum features contemporary art.", "def": "Belonging to the present time."}, {"w": "disintegrate", "p": "prefix", "d": "hard", "g": 7, "s": "The old paper began to disintegrate.", "def": "To break into small pieces."}, {"w": "perspective", "p": "prefix", "d": "medium", "g": 7, "s": "Try to see it from her perspective.", "def": "A point of view."}, {"w": "subordinate", "p": "prefix", "d": "easy", "g": 7, "s": "A subordinate clause cannot stand alone.", "def": "Lower in rank or importance."}, {"w": "transformation", "p": "prefix", "d": "easy", "g": 7, "s": "The caterpillar's transformation amazed us.", "def": "A complete change in form."}, {"w": "considerable", "p": "suffix", "d": "medium", "g": 7, "s": "They made considerable progress.", "def": "Fairly large in amount."}, {"w": "significance", "p": "suffix", "d": "hard", "g": 7, "s": "The date has great significance.", "def": "Importance or meaning."}, {"w": "independence", "p": "suffix", "d": "hard", "g": 7, "s": "The colony declared its independence.", "def": "Freedom from control by others."}, {"w": "reliable", "p": "suffix", "d": "easy", "g": 7, "s": "He is a reliable teammate.", "def": "Able to be trusted or counted on."}, {"w": "persistence", "p": "suffix", "d": "medium", "g": 7, "s": "Her persistence finally paid off.", "def": "Continuing despite difficulty."}, {"w": "courageous", "p": "suffix", "d": "medium", "g": 7, "s": "It was a courageous decision.", "def": "Showing bravery."}, {"w": "efficiency", "p": "ie-ei", "d": "hard", "g": 7, "s": "The new system improved efficiency.", "def": "Working well without waste."}, {"w": "achievement", "p": "ie-ei", "d": "medium", "g": 7, "s": "Finishing the race was a real achievement.", "def": "Something accomplished through effort."}, {"w": "perceive", "p": "ie-ei", "d": "hard", "g": 7, "s": "Can you perceive the faint sound?", "def": "To become aware of through the senses."}, {"w": "sufficient", "p": "ie-ei", "d": "medium", "g": 7, "s": "We have sufficient supplies.", "def": "Enough for what is needed."}, {"w": "seize", "p": "ie-ei", "d": "easy", "g": 7, "s": "The eagle will seize the fish.", "def": "To grab suddenly and firmly."}, {"w": "leisure", "p": "ie-ei", "d": "easy", "g": 7, "s": "He reads during his leisure time.", "def": "Free time for relaxing."}, {"w": "accept", "p": "homophone", "d": "medium", "g": 7, "s": "Please accept this gift.", "def": "To receive willingly. Not 'except'."}, {"w": "except", "p": "homophone", "d": "medium", "g": 7, "s": "Everyone came except Marcus.", "def": "Not including. Not 'accept'."}, {"w": "effect", "p": "homophone", "d": "hard", "g": 7, "s": "The medicine had a strong effect.", "def": "A result. Usually a noun, unlike 'affect'."}, {"w": "advice", "p": "homophone", "d": "easy", "g": 7, "s": "She gave me good advice.", "def": "A suggestion. The noun; 'advise' is the verb."}, {"w": "advise", "p": "homophone", "d": "hard", "g": 7, "s": "I advise you to start early.", "def": "To give advice. The verb; 'advice' is the noun."}, {"w": "lose", "p": "homophone", "d": "easy", "g": 7, "s": "Try not to lose your keys.", "def": "To misplace or be defeated. Not 'loose'."}, {"w": "bureaucrat", "p": "silent", "d": "hard", "g": 8, "s": "The bureaucrat reviewed every form.", "def": "An official who works in a complex system of rules."}, {"w": "psychology", "p": "silent", "d": "medium", "g": 8, "s": "She wants to study psychology.", "def": "The study of the mind and behavior."}, {"w": "rhetoric", "p": "silent", "d": "medium", "g": 8, "s": "His speech was full of clever rhetoric.", "def": "The art of persuasive speaking or writing."}, {"w": "mnemonic", "p": "silent", "d": "hard", "g": 8, "s": "A mnemonic can help you remember the order.", "def": "A trick that helps you remember something."}, {"w": "chasm", "p": "silent", "d": "easy", "g": 8, "s": "A deep chasm split the canyon floor.", "def": "A deep crack in the earth."}, {"w": "pseudonym", "p": "silent", "d": "hard", "g": 8, "s": "The author wrote under a pseudonym.", "def": "A false name used by a writer."}, {"w": "depot", "p": "silent", "d": "easy", "g": 8, "s": "The bus left from the downtown depot.", "def": "A station or storage place."}, {"w": "subpoena", "p": "silent", "d": "medium", "g": 8, "s": "The court issued a subpoena for the records.", "def": "An order to appear in court or produce evidence."}, {"w": "committed", "p": "double", "d": "easy", "g": 8, "s": "She is committed to finishing the project.", "def": "Dedicated to something."}, {"w": "questionnaire", "p": "double", "d": "hard", "g": 8, "s": "Each student filled out a questionnaire.", "def": "A written list of questions."}, {"w": "embarrassment", "p": "double", "d": "hard", "g": 8, "s": "He blushed with embarrassment.", "def": "The feeling of being ashamed or awkward."}, {"w": "accommodation", "p": "double", "d": "hard", "g": 8, "s": "The school arranged an accommodation for the test.", "def": "An adjustment made to help someone."}, {"w": "unnecessarily", "p": "double", "d": "medium", "g": 8, "s": "The instructions were unnecessarily long.", "def": "In a way that was not needed."}, {"w": "parallelogram", "p": "double", "d": "medium", "g": 8, "s": "Find the area of the parallelogram.", "def": "A four-sided shape with opposite sides parallel."}, {"w": "millimeter", "p": "double", "d": "easy", "g": 8, "s": "The wire is one millimeter thick.", "def": "One thousandth of a meter."}, {"w": "irresponsible", "p": "double", "d": "medium", "g": 8, "s": "Leaving the gate open was irresponsible.", "def": "Not showing good judgment or care."}, {"w": "acquisition", "p": "endings", "d": "medium", "g": 8, "s": "The library announced the acquisition of rare maps.", "def": "Something gained or bought."}, {"w": "suspicion", "p": "endings", "d": "medium", "g": 8, "s": "She had a suspicion the cat took the yarn.", "def": "A feeling something may be true without proof."}, {"w": "comprehension", "p": "endings", "d": "hard", "g": 8, "s": "The reading comprehension test had ten passages.", "def": "The ability to understand."}, {"w": "pronunciation", "p": "endings", "d": "hard", "g": 8, "s": "The pronunciation of that word is tricky.", "def": "The way a word is spoken."}, {"w": "jurisdiction", "p": "endings", "d": "hard", "g": 8, "s": "The case fell outside the court's jurisdiction.", "def": "The area where an authority has power."}, {"w": "persuasion", "p": "endings", "d": "easy", "g": 8, "s": "It took gentle persuasion to change his mind.", "def": "The act of convincing someone."}, {"w": "dimension", "p": "endings", "d": "easy", "g": 8, "s": "Measure every dimension of the prism.", "def": "A measurement such as length or width."}, {"w": "precision", "p": "endings", "d": "medium", "g": 8, "s": "The drawing was made with great precision.", "def": "Exactness and accuracy."}, {"w": "circumstance", "p": "prefix", "d": "medium", "g": 8, "s": "Under no circumstance should you skip it.", "def": "A condition or situation."}, {"w": "unprecedented", "p": "prefix", "d": "hard", "g": 8, "s": "The storm caused unprecedented damage.", "def": "Never having happened before."}, {"w": "interdependent", "p": "prefix", "d": "hard", "g": 8, "s": "The species are interdependent.", "def": "Relying on each other."}, {"w": "retrospective", "p": "prefix", "d": "hard", "g": 8, "s": "The museum held a retrospective of her work.", "def": "Looking back on the past."}, {"w": "antagonist", "p": "prefix", "d": "easy", "g": 8, "s": "The antagonist opposes the hero.", "def": "A character who works against the main character."}, {"w": "predetermined", "p": "prefix", "d": "medium", "g": 8, "s": "The route was predetermined.", "def": "Decided in advance."}, {"w": "superficial", "p": "prefix", "d": "easy", "g": 8, "s": "The cut was superficial and healed fast.", "def": "On the surface only; not deep."}, {"w": "transcontinental", "p": "prefix", "d": "medium", "g": 8, "s": "They rode the transcontinental railroad.", "def": "Crossing an entire continent."}, {"w": "conscientious", "p": "suffix", "d": "hard", "g": 8, "s": "He is a conscientious student who checks his work.", "def": "Careful and thorough in doing what is right."}, {"w": "indispensable", "p": "suffix", "d": "hard", "g": 8, "s": "A good dictionary is indispensable.", "def": "Too important to do without."}, {"w": "perseverance", "p": "suffix", "d": "medium", "g": 8, "s": "Her perseverance impressed the coach.", "def": "Continuing despite difficulty."}, {"w": "controversial", "p": "suffix", "d": "medium", "g": 8, "s": "The proposal proved controversial.", "def": "Causing strong disagreement."}, {"w": "inevitable", "p": "suffix", "d": "easy", "g": 8, "s": "Change was inevitable.", "def": "Certain to happen."}, {"w": "resilience", "p": "suffix", "d": "easy", "g": 8, "s": "The team showed real resilience.", "def": "The ability to recover from difficulty."}, {"w": "counterfeit", "p": "ie-ei", "d": "hard", "g": 8, "s": "The bank spotted the counterfeit bill.", "def": "A fake copy made to fool people."}, {"w": "sovereign", "p": "ie-ei", "d": "medium", "g": 8, "s": "The nation became a sovereign state.", "def": "Having independent authority."}, {"w": "deficiency", "p": "ie-ei", "d": "hard", "g": 8, "s": "A vitamin deficiency can cause fatigue.", "def": "A lack of something needed."}, {"w": "heir", "p": "ie-ei", "d": "easy", "g": 8, "s": "He was the heir to the family farm.", "def": "A person who inherits property. Sounds like 'air'."}, {"w": "forfeit", "p": "ie-ei", "d": "medium", "g": 8, "s": "The team had to forfeit the game.", "def": "To lose or give up something as a penalty."}, {"w": "protein", "p": "ie-ei", "d": "easy", "g": 8, "s": "Beans are a good source of protein.", "def": "A nutrient the body needs to grow."}, {"w": "complementary", "p": "homophone", "d": "hard", "g": 8, "s": "The two angles are complementary.", "def": "Completing each other. Not 'complimentary'."}, {"w": "stationery", "p": "homophone", "d": "medium", "g": 8, "s": "She bought stationery to write letters.", "def": "Paper and envelopes. Not 'stationary'."}, {"w": "discrete", "p": "homophone", "d": "medium", "g": 8, "s": "The data came in discrete groups.", "def": "Separate and distinct. Not 'discreet'."}, {"w": "allusion", "p": "homophone", "d": "easy", "g": 8, "s": "The poem makes an allusion to a Greek myth.", "def": "An indirect reference. Not 'illusion'."}, {"w": "elicit", "p": "homophone", "d": "easy", "g": 8, "s": "The question will elicit a thoughtful answer.", "def": "To draw out a response. Not 'illicit'."}, {"w": "precedent", "p": "homophone", "d": "hard", "g": 8, "s": "The ruling set a legal precedent.", "def": "An earlier case used as an example. Not 'president'."}];
+
+const PATTERN_NAMES = {
+  silent:"Silent letters", double:"Double consonants", endings:"-tion / -sion endings",
+  homophone:"Homophones", prefix:"Prefixes", suffix:"Suffixes",
+  "ie-ei":"ie / ei words", tricky:"Tricky spellings"
+};
+const TIMER_MIN = {easy:15, medium:12, hard:10};
+/* Grades with word lists. Others appear disabled until words exist. */
+const GRADES_AVAILABLE = [...new Set(WORD_BANK.map(w => w.g))].sort((a,b)=>a-b);
+const ALL_GRADES = [2,3,4,5,6,7,8,9,10,11,12];
+const TOTAL = 20, WIN_COUNT = 16;
+const APP_ID = "spelling";
+let currentUser = null, session = null;
+function myApp(){ return TutorStore.app(currentUser, APP_ID); }
+
+/* ================= SPEECH ================= */
+const synth = window.speechSynthesis || null;
+let voices = [], chosenVoice = null;
+
+function loadVoices(){
+  const sel0 = document.getElementById("voiceSelect");
+  if(!synth){
+    // Browser has no speech support at all — warn and fall back to showing words.
+    voices = [];
+    if(sel0) sel0.innerHTML = "<option>Speech not supported in this browser</option>";
+    document.getElementById("voiceWarn").style.display = "block";
+    return;
+  }
+  voices = (synth.getVoices() || []).filter(v => /^en/i.test(v.lang));
+  if(!voices.length) voices = synth.getVoices() || [];
+  const sel = document.getElementById("voiceSelect");
+  sel.innerHTML = "";
+  if(!voices.length){
+    sel.innerHTML = "<option>No voices available</option>";
+    document.getElementById("voiceWarn").style.display = "block";
+    return;
+  }
+  document.getElementById("voiceWarn").style.display = "none";
+  voices.forEach((v,i)=>{
+    const o = document.createElement("option");
+    o.value = i; o.textContent = v.name + " (" + v.lang + ")";
+    sel.appendChild(o);
+  });
+  // Prefer a natural-sounding default
+  const preferred = voices.findIndex(v => /samantha|karen|daniel|google us|natural|zira/i.test(v.name));
+  sel.value = preferred >= 0 ? preferred : 0;
+  chosenVoice = voices[sel.value];
+  sel.onchange = ()=>{ chosenVoice = voices[sel.value]; };
+}
+function say(text, rate){
+  if(!synth || !text) return false;
+  try{
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    if(chosenVoice) u.voice = chosenVoice;
+    u.rate = rate || 0.9;
+    u.pitch = 1;
+    synth.speak(u);
+    return true;
+  }catch(e){ return false; }
+}
+function testVoice(){ say("Hello! I will read your spelling words.", 0.95); }
+function speechAvailable(){ return !!(synth && voices.length); }
+
+/* ================= SCREENS ================= */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+function escapeHtml(s){ const d=document.createElement("div"); d.textContent=String(s==null?"":s); return d.innerHTML; }
+
+/* ================= LOGIN ================= */
+function renderChips(){
+  const box = document.getElementById("userChips");
+  const users = TutorStore.users();
+  box.innerHTML = users.length ? "<span style='width:100%;font-size:.85rem;color:#777'>Or tap your name:</span>" : "";
+  users.forEach(u=>{
+    const c = document.createElement("span");
+    c.className = "chip"; c.textContent = "🐾 " + u.displayName;
+    c.onclick = ()=>{ document.getElementById("nameInput").value = u.displayName; login(); };
+    box.appendChild(c);
+  });
+}
+function login(){
+  const typed = document.getElementById("nameInput").value.trim();
+  if(!typed){ document.getElementById("nameInput").focus(); return; }
+  currentUser = TutorStore.login(typed).displayName;   // case-insensitive
+  document.getElementById("helloName").textContent = "Hi, " + currentUser + "! 🎉";
+  const saved = myApp().lastGrade;
+  chosenGrade = GRADES_AVAILABLE.includes(saved) ? saved
+              : (GRADES_AVAILABLE.includes(5) ? 5 : GRADES_AVAILABLE[0]);
+  renderGrades();
+  if(window.TutorNav) TutorNav.setUser(currentUser);
+  loadVoices();
+  show("scr-setup");
+}
+function switchUser(){ currentUser=null; document.getElementById("nameInput").value=""; renderChips(); show("scr-login"); }
+function showSetup(){ stopTimer(); if(synth) synth.cancel(); show("scr-setup"); }
+
+let chosenDiff = "medium";
+let chosenGrade = 5;
+
+function renderGrades(){
+  const row = document.getElementById("gradeRow");
+  row.innerHTML = "";
+  ALL_GRADES.forEach(g=>{
+    const has = GRADES_AVAILABLE.includes(g);
+    const card = document.createElement("div");
+    card.className = "grade-card" + (has ? "" : " disabled") + (g === chosenGrade ? " selected" : "");
+    card.dataset.grade = g;
+    card.innerHTML = `<div class="g-num">${g}</div><div class="g-lbl">${has ? "grade" : "soon"}</div>`;
+    if(has) card.onclick = ()=>pickGrade(g);
+    row.appendChild(card);
+  });
+  updateGradeNote();
+}
+function pickGrade(g){
+  if(!GRADES_AVAILABLE.includes(g)) return;
+  chosenGrade = g;
+  document.querySelectorAll("#gradeRow .grade-card").forEach(c=>
+    c.classList.toggle("selected", Number(c.dataset.grade) === g));
+  updateGradeNote();
+  try{ TutorStore.setAppField(currentUser, APP_ID, "lastGrade", g); }catch(e){}
+}
+function updateGradeNote(){
+  const n = WORD_BANK.filter(w=>w.g===chosenGrade).length;
+  const pats = [...new Set(WORD_BANK.filter(w=>w.g===chosenGrade).map(w=>w.p))];
+  document.getElementById("gradeNote").textContent =
+    `Grade ${chosenGrade}: ${n} words covering ${pats.map(x=>PATTERN_NAMES[x]||x).join(", ")}.`;
+}
+function pickDiff(d){
+  chosenDiff = d;
+  document.querySelectorAll(".diff-card").forEach(c=>c.classList.toggle("selected", c.dataset.diff===d));
+}
+
+/* ================= TEST BUILD ================= */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function buildTest(diff, grade){
+  const inGrade = WORD_BANK.filter(w=>w.g===grade);
+  let pool = inGrade.filter(w=>w.d===diff);
+  if(pool.length < TOTAL){
+    // Thin bucket — top up from the rest of this grade so the test is
+    // always full, rather than repeating words.
+    const rest = shuffle(inGrade.filter(w=>w.d!==diff));
+    pool = pool.concat(rest.slice(0, TOTAL - pool.length));
+  }
+  const byPat = {};
+  pool.forEach(w=>{ (byPat[w.p]=byPat[w.p]||[]).push(w); });
+  Object.values(byPat).forEach(a=>shuffle(a));
+  const pats = shuffle(Object.keys(byPat));
+  const picked = [];
+  let i = 0;
+  while(picked.length < TOTAL && i < 500){
+    const p = pats[i % pats.length];
+    if(byPat[p].length) picked.push(byPat[p].pop());
+    i++;
+  }
+  return shuffle(picked).slice(0, TOTAL);
+}
+
+/* ================= QUIZ ================= */
+function startTest(){
+  session = {
+    diff: chosenDiff,
+    timed: document.getElementById("timerToggle").checked,
+    peek: document.getElementById("peekToggle").checked,
+    words: buildTest(chosenDiff, chosenGrade),
+    grade: chosenGrade,
+    idx:0, correct:0, results:[],
+    startedAt: Date.now(), qStart: Date.now(), replays: 0, helpersUsed: [],
+    timeLeft: TIMER_MIN[chosenDiff]*60, timerId: null
+  };
+  document.getElementById("timerBox").style.display = session.timed ? "flex" : "none";
+  if(session.timed) startTimer();
+  movePanda();
+  renderWord(true);
+  show("scr-quiz");
+}
+function renderWord(first){
+  const w = session.words[session.idx];
+  document.getElementById("qCount").textContent = `Word ${session.idx+1} of ${TOTAL}`;
+  document.getElementById("scoreCount").textContent = `✅ ${session.correct} correct`;
+  document.getElementById("patternBadge").textContent = PATTERN_NAMES[w.p];
+  const box = document.getElementById("answerBox");
+  box.value = ""; box.disabled = false; box.className = "";
+  document.getElementById("feedbackBanner").style.display = "none";
+  const h = document.getElementById("helperText");
+  h.classList.remove("show"); h.innerHTML = "";
+  document.getElementById("submitBtn").style.display = "";
+  document.getElementById("skipBtn").style.display = "";
+  document.getElementById("nextBtn").style.display = "none";
+  document.getElementById("finishBtn").style.display = "none";
+  document.getElementById("speakBtn").textContent = "🔊 Hear the word";
+  session.qStart = Date.now(); session.replays = 0; session.helpersUsed = [];
+  if(session.peek){
+    h.innerHTML = "👀 Practice mode — the word is: <strong>" + escapeHtml(w.w) + "</strong>";
+    h.classList.add("show");
+  }
+  // Browsers block audio before a user gesture, so the very first word waits for a click.
+  if(!first) speakWord();
+  box.focus();
+}
+function speakWord(){
+  const w = session.words[session.idx];
+  session.replays++;
+  if(!say(w.w, 0.85) || !speechAvailable()) showWordFallback();
+}
+function speakSlow(){
+  const w = session.words[session.idx];
+  session.replays++;
+  if(!session.helpersUsed.includes("slow")) session.helpersUsed.push("slow");
+  if(!say(w.w, 0.5) || !speechAvailable()) showWordFallback();
+}
+function speakSentence(){
+  const w = session.words[session.idx];
+  if(!session.helpersUsed.includes("sentence")) session.helpersUsed.push("sentence");
+  const h = document.getElementById("helperText");
+  // The sentence is shown with the word blanked out so it doesn't give away the spelling.
+  const blanked = w.s.replace(new RegExp(w.w, "ig"), "_".repeat(w.w.length));
+  h.innerHTML = "💬 <strong>In a sentence:</strong> " + escapeHtml(blanked);
+  h.classList.add("show");
+  say(w.s, 0.9);
+}
+function speakDefinition(){
+  const w = session.words[session.idx];
+  if(!session.helpersUsed.includes("definition")) session.helpersUsed.push("definition");
+  const h = document.getElementById("helperText");
+  h.innerHTML = "📖 <strong>Definition:</strong> " + escapeHtml(w.def);
+  h.classList.add("show");
+  say(w.def, 0.9);
+}
+function showWordFallback(){
+  const w = session.words[session.idx];
+  const h = document.getElementById("helperText");
+  h.innerHTML = "🔇 No audio available — the word is: <strong>" + escapeHtml(w.w) + "</strong>";
+  h.classList.add("show");
+}
+
+/* Grading: exact match, case-insensitive, surrounding whitespace ignored. */
+function normalize(s){ return String(s==null?"":s).trim().replace(/\s+/g," ").toLowerCase(); }
+function isCorrect(typed, word){ return normalize(typed) === normalize(word); }
+
+function makeRecord(w, typed, right, skipped){
+  return {
+    word: w.w, pattern: w.p, patternName: PATTERN_NAMES[w.p], difficulty: w.d,
+    order: session.idx + 1,
+    typed: skipped ? null : String(typed),
+    correct: right, skipped: skipped,
+    seconds: Math.round((Date.now() - session.qStart)/1000),
+    replays: session.replays, helpers: session.helpersUsed.slice(),
+    sentence: w.s, definition: w.def
+  };
+}
+function submitAnswer(){
+  const w = session.words[session.idx];
+  const box = document.getElementById("answerBox");
+  const typed = box.value;
+  if(!typed.trim()){ box.focus(); return; }
+  const right = isCorrect(typed, w.w);
+  session.results.push(makeRecord(w, typed, right, false));
+  box.disabled = true;
+  box.className = right ? "correct" : "wrong";
+  const banner = document.getElementById("feedbackBanner");
+  banner.style.display = "block";
+  const panda = document.getElementById("climbPanda");
+  if(right){
+    session.correct++;
+    banner.textContent = pick(["🎉 Correct! Up the stalk!","✨ Perfect spelling!","🐾 Nailed it! Climb, panda, climb!"]);
+    banner.style.color = "var(--green-dark)";
+    panda.classList.remove("hop"); void panda.offsetWidth; panda.classList.add("hop");
+    movePanda();
+  } else {
+    banner.textContent = "😢 Not quite — we'll review this word at the end.";
+    banner.style.color = "var(--red)";
+    panda.classList.remove("sad"); void panda.offsetWidth; panda.classList.add("sad");
+  }
+  document.getElementById("scoreCount").textContent = `✅ ${session.correct} correct`;
+  afterAnswer();
+}
+function skipWord(){
+  const w = session.words[session.idx];
+  session.results.push(makeRecord(w, null, false, true));
+  const box = document.getElementById("answerBox");
+  box.disabled = true;
+  const banner = document.getElementById("feedbackBanner");
+  banner.style.display = "block"; banner.style.color = "var(--blue)";
+  banner.textContent = "⏭️ Skipped — we'll review this word at the end.";
+  afterAnswer();
+}
+function afterAnswer(){
+  if(synth) synth.cancel();
+  document.getElementById("submitBtn").style.display = "none";
+  document.getElementById("skipBtn").style.display = "none";
+  const last = session.idx === TOTAL - 1;
+  const btn = document.getElementById(last ? "finishBtn" : "nextBtn");
+  btn.style.display = "";
+  btn.focus();
+}
+function nextWord(){ session.idx++; renderWord(false); }
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+function movePanda(){
+  const track = document.querySelector(".climb-track");
+  const panda = document.getElementById("climbPanda");
+  const max = track.clientHeight - 62;
+  const frac = Math.min(session.correct / WIN_COUNT, 1);
+  panda.style.bottom = (6 + frac * max) + "px";
+  const left = WIN_COUNT - session.correct;
+  document.getElementById("climbLabel").textContent = left > 0
+    ? `🎋 ${left} more correct word${left===1?"":"s"} to reach the leaves!`
+    : "🎋 The panda reached the leaves! Keep going for the bonus treat! 🎂";
+}
+
+/* ================= TIMER ================= */
+function startTimer(){
+  renderTimer();
+  session.timerId = setInterval(()=>{
+    session.timeLeft--;
+    renderTimer();
+    if(session.timeLeft <= 0){ stopTimer(); timeUp(); }
+  }, 1000);
+}
+function stopTimer(){ if(session && session.timerId){ clearInterval(session.timerId); session.timerId = null; } }
+function renderTimer(){
+  const m = Math.floor(session.timeLeft/60), s = session.timeLeft%60;
+  document.getElementById("timerText").textContent = `${m}:${String(s).padStart(2,"0")}`;
+  document.getElementById("timerBox").classList.toggle("warn", session.timeLeft <= 60);
+}
+function addTime(){ session.timeLeft += 180; renderTimer(); }
+function timeUp(){ alert("⏰ Time's up! Let's see how the panda did…"); finishTest(); }
+
+/* ================= FINISH ================= */
+function finishTest(){
+  stopTimer();
+  if(synth) synth.cancel();
+  while(session.results.length < TOTAL){
+    session.idx = session.results.length;
+    session.results.push(makeRecord(session.words[session.idx], null, false, true));
+  }
+  const correct = session.results.filter(r=>r.correct).length;
+  const pct = Math.round(correct/TOTAL*100);
+  const win = pct >= 80, perfect = correct === TOTAL;
+  const patterns = {};
+  session.results.forEach(r=>{
+    const p = patterns[r.pattern] = patterns[r.pattern] || {c:0,t:0};
+    p.t++; if(r.correct) p.c++;
+  });
+  const prevBest = myApp().best || 0;
+  const rec = {
+    app: APP_ID, subject: "Spelling", gradeLevel: String(session.grade),
+    date: new Date().toISOString(),
+    player: currentUser, playerKey: TutorStore.keyOf(currentUser),
+    difficulty: session.diff, timed: session.timed, practiceMode: session.peek,
+    voice: chosenVoice ? chosenVoice.name : null,
+    timeLimitSec: session.timed ? TIMER_MIN[session.diff]*60 : null,
+    timeTakenSec: Math.round((Date.now()-session.startedAt)/1000),
+    score: correct, total: TOTAL, pct, win, perfect,
+    skippedCount: session.results.filter(r=>r.skipped).length,
+    topics: patterns,
+    answers: session.results
+  };
+  TutorStore.saveResult(currentUser, APP_ID, rec);
+
+  document.getElementById("scoreBig").textContent = `${correct} / ${TOTAL}  (${pct}%)`;
+  const msg = document.getElementById("resultMsg");
+  if(perfect){
+    msg.textContent = "PERFECT SPELLING! The panda feasts and earns the bonus cake! 🎆";
+    launchFireworks(); setTimeout(launchConfetti, 1200);
+  } else if(win){
+    msg.textContent = "You did it! Watch the panda enjoy the bamboo! 🎊 (Spell all 20 for a bonus treat…)";
+    launchConfetti();
+  } else {
+    msg.textContent = `So close! The panda needs ${WIN_COUNT} correct (80%). Review the words below and try again!`;
+  }
+  document.getElementById("bestBanner").style.display =
+    (pct > prevBest && myApp().history.length > 1) ? "block" : "none";
+
+  buildReview();
+  playEatAnimation(win, perfect);
+  renderBars("testPatternBars", patterns, true);
+  renderBars("masteryBars", aggregatePatterns(myApp()), false);
+  show("scr-results");
+}
+
+/* Letter-by-letter diff so she can see exactly which letters went wrong. */
+function spellDiff(typed, correctWord){
+  const t = String(typed==null?"":typed).trim(), c = correctWord;
+  let out = "";
+  const n = Math.max(t.length, c.length);
+  for(let i=0;i<n;i++){
+    const tc = t[i], cc = c[i];
+    if(tc === undefined) out += `<span class="miss">${escapeHtml(cc)}</span>`;
+    else if(cc === undefined) out += `<span class="bad">${escapeHtml(tc)}</span>`;
+    else if(tc.toLowerCase() === cc.toLowerCase()) out += `<span class="ok">${escapeHtml(tc)}</span>`;
+    else out += `<span class="bad">${escapeHtml(tc)}</span>`;
+  }
+  return out;
+}
+function buildReview(){
+  const missed = session.results.filter(r=>!r.correct);
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+  if(!missed.length){
+    list.innerHTML = "<p style='font-size:1rem'>🌟 Nothing to review — every word spelled correctly! Amazing!</p>";
+    return;
+  }
+  missed.forEach((r,n)=>{
+    const div = document.createElement("div");
+    div.className = "review-item";
+    div.innerHTML = `
+      <div class="review-word">
+        <strong>${n+1}. ${escapeHtml(r.word)}</strong>
+        <span class="pattern-badge" style="float:right">${r.patternName}</span>
+      </div>
+      ${r.skipped
+        ? `<div style="color:var(--blue);font-size:.92rem;margin-bottom:8px">⏭️ You skipped this word</div>`
+        : `<div style="font-size:.85rem;color:#8a8371;margin-bottom:4px">You typed:</div>
+           <div class="spell-diff">${spellDiff(r.typed, r.word)}</div>
+           <div class="diff-legend">Red = wrong letter · Blue = missing letter</div>`}
+      <div style="margin-top:10px;font-size:.85rem;color:#8a8371">Correct spelling:</div>
+      <div class="spell-diff"><span class="ok">${escapeHtml(r.word)}</span>
+        <button class="replay-btn" onclick="say('${escapeHtml(r.word).replace(/'/g,"")}', 0.8)">🔊 Hear it</button></div>
+      <div style="margin-top:10px;font-size:.9rem"><strong>💬</strong> ${escapeHtml(r.sentence)}</div>
+      <div style="margin-top:4px;font-size:.9rem"><strong>📖</strong> ${escapeHtml(r.definition)}</div>`;
+    list.appendChild(div);
+  });
+}
+
+/* ================= EATING ANIMATION ================= */
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+let eatToken = 0;
+async function playEatAnimation(win, perfect){
+  const my = ++eatToken;
+  const panda = document.getElementById("eatPanda"), bamboo = document.getElementById("eatBamboo");
+  const cake = document.getElementById("eatCake"), bubble = document.getElementById("chompBubble");
+  const scene = document.getElementById("eatScene");
+  panda.style.transition = "none"; panda.style.left = "10px";
+  panda.textContent = "🐼"; panda.classList.remove("chomp");
+  bamboo.textContent = "🎋"; cake.style.opacity = 0; bubble.style.opacity = 0;
+  void panda.offsetWidth;
+  if(!win){
+    bubble.textContent = "💭 I'll reach the leaves next time!";
+    bubble.style.left = "20px"; bubble.style.opacity = 1;
+    return;
+  }
+  await sleep(500); if(my!==eatToken) return;
+  const target = Math.max(scene.clientWidth - 150, 120);
+  panda.style.transition = "left 1.5s ease-in-out";
+  panda.style.left = target + "px";
+  await sleep(1650); if(my!==eatToken) return;
+  const stages = ["🎋","🎍","🌿","🍃",""];
+  bubble.style.left = Math.max(target-40, 60) + "px";
+  for(let i=1;i<stages.length;i++){
+    bubble.textContent = "CHOMP!"; bubble.style.opacity = 1;
+    panda.classList.add("chomp");
+    await sleep(330); if(my!==eatToken) return;
+    bamboo.textContent = stages[i];
+    panda.classList.remove("chomp"); bubble.style.opacity = 0;
+    await sleep(300); if(my!==eatToken) return;
+  }
+  panda.textContent = "🐼💚";
+  if(perfect){
+    await sleep(450); if(my!==eatToken) return;
+    cake.style.opacity = 1;
+    bubble.textContent = "BONUS TREAT!"; bubble.style.opacity = 1;
+    await sleep(800); if(my!==eatToken) return;
+    for(let i=0;i<2;i++){
+      bubble.textContent = "NOM NOM!"; bubble.style.opacity = 1;
+      panda.classList.add("chomp");
+      await sleep(330); if(my!==eatToken) return;
+      panda.classList.remove("chomp"); bubble.style.opacity = 0;
+      await sleep(260); if(my!==eatToken) return;
+    }
+    cake.style.opacity = 0;
+    panda.textContent = "🐼✨🎂✨";
+  }
+}
+
+/* ================= BARS & DASHBOARD ================= */
+function aggregatePatterns(u){
+  const agg = {};
+  (u.history||[]).forEach(h=>{
+    Object.entries(h.topics||{}).forEach(([p,v])=>{
+      const a = agg[p] = agg[p] || {c:0,t:0};
+      a.c += v.c; a.t += v.t;
+    });
+  });
+  return agg;
+}
+function masteryClass(pct){
+  if(pct >= 85) return ["bar-excel","🌟 Excels"];
+  if(pct >= 60) return ["bar-ok","👍 Doing OK"];
+  return ["bar-need","💪 Needs practice"];
+}
+function renderBars(elId, pats, showCount){
+  const el = document.getElementById(elId);
+  el.innerHTML = "";
+  const keys = Object.keys(PATTERN_NAMES).filter(k=>pats[k]);
+  if(!keys.length){ el.innerHTML = "<p class='small-note'>No data yet — take a test!</p>"; return; }
+  keys.sort((a,b)=> (pats[a].c/pats[a].t) - (pats[b].c/pats[b].t));
+  keys.forEach(k=>{
+    const v = pats[k], pct = Math.round(v.c/v.t*100);
+    const [cls, tag] = masteryClass(pct);
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    row.innerHTML = `<span class="bar-label">${PATTERN_NAMES[k]}</span>
+      <div class="bar-outer"><div class="bar-inner ${cls}" style="width:0%">${showCount ? v.c+"/"+v.t : pct+"%"}</div></div>
+      <span class="bar-tag">${tag}</span>`;
+    el.appendChild(row);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      row.querySelector(".bar-inner").style.width = Math.max(pct,8) + "%";
+    }));
+  });
+}
+function showDashboard(){
+  stopTimer();
+  if(synth) synth.cancel();
+  const u = myApp();
+  document.getElementById("dashTitle").textContent = `📊 ${currentUser}'s Spelling Progress`;
+  renderBars("dashMastery", aggregatePatterns(u), false);
+
+  // Words missed most often
+  const miss = {};
+  (u.history||[]).forEach(h=>(h.answers||[]).forEach(a=>{
+    if(!a.correct){ const m = miss[a.word] = miss[a.word] || {n:0, pat:a.patternName}; m.n++; }
+  }));
+  const tw = document.getElementById("troubleWords");
+  const entries = Object.entries(miss).sort((a,b)=>b[1].n - a[1].n).slice(0,12);
+  tw.innerHTML = entries.length
+    ? entries.map(([w,m])=>`<span class="chip" style="cursor:default">${escapeHtml(w)} <small>×${m.n}</small></span>`).join(" ")
+    : "<p class='small-note'>No missed words yet — nice!</p>";
+
+  const hist = document.querySelector("#historyTable tbody");
+  hist.innerHTML = "";
+  [...(u.history||[])].reverse().forEach(h=>{
+    const tr = document.createElement("tr");
+    const wrong = (h.answers||[]).filter(a=>!a.correct).length;
+    tr.innerHTML = `
+      <td><input type="checkbox" class="hist-check" data-date="${escapeHtml(h.date)}"
+                 onchange="syncSelection()" aria-label="select this test"></td>
+      <td>${new Date(h.date).toLocaleDateString()}<br><span style="font-size:.72rem;color:#8a8371">${new Date(h.date).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></td>
+      <td>Gr ${escapeHtml(h.gradeLevel||"?")} · ${cap(h.difficulty||"medium")}${h.timed?" ⏱️":""}${h.practiceMode?" 👀":""}</td>
+      <td>${h.score}/${h.total} (${h.pct}%)</td>
+      <td>${h.perfect?"🎂 Perfect!":h.win?"🎋 Panda fed!":"💪 Practice"}</td>
+      <td>${wrong?`<button class="rev-btn" onclick="reviewTest('${escapeHtml(h.date)}')">Review ${wrong}</button>`:""}</td>`;
+    hist.appendChild(tr);
+  });
+  if(!(u.history||[]).length) hist.innerHTML = "<tr><td colspan=6>No tests yet!</td></tr>";
+  buildReviewPicker();
+  syncSelection();
+
+  const tops = TutorStore.allResults(APP_ID);
+  tops.sort((a,b)=> b.pct - a.pct || new Date(a.date) - new Date(b.date));
+  const tt = document.querySelector("#topScoresTable tbody");
+  tt.innerHTML = "";
+  const medals = ["🥇","🥈","🥉","🏅","🏅"];
+  tops.slice(0,5).forEach((t,i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="medal">${medals[i]}</td><td>${escapeHtml(t.name)}</td>
+      <td>${t.score}/${t.total} (${t.pct}%)</td><td>${cap(t.difficulty||"medium")}</td>
+      <td>${new Date(t.date).toLocaleDateString()}</td>`;
+    tt.appendChild(tr);
+  });
+  if(!tops.length) tt.innerHTML = "<tr><td colspan=5>No scores yet!</td></tr>";
+  show("scr-dash");
+}
+function cap(s){ return String(s).charAt(0).toUpperCase()+String(s).slice(1); }
+
+/* ================= REVIEW PAST MISTAKES ================= */
+function buildReviewPicker(){
+  const sel = document.getElementById("reviewPick");
+  const hist = [...(myApp().history||[])].reverse()
+    .filter(h => (h.answers||[]).some(a=>!a.correct));
+  if(!hist.length){
+    sel.innerHTML = "<option value=''>No misspellings recorded yet 🎉</option>";
+    document.getElementById("pastReview").innerHTML =
+      "<p class='rev-empty'>Nothing to review — every word so far has been spelled correctly!</p>";
+    return;
+  }
+  sel.innerHTML = hist.map(h=>{
+    const n = h.answers.filter(a=>!a.correct).length;
+    return `<option value="${escapeHtml(h.date)}">${new Date(h.date).toLocaleString()} — Grade ${escapeHtml(h.gradeLevel||"?")}, ${h.pct}% · ${n} to review</option>`;
+  }).join("");
+  renderPastReview();
+}
+function renderPastReview(){ renderReviewFor(document.getElementById("reviewPick").value); }
+function reviewTest(date){
+  const sel = document.getElementById("reviewPick");
+  if([...sel.options].some(o=>o.value===date)) sel.value = date;
+  renderReviewFor(date);
+  document.getElementById("pastReview").scrollIntoView({behavior:"smooth", block:"center"});
+}
+function renderReviewFor(date){
+  const host = document.getElementById("pastReview");
+  const rec = (myApp().history||[]).find(h=>h.date===date);
+  if(!rec){ host.innerHTML = "<p class='rev-empty'>Pick a test above.</p>"; return; }
+  const missed = (rec.answers||[]).filter(a=>!a.correct);
+  if(!missed.length){ host.innerHTML = "<p class='rev-empty'>🌟 Nothing wrong in that test!</p>"; return; }
+  host.innerHTML = missed.map((r,n)=>`
+    <div class="rev-item">
+      <div class="review-word"><strong>${n+1}. ${escapeHtml(r.word)}</strong>
+        <span class="pattern-badge" style="float:right">${escapeHtml(r.patternName||"")}</span></div>
+      <div class="rev-meta">${escapeHtml(r.difficulty||"")}${r.seconds!=null?" · "+r.seconds+"s":""}${r.replays?" · "+r.replays+" replays":""}</div>
+      ${r.skipped
+        ? `<div style="color:var(--blue);font-size:.92rem;margin-bottom:8px">⏭️ Skipped this word</div>`
+        : `<div style="font-size:.85rem;color:#8a8371;margin-bottom:4px">She typed:</div>
+           <div class="spell-diff">${spellDiff(r.typed, r.word)}</div>
+           <div class="diff-legend">Red = wrong letter · Blue = missing letter</div>`}
+      <div style="margin-top:10px;font-size:.85rem;color:#8a8371">Correct spelling:</div>
+      <div class="spell-diff"><span class="ok">${escapeHtml(r.word)}</span>
+        <button class="replay-btn" onclick="say('${escapeHtml(r.word).replace(/'/g,"")}', 0.8)">🔊 Hear it</button></div>
+      <div style="margin-top:10px;font-size:.9rem"><strong>💬</strong> ${escapeHtml(r.sentence||"")}</div>
+      <div style="margin-top:4px;font-size:.9rem"><strong>📖</strong> ${escapeHtml(r.definition||"")}</div>
+    </div>`).join("");
+}
+
+/* ================= SELECTIVE DELETE ================= */
+function selectedDates(){
+  return [...document.querySelectorAll(".hist-check:checked")].map(c=>c.dataset.date);
+}
+function syncSelection(){
+  const n = selectedDates().length;
+  document.getElementById("selBar").classList.toggle("on", n>0);
+  document.getElementById("selCount").textContent = n+" test"+(n===1?"":"s")+" selected";
+}
+function clearSelection(){
+  document.querySelectorAll(".hist-check").forEach(c=>c.checked=false);
+  syncSelection();
+}
+function confirmDeleteSelected(){
+  const n = selectedDates().length;
+  if(!n) return;
+  pendingDelete = "selected";
+  document.getElementById("deleteModalText").textContent = `Delete ${n} selected test${n===1?"":"s"}?`;
+  document.getElementById("deleteModalBody").textContent =
+    "Only these tests are removed. The rest of the history stays, and the removed tests move to the Deleted Data page.";
+  document.getElementById("deleteModal").classList.add("show");
+}
+
+/* ================= DELETE / ARCHIVE ================= */
+let pendingDelete = "all";
+function confirmDelete(){
+  pendingDelete = "all";
+  document.getElementById("deleteModalBody").textContent =
+    "Every spelling test is removed. Your data moves to the Deleted Data page, not erased.";
+  document.getElementById("deleteModalText").textContent = `Delete ALL spelling progress for ${currentUser}?`;
+  document.getElementById("deleteModal").classList.add("show");
+}
+function closeModal(){ document.getElementById("deleteModal").classList.remove("show"); }
+function doDelete(){
+  if(pendingDelete === "selected"){
+    TutorStore.deleteResults(currentUser, APP_ID, selectedDates());   // archives first
+    closeModal();
+    showDashboard();          // stay on the page; only some rows went away
+    return;
+  }
+  TutorStore.deleteUser(currentUser, APP_ID);
+  closeModal(); switchUser();
+}
+function showArchive(){
+  const el = document.getElementById("archiveList");
+  el.innerHTML = "";
+  const del = TutorStore.deleted();
+  if(!del.length) el.innerHTML = "<div class='card center'>Nothing here — no data has been deleted. 🐼</div>";
+  del.forEach(d=>{
+    const div = document.createElement("div");
+    div.className = "card";
+    const data = d.data || {};
+    div.innerHTML = `<h2>🐾 ${escapeHtml(d.name)}</h2>
+      <p style="font-size:.9rem">App: ${escapeHtml(d.app||"spelling")} · Deleted: ${new Date(d.deletedAt).toLocaleString()}
+      · Tests: ${(data.history||[]).length} · Best: ${data.best||0}%</p>`;
+    el.appendChild(div);
+  });
+  show("scr-archive");
+}
+
+/* ================= FX ================= */
+const fx = document.getElementById("fxCanvas"), ctx = fx.getContext("2d");
+let particles = [], fxRunning = false, fxTimeout = null;
+function sizeFx(){ fx.width = innerWidth; fx.height = innerHeight; }
+addEventListener("resize", sizeFx); sizeFx();
+const COLORS = ["#e05252","#f5c542","#4a8f3c","#4a7fb5","#9b59b6","#e67e22","#1abc9c","#ff7eb9"];
+function launchConfetti(){
+  for(let i=0;i<220;i++) particles.push({type:"c", x:Math.random()*fx.width, y:-20-Math.random()*fx.height*0.5,
+    vx:(Math.random()-.5)*2.4, vy:2+Math.random()*3.5, size:6+Math.random()*7,
+    color:COLORS[Math.floor(Math.random()*COLORS.length)], rot:Math.random()*Math.PI, vr:(Math.random()-.5)*.25, life:99999});
+  runFx(6000);
+}
+function launchFireworks(){
+  let bursts = 0;
+  const iv = setInterval(()=>{
+    const cx = fx.width*(0.15+Math.random()*0.7), cy = fx.height*(0.15+Math.random()*0.4);
+    const col = COLORS[Math.floor(Math.random()*COLORS.length)];
+    for(let i=0;i<70;i++){
+      const ang = Math.PI*2*i/70, sp = 2+Math.random()*4;
+      particles.push({type:"f", x:cx, y:cy, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp,
+        size:2.5+Math.random()*2, color:col, life:60+Math.random()*30});
+    }
+    if(++bursts >= 8) clearInterval(iv);
+  }, 450);
+  runFx(8000);
+}
+function runFx(ms){
+  if(fxTimeout) clearTimeout(fxTimeout);
+  fxTimeout = setTimeout(()=>{ particles = []; }, ms);
+  if(!fxRunning){ fxRunning = true; requestAnimationFrame(tickFx); }
+}
+function tickFx(){
+  ctx.clearRect(0,0,fx.width,fx.height);
+  particles = particles.filter(p=> p.life > 0 && p.y < fx.height + 30);
+  particles.forEach(p=>{
+    p.x += p.vx; p.y += p.vy; p.life--;
+    if(p.type==="c"){ p.vy += 0.03; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size/2,-p.size/4,p.size,p.size/2); ctx.restore();
+    } else { p.vy += 0.05; ctx.globalAlpha = Math.max(p.life/90,0);
+      ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,7); ctx.fill(); ctx.globalAlpha = 1; }
+  });
+  if(particles.length) requestAnimationFrame(tickFx);
+  else { fxRunning = false; ctx.clearRect(0,0,fx.width,fx.height); }
+}
+
+/* ================= INIT ================= */
+if(window.TutorNav) TutorNav.init({app: APP_ID});
+renderChips();
+document.getElementById("nameInput").addEventListener("keydown", e=>{ if(e.key==="Enter") login(); });
+document.getElementById("answerBox").addEventListener("keydown", e=>{
+  if(e.key === "Enter"){
+    e.preventDefault();
+    const nb = document.getElementById("nextBtn"), fb = document.getElementById("finishBtn");
+    if(nb.style.display !== "none") nextWord();
+    else if(fb.style.display !== "none") finishTest();
+    else submitAnswer();
+  }
+});
+if(synth){
+  loadVoices();
+  if(typeof synth.addEventListener === "function") synth.addEventListener("voiceschanged", loadVoices);
+  else synth.onvoiceschanged = loadVoices;
+}
+</script>
+</body>
+</html>
