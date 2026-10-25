@@ -23,6 +23,8 @@
       sub: "Grades 3–8" },
     { id: "geometry",    label: "Shape Quest",   icon: "📐", href: "geometry.html",
       sub: "Geometry, step by step" },
+    { id: "watts-up",    label: "Watt’s Up",     icon: "⚡", href: "watts-up.html",
+      sub: "SciOly circuits practice" },
     { id: "typing",      label: "Wind Courier",  icon: "🕊️", href: "typing.html",
       sub: "Learn to type" },
     { id: "korean",      label: "한글 Adventure", icon: "🌿", href: "korean.html",

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Watt’s Up Practice</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito+Sans:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#FBF7EF; --panel:#FFFEFB; --ink:#1F2A44; --muted:#4A5568; --line:#D9D2C3;
+  --accent:#2F5F9E; --accent-dark:#22477A; --amber:#E8A33D; --amber-ink:#5A3404;
+  --good:#1D6B3A; --good-bg:#DDEFE3; --bad:#9B2C2C; --bad-bg:#F8E1DF; --pick-bg:#E3ECF8;
+  --display:'Fredoka','Trebuchet MS',Verdana,sans-serif; --body:'Nunito Sans','Trebuchet MS',Verdana,sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:var(--body); background:var(--bg); color:var(--ink); min-height:100vh; line-height:1.5;}
+.wrap{max-width:980px; margin:0 auto; padding:72px 16px 48px;}
+.screen{display:none;}
+.screen.active{display:block;}
+h1,h2,h3{font-family:var(--display); font-weight:600; line-height:1.15; color:var(--ink);}
+h1{font-size:clamp(2rem,6vw,3rem);}
+h2{font-size:1.6rem; margin-bottom:12px;}
+.card{background:var(--panel); border:2px solid var(--line); border-radius:20px; padding:24px;}
+.stack{display:flex; flex-direction:column; gap:16px;}
+.row{display:flex; gap:12px; flex-wrap:wrap; align-items:center;}
+.muted{color:var(--muted);}
+.eyebrow{font-size:.8rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--accent);}
+button{font-family:inherit; font-size:1rem; font-weight:700; border:none; border-radius:14px; padding:12px 20px; cursor:pointer;}
+button:focus-visible, input:focus-visible, .opt:focus-visible{outline:3px solid var(--amber); outline-offset:2px;}
+.btn{background:var(--accent); color:#FFFFFF;}
+.btn:hover{background:var(--accent-dark);}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+.btn-ghost{background:transparent; color:var(--accent); border:2px solid var(--accent);}
+.btn-danger{background:var(--bad); color:#FFFFFF;}
+input[type=text]{font-family:inherit; font-size:1.1rem; padding:12px 14px; border:2px solid var(--line); border-radius:14px; width:100%; color:var(--ink); background:#FFFFFF;}
+.chip{display:inline-block; padding:6px 14px; border-radius:999px; background:var(--pick-bg); color:var(--ink); cursor:pointer; font-weight:700; border:none;}
+.hero{display:flex; gap:20px; align-items:center; flex-wrap:wrap;}
+.hero svg{width:96px; height:96px; flex-shrink:0;}
+label.check{display:flex; gap:10px; align-items:flex-start; cursor:pointer;}
+label.check input{width:20px; height:20px; margin-top:3px; flex-shrink:0;}
+/* quiz */
+.qtop{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center; margin-bottom:12px;}
+.bar{height:10px; background:#ECE6D8; border-radius:999px; overflow:hidden; margin-bottom:18px;}
+.bar > div{height:100%; background:var(--accent); width:0; transition:width .2s;}
+.timer{font-variant-numeric:tabular-nums; font-weight:700;}
+.timer.low{color:var(--bad);}
+.qgrid{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:20px; align-items:start;}
+@media (max-width:760px){ .qgrid{grid-template-columns:1fr;} }
+.diagram{background:var(--panel); border:2px solid var(--line); border-radius:18px; padding:8px;}
+.diagram svg{width:100%; height:auto; display:block;}
+.dname{font-size:.85rem; font-weight:700; color:var(--muted); padding:4px 8px 0;}
+.prompt{font-size:1.25rem; font-weight:700; margin-bottom:6px;}
+.note{font-size:.95rem; color:var(--muted); margin-bottom:12px;}
+.opts{display:flex; flex-direction:column; gap:10px;}
+.opt{display:flex; gap:12px; align-items:flex-start; text-align:left; width:100%; background:var(--panel); color:var(--ink); border:2px solid var(--line); border-radius:14px; padding:12px 14px; font-weight:400; font-size:1rem;}
+.opt:hover{border-color:var(--accent);}
+.opt.picked{border-color:var(--accent); background:var(--pick-bg);}
+.opt .letter{font-family:var(--display); font-weight:600; width:30px; height:30px; border-radius:50%; background:#ECE6D8; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.opt.picked .letter{background:var(--accent); color:#FFFFFF;}
+table.data{border-collapse:collapse; width:100%; font-size:.95rem;}
+table.data th, table.data td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line);}
+table.data th{font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--muted);}
+.tag{display:inline-block; font-size:.75rem; font-weight:700; padding:2px 10px; border-radius:999px; background:var(--amber); color:var(--amber-ink);}
+/* results */
+.score{font-family:var(--display); font-size:clamp(2.4rem,8vw,3.6rem); font-weight:600;}
+.mastery{display:grid; grid-template-columns:minmax(0,1fr) 3fr auto; gap:8px 12px; align-items:center;}
+.mbar{height:12px; background:#ECE6D8; border-radius:999px; overflow:hidden;}
+.mbar > div{height:100%; background:var(--good);}
+.miss{border:2px solid var(--line); border-radius:16px; padding:14px; display:grid; grid-template-columns:200px minmax(0,1fr); gap:14px; background:var(--panel);}
+@media (max-width:640px){ .miss{grid-template-columns:1fr;} }
+.miss svg{width:100%; height:auto; border:1px solid var(--line); border-radius:10px; background:var(--panel);}
+.yours{color:var(--bad); font-weight:700;}
+.right{color:var(--good); font-weight:700;}
+.explain{background:var(--good-bg); color:#123F23; border-radius:10px; padding:8px 12px; margin-top:6px;}
+.confirm{background:var(--bad-bg); color:#5C1414; border-radius:14px; padding:14px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;}
+.table-wrap{overflow-x:auto;}
+@media (prefers-reduced-motion:reduce){ .bar > div{transition:none;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ========== LOGIN ========== -->
+<section id="scr-login" class="screen active">
+  <div class="stack">
+    <div class="hero">
+      <svg viewBox="0 0 96 96" aria-hidden="true"><g fill="none" stroke="#1F2A44" stroke-width="5" stroke-linecap="round"><path d="M14 20 V40 M14 52 V76 H82 V60 M82 36 V20 H14"/><path d="M4 40 H24"/><path d="M8 52 H20" stroke-width="9"/><circle cx="82" cy="48" r="12" stroke="#E8A33D"/><path d="M74 40 L90 56 M90 40 L74 56" stroke="#E8A33D"/></g></svg>
+      <div>
+        <p class="eyebrow">Science Olympiad · Division A</p>
+        <h1>Watt’s Up Practice</h1>
+        <p class="muted">Simple DC circuits, built to the 2026–2027 SoCal Elementary rules.</p>
+      </div>
+    </div>
+    <div class="card stack">
+      <label for="nameInput"><b>Your name</b></label>
+      <input type="text" id="nameInput" autocomplete="off" placeholder="Type your name" onkeydown="if(event.key==='Enter')login()">
+      <div><button class="btn" onclick="login()">Start →</button></div>
+      <div id="userChips" class="row"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SETUP ========== -->
+<section id="scr-setup" class="screen">
+  <div class="stack">
+    <h2 id="helloName">Hi!</h2>
+    <div class="card stack">
+      <p><b>Practice test:</b> <span id="coreCount"></span> multiple-choice questions in 5 parts: symbols, open/closed/short circuits, series and parallel, switch logic, and hands-on tasks. Each question shows its circuit diagram. Pick the best answer from A to D.</p>
+      <p class="muted">You see your score and the explanations at the end, like a real test. All lamps are identical.</p>
+      <label class="check"><input type="checkbox" id="optChallenge"> <span><b>Add 3 challenge questions</b> (Ohm’s law and watts). These go beyond the rules and are scored separately.</span></label>
+      <label class="check"><input type="checkbox" id="optTimed"> <span><b>Timed: 35 minutes</b>, like the real event.</span></label>
+      <div class="row"><button class="btn" onclick="startQuiz()">Begin test</button><button class="btn-ghost" onclick="showHistory()">My progress</button><button class="btn-ghost" onclick="switchUser()">Not you?</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== QUIZ ========== -->
+<section id="scr-quiz" class="screen">
+  <div class="qtop">
+    <span class="eyebrow" id="qPart"></span>
+    <span><b id="qNum"></b> <span class="timer" id="timer"></span></span>
+  </div>
+  <div class="bar"><div id="qBar"></div></div>
+  <div class="qgrid">
+    <div class="diagram"><div class="dname" id="qDiagName"></div><div id="qDiagram"></div></div>
+    <div>
+      <p class="prompt" id="qPrompt"></p>
+      <div id="qExtra"></div>
+      <div class="opts" id="qOpts" role="radiogroup" aria-labelledby="qPrompt"></div>
+      <div class="row" style="margin-top:16px">
+        <button class="btn-ghost" id="backBtn" onclick="go(-1)">← Back</button>
+        <button class="btn" id="nextBtn" onclick="go(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== RESULTS ========== -->
+<section id="scr-results" class="screen">
+  <div class="stack">
+    <div class="card stack">
+      <p class="eyebrow">Your result</p>
+      <p class="score" id="scoreBig"></p>
+      <p id="resultMsg"></p>
+      <p class="muted" id="challengeLine"></p>
+    </div>
+    <div class="card stack"><h3>Mastery by part</h3><div class="mastery" id="mastery"></div></div>
+    <div class="stack"><h3 id="missTitle">Questions to review</h3><div class="stack" id="missList"></div></div>
+    <div class="card stack"><h3>Top scores on this computer</h3><div class="table-wrap" id="leaders"></div></div>
+    <div class="row"><button class="btn" onclick="showSetup()">Try again</button><button class="btn-ghost" onclick="showHistory()">My progress</button></div>
+  </div>
+</section>
+
+<!-- ========== HISTORY ========== -->
+<section id="scr-history" class="screen">
+  <div class="stack">
+    <h2 id="histTitle">My progress</h2>
+    <div class="card stack">
+      <p id="histSummary" class="muted"></p>
+      <div class="table-wrap" id="histTable"></div>
+      <div id="histConfirm"></div>
+      <div class="row"><button class="btn-ghost" id="delBtn" onclick="askDelete()" disabled>Delete selected runs</button><button class="btn" onclick="showSetup()">Back</button></div>
+    </div>
+  </div>
+</section>
+
+</div>
+<script src="tutor-store.js"></script>
+<script src="tutor-nav.js"></script>
+<script>
+const APP_ID = "watts-up";
+const TIME_LIMIT_MIN = 35;
+TutorNav.init({app: APP_ID});
+
+/* ================= DIAGRAMS =================
+   One 880×600 drawing per circuit, reused by every question that points at it.
+   Symbols are the ones the rules name: one cell (long + short plate), lamp
+   (circle with X), wires with junction dots, normally open and normally closed
+   push switches. */
+const INK = "#1F2A44";
+const CELL = '<path d="M85 280 H155"/><path d="M102 305 H138" stroke-width="12"/>';
+const lamp = (x,y) => `<circle cx="${x}" cy="${y}" r="36"/><path d="M${x-25} ${y-25} L${x+25} ${y+25} M${x+25} ${y-25} L${x-25} ${y+25}"/>`;
+const dot = (x,y) => `<circle cx="${x}" cy="${y}" r="8" fill="${INK}"/>`;
+const term = (x,y) => `<circle cx="${x}" cy="${y}" r="7" fill="#FFFEFB"/>`;
+const noSwitch = (cx) => term(cx-30,120)+term(cx+30,120)+`<path d="M${cx-40} 94 H${cx+40}" stroke-width="6"/><path d="M${cx} 94 V64 M${cx-16} 64 H${cx+16}"/>`;
+const ncSwitch = (cx) => term(cx-30,120)+term(cx+30,120)+`<path d="M${cx-40} 129 H${cx+40}" stroke-width="6"/><path d="M${cx} 129 V70 M${cx-16} 70 H${cx+16}"/>`;
+const label = (x,y,t,c) => `<text x="${x}" y="${y}" font-family="Nunito Sans, Verdana, sans-serif" font-size="30" font-weight="700" fill="${c||INK}" text-anchor="middle" stroke="none">${t}</text>`;
+
+const DIAGRAMS = {
+  S: {name:"Symbol strip", alt:"Five schematic symbols numbered 1 to 5", draw: hi => {
+    let s = '';
+    if(hi) s += `<rect x="${(hi-1)*176+6}" y="40" width="164" height="520" rx="14" fill="#FCE9C8" stroke="none"/>`;
+    s += `<path d="M176 60 V540 M352 60 V540 M528 60 V540 M704 60 V540" stroke="#E4DDCF" stroke-width="2"/>`;
+    s += '<path d="M28 280 H78 M98 280 H148"/><path d="M78 240 V320"/><path d="M98 262 V298" stroke-width="12"/>';
+    s += '<path d="M204 280 H228 M300 280 H324"/>' + lamp(264,280);
+    s += '<path d="M380 280 H403 M477 280 H500"/>' + term(410,280) + term(470,280) + '<path d="M400 254 H480" stroke-width="6"/><path d="M440 254 V224 M424 224 H456"/>';
+    s += '<path d="M556 280 H579 M653 280 H676"/>' + term(586,280) + term(646,280) + '<path d="M576 289 H656" stroke-width="6"/><path d="M616 289 V230 M600 230 H632"/>';
+    s += '<path d="M732 280 H852 M792 220 V340"/>' + dot(792,280);
+    [1,2,3,4,5].forEach(n => s += label(88+(n-1)*176, 430, n, "#2F5F9E"));
+    return s; }},
+  A: {name:"Diagram A", alt:"One cell, normally open push switch S1 and lamp L1 in one loop", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H470 M410 120 H120"/>' + CELL + lamp(760,300) + noSwitch(440)
+    + label(440,40,"S1") + label(830,310,"L1") },
+  B: {name:"Diagram B", alt:"One cell with lamps L1 and L2 one after the other in a single loop", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V120 H586 M514 120 H366 M294 120 H120"/>' + CELL + lamp(330,120) + lamp(550,120)
+    + label(330,62,"L1") + label(550,62,"L2") },
+  BV: {name:"Diagram B with values", alt:"A 1.5 volt cell with two 3 ohm lamps in series", draw: () =>
+    DIAGRAMS.B.draw() + label(230,302,"1.5 V") + label(330,196,"3 Ω","#9A5B0C") + label(550,196,"3 Ω","#9A5B0C") },
+  C: {name:"Diagram C", alt:"One cell with lamp L1 and lamp L2 on separate branches", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H120 M440 120 V264 M440 336 V480"/>' + CELL + lamp(440,300) + lamp(760,300)
+    + dot(440,120) + dot(440,480) + label(510,310,"L1") + label(830,310,"L2") },
+  D: {name:"Diagram D", alt:"One cell and lamp L1, with a plain wire W joined across beside the lamp", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H120 M440 120 V480"/>' + CELL + lamp(760,300)
+    + dot(440,120) + dot(440,480) + label(480,310,"W") + label(830,310,"L1") },
+  E: {name:"Diagram E", alt:"One cell; lamp L1 on the top wire, then branches with lamp L2 and lamp L3", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H336 M264 120 H120 M540 120 V264 M540 336 V480"/>' + CELL
+    + lamp(300,120) + lamp(540,300) + lamp(760,300) + dot(540,120) + dot(540,480)
+    + label(300,62,"L1") + label(610,310,"L2") + label(830,310,"L3") },
+  F: {name:"Diagram F", alt:"One cell, normally open switch S1, normally closed switch S2 and lamp L1 in one loop", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H620 M560 120 H360 M300 120 H120"/>' + CELL + lamp(760,300)
+    + noSwitch(330) + ncSwitch(590) + label(330,40,"S1") + label(590,40,"S2") + label(830,310,"L1") },
+  G: {name:"Diagram G", alt:"A continuity tester with two loose probes, beside a circuit card with hidden wiring and points A, B, C, D", draw: () =>
+    '<rect x="500" y="110" width="340" height="380" rx="18" fill="#E9E2D2" stroke="#8A8172" stroke-width="4"/>'
+    + '<path d="M100 160 V280 M100 305 V440 H300 L420 370 M100 160 H170 M242 160 H300 L420 230"/><path d="M65 280 H135"/><path d="M82 305 H118" stroke-width="12"/>'
+    + lamp(206,160) + `<circle cx="420" cy="230" r="10" fill="${INK}"/><circle cx="420" cy="370" r="10" fill="${INK}"/>`
+    + term(580,200).replace('r="7"','r="13"') + term(760,200).replace('r="7"','r="13"') + term(580,400).replace('r="7"','r="13"') + term(760,400).replace('r="7"','r="13"')
+    + label(580,168,"A") + label(760,168,"B") + label(580,456,"C") + label(760,456,"D")
+    + `<text x="670" y="308" font-family="Nunito Sans, Verdana, sans-serif" font-size="24" font-style="italic" fill="#5A5246" text-anchor="middle" stroke="none">wiring hidden</text>`
+    + `<text x="200" y="540" font-family="Nunito Sans, Verdana, sans-serif" font-size="26" font-weight="700" fill="#4A5568" text-anchor="middle" stroke="none">Continuity tester</text>`
+    + `<text x="670" y="540" font-family="Nunito Sans, Verdana, sans-serif" font-size="26" font-weight="700" fill="#4A5568" text-anchor="middle" stroke="none">Circuit card</text>` },
+  H: {name:"Diagram H", alt:"A 1.5 volt cell and one 3 ohm lamp L1 in one loop", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H120"/>' + CELL + lamp(760,300)
+    + label(230,302,"1.5 V") + label(830,300,"L1") + label(836,346,"3 Ω","#9A5B0C") }
+};
+
+function svgFor(key, hi){
+  const d = DIAGRAMS[key];
+  return `<svg viewBox="0 0 880 600" role="img" aria-label="${d.alt}" xmlns="http://www.w3.org/2000/svg">`
+    + `<rect x="2" y="2" width="876" height="596" rx="20" fill="#FFFEFB" stroke="#D9D2C3" stroke-width="3"/>`
+    + `<g fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">${d.draw(hi)}</g></svg>`;
+}
+
+/* ================= QUESTION BANK =================
+   Each question: the first option is the correct one; options are shuffled per run.
+   part = rule area it practices (rules p. 26). */
+const PARTS = {
+  symbols:  "Part 1 · Schematic symbols",
+  circuits: "Part 2 · Open, closed & short circuits",
+  series:   "Part 3 · Series & parallel",
+  logic:    "Part 4 · Circuit logic",
+  hands:    "Part 5 · Hands-on practice",
+  challenge:"Challenge · beyond the rules"
+};
+const CARD1 = '<table class="data" style="margin-bottom:12px"><tr><th>Probes on</th><th>Lamp</th></tr><tr><td>A and B</td><td>lights</td></tr><tr><td>A and C</td><td>stays off</td></tr><tr><td>A and D</td><td>stays off</td></tr><tr><td>B and C</td><td>stays off</td></tr><tr><td>B and D</td><td>stays off</td></tr><tr><td>C and D</td><td>lights</td></tr></table>';
+const CARD2 = '<table class="data" style="margin-bottom:12px"><tr><th>Probes on</th><th>Lamp</th></tr><tr><td>A and B</td><td>lights</td></tr><tr><td>B and C</td><td>lights</td></tr><tr><td>C and D</td><td>stays off</td></tr></table>';
+
+const BANK = [
+  {id:"s1", part:"symbols", d:"S", hi:1, prompt:"What does symbol 1 show?",
+   opts:["A cell (a one-cell battery)","A lamp","A normally closed switch","Connected wires"],
+   explain:"A cell is drawn as a long thin line (+) and a short thick line (−)."},
+  {id:"s2", part:"symbols", d:"S", hi:3, prompt:"What does symbol 3 show?",
+   opts:["A normally open switch","A normally closed switch","A lamp","A cell"],
+   explain:"The bar sits above the two contacts without touching them, so the switch is open until you press it, like a doorbell button."},
+  {id:"s3", part:"symbols", d:"S", hi:4, prompt:"What does symbol 4 show?",
+   opts:["A normally closed switch","A normally open switch","Connected wires","A lamp"],
+   explain:"The bar touches both contacts, so current can flow until you press the button. Pressing it opens the switch."},
+  {id:"s4", part:"symbols", d:"S", hi:5, prompt:"Symbol 5 shows wires, which are conductors. Which sentence describes a conductor?",
+   opts:["A material that lets electric current flow through it easily","A material that stops electric current from flowing","A material that stores electric current for later","A material that makes light when current flows"],
+   explain:"Conductors, like the copper inside a wire or aluminum foil, let current flow. Insulators, like the plastic coating on a wire, do not."},
+
+  {id:"a1", part:"circuits", d:"A", prompt:"Nobody is pressing S1. What is true about lamp L1?",
+   opts:["L1 is off, because the circuit is open","L1 is on, because the circuit is closed","L1 is on, because S1 is a normally closed switch","L1 is dim, because the cell is weak"],
+   explain:"S1 is normally open: there is a gap, so there is no complete path for the current."},
+  {id:"a2", part:"circuits", d:"A", prompt:"Someone presses and holds S1. What happens?",
+   opts:["The circuit closes and L1 lights until S1 is let go","L1 lights and stays on even after S1 is let go","Nothing happens, because the circuit stays open","It makes a short circuit"],
+   explain:"Pressing S1 closes the gap. Letting go opens it again, and L1 goes out."},
+  {id:"d1", part:"circuits", d:"D", prompt:"Is lamp L1 lit?",
+   opts:["No, or too dim to see: almost all the current flows through wire W instead","Yes, and brighter than usual","Yes, at normal brightness","No, because the circuit is open"],
+   explain:"Wire W is an easy path with no lamp in it, so almost all the current bypasses L1."},
+  {id:"d2", part:"circuits", d:"D", prompt:"What is this kind of circuit called?",
+   opts:["A short circuit","A series circuit","An open circuit","A normally closed circuit"],
+   explain:"A wire that connects the two sides of the cell with almost nothing in the way makes a short circuit."},
+  {id:"d3", part:"circuits", d:"D", prompt:"Why is a short circuit a problem?",
+   opts:["A very large current flows, so the cell drains fast and the wires get hot","The lamp gets much too bright and pops","No current can flow at all","The wires stop being conductors"],
+   explain:"A short circuit can make wires and the cell hot enough to be dangerous. Never connect anything to a wall outlet."},
+
+  {id:"b1", part:"series", d:"B", prompt:"Is this a series or a parallel circuit?",
+   opts:["Series: there is one path, through L1 and then L2","Parallel: each lamp has its own path","Series-parallel","Neither: it is an open circuit"],
+   explain:"There are no branches, so the current goes through both lamps one after the other."},
+  {id:"b2", part:"series", d:"B", prompt:"Compared with one lamp alone on the same cell, how bright are L1 and L2?",
+   opts:["Dimmer","Brighter","The same","L1 is bright and L2 is off"],
+   explain:"The two lamps share the cell’s push (voltage), so less current flows through each."},
+  {id:"b3", part:"series", d:"B", prompt:"Lamp L1 burns out: the thin wire inside it breaks. What happens to L2?",
+   opts:["L2 goes out too","L2 stays lit","L2 gets brighter","L2 starts to flicker"],
+   explain:"The broken lamp opens the only path, so no current flows anywhere."},
+  {id:"c1", part:"series", d:"C", prompt:"Is this a series or a parallel circuit?",
+   opts:["Parallel: each lamp is on its own branch","Series: there is one path through both lamps","A short circuit","An open circuit"],
+   explain:"The junction dots split the current into two branches, one for each lamp."},
+  {id:"c2", part:"series", d:"C", prompt:"Compared with one lamp alone on the same cell, how bright is L1?",
+   opts:["About the same","Dimmer","Brighter","It is off"],
+   explain:"Each branch gets the cell’s full voltage. The cell does run down faster, because it feeds two branches."},
+  {id:"c3", part:"series", d:"C", prompt:"Someone unscrews lamp L1. What happens to L2?",
+   opts:["L2 stays lit","L2 goes out","L2 gets dimmer","It becomes a short circuit"],
+   explain:"L2’s own branch is still a complete path to the cell."},
+  {id:"e1", part:"series", d:"E", prompt:"How are the three lamps connected?",
+   opts:["Series-parallel: L1 is in series with the parallel pair L2 and L3","Series: all three are on one path","Parallel: all three are on separate branches","It is a short circuit"],
+   explain:"All the current goes through L1, then splits between the L2 and L3 branches."},
+  {id:"e2", part:"series", d:"E", prompt:"Which lamp glows brightest?",
+   opts:["L1","L2","L3","They are all the same"],
+   explain:"All the current passes through L1, then splits, so L2 and L3 each get only part of it."},
+  {id:"e3", part:"logic", d:"E", prompt:"Someone unscrews lamp L1. Which lamps stay lit?",
+   opts:["None of them","L2 and L3","Only L2","Only L3"],
+   explain:"L1 is on the only path to and from the cell, so removing it opens the whole circuit."},
+  {id:"e4", part:"logic", d:"E", tie:true, prompt:"Start with all three lamps lit. Someone unscrews L3. What happens?",
+   opts:["L1 and L2 stay lit; L2 gets brighter and L1 gets dimmer","L1 and L2 stay lit with no change in brightness","All the lamps go out","Only L1 stays lit, and it gets brighter"],
+   explain:"Now L1 and L2 are in series. L2 no longer shares current with L3, so it gets brighter; less total current flows, so L1 gets dimmer."},
+
+  {id:"f1", part:"logic", d:"F", prompt:"What kinds of switches are S1 and S2?",
+   opts:["S1 is normally open; S2 is normally closed","S1 is normally closed; S2 is normally open","Both are normally open","Both are normally closed"],
+   explain:"S1’s bar is above its contacts (open). S2’s bar touches its contacts (closed)."},
+  {id:"f2", part:"logic", d:"F", prompt:"Nobody is pressing either switch. Is L1 on or off?",
+   opts:["Off, because S1 is open","On, because both switches are closed","On, because S2 is closed","Off, because S2 is open"],
+   explain:"One open switch anywhere in a series loop is enough to stop the current."},
+  {id:"f3", part:"logic", d:"F", prompt:"Someone presses and holds S1 only. Is L1 on or off?",
+   opts:["On","Off, because pressing S1 opens it","Off, because S2 is open","It makes a short circuit"],
+   explain:"Pressing S1 closes it, and S2 is normally closed, so the path is complete."},
+  {id:"f4", part:"logic", d:"F", prompt:"Now they press and hold both S1 and S2. Is L1 on or off?",
+   opts:["Off, because pressing S2 opens it","On, because both buttons are pressed","On, but dimmer","It makes a short circuit"],
+   explain:"Pressing a normally closed switch opens it, which breaks the path."},
+
+  {id:"g1", part:"hands", d:"G", prompt:"Before testing a card, you touch the two probes together. What should happen, and why check?",
+   opts:["The lamp lights, which proves the tester works","The lamp stays off, which proves the tester is safe","The lamp blinks, which shows the cell is full","The cell gets warm, which shows current is flowing"],
+   explain:"If the lamp lights with the probes touching, a dark lamp later really means “not connected.”"},
+  {id:"g2", part:"hands", d:"G", prompt:"What three parts do you need to build a continuity tester?",
+   opts:["A cell, a lamp and wires","A cell, a switch and a magnet","A lamp, a switch and a coin","Two cells and a resistor"],
+   explain:"The rules give you a battery (cell), a lamp and wires to build it."},
+  {id:"g3", part:"hands", d:"G", extra:CARD1, prompt:"You test card 1 and record this data. Which points are connected inside the card?",
+   opts:["A to B, and C to D","A to C, and B to D","All four points are connected","None of the points are connected"],
+   explain:"Only A–B and C–D light the lamp, and the two pairs are not joined to each other."},
+  {id:"g4", part:"hands", d:"G", extra:CARD2, tie:true, prompt:"Card 2 contains only wires. Without testing, what will A and C, and A and D, do?",
+   opts:["A and C light; A and D stay off","Both pairs light","Both pairs stay off","A and C stay off; A and D light"],
+   explain:"A joins B and B joins C, so A, B and C are all connected. D is not joined to C, so it is not joined to A either."},
+  {id:"g5", part:"hands", d:"G", prompt:"You touch the probes to items on a tray. Which item is an insulator (the lamp stays off)?",
+   opts:["A rubber band","Aluminum foil","A bare steel paper clip","A coin"],
+   explain:"Rubber does not let current flow. Metals like foil, steel and coins are conductors."},
+  {id:"g6", part:"hands", d:"G", prompt:"Which item is a conductor (the lamp lights)?",
+   opts:["A coin","A plastic spoon","A wooden craft stick","A glass marble"],
+   explain:"Coins are metal. Plastic, wood and glass are insulators."},
+
+  {id:"x1", part:"challenge", d:"H", prompt:"A 1.5 V cell lights lamp L1, which has a resistance of 3 Ω. Using V = I × R, how much current flows?",
+   opts:["0.5 A","4.5 A","2 A","0.5 V"],
+   explain:"I = V ÷ R = 1.5 V ÷ 3 Ω = 0.5 A. Current is measured in amps (A)."},
+  {id:"x2", part:"challenge", d:"H", prompt:"Using P = V × I, how much power does lamp L1 use?",
+   opts:["0.75 W","4.5 W","2 W","0.75 A"],
+   explain:"P = 1.5 V × 0.5 A = 0.75 W. Power is measured in watts (W)."},
+  {id:"x3", part:"challenge", d:"BV", prompt:"Two 3 Ω lamps are in series on a 1.5 V cell. What are the total resistance and the current?",
+   opts:["6 Ω and 0.25 A","3 Ω and 0.5 A","1.5 Ω and 1 A","6 Ω and 0.5 A"],
+   explain:"Series resistances add: 3 Ω + 3 Ω = 6 Ω. I = 1.5 V ÷ 6 Ω = 0.25 A, half as much as one lamp, which is why series lamps are dimmer."}
+];
+const CORE = BANK.filter(q => q.part !== "challenge");
+
+/* ================= STATE ================= */
+let currentUser = null;
+let session = null;
+let timerId = null;
+
+function myApp(){ return TutorStore.app(currentUser, APP_ID); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function show(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ================= LOGIN ================= */
+function renderChips(){
+  const box = document.getElementById("userChips");
+  const users = TutorStore.users();
+  box.innerHTML = users.length ? "<span class='muted' style='width:100%'>Or tap your name:</span>" : "";
+  users.forEach(u => {
+    const c = document.createElement("button");
+    c.className = "chip"; c.type = "button"; c.textContent = "⚡ " + u.displayName;
+    c.onclick = () => { document.getElementById("nameInput").value = u.displayName; login(); };
+    box.appendChild(c);
+  });
+}
+function login(){
+  const typed = document.getElementById("nameInput").value.trim();
+  if(!typed){ document.getElementById("nameInput").focus(); return; }
+  const u = TutorStore.login(typed);          // case-insensitive
+  currentUser = u.displayName;
+  if(window.TutorNav && TutorNav.setUser) TutorNav.setUser(currentUser);
+  showSetup();
+}
+function switchUser(){ stopTimer(); currentUser = null; document.getElementById("nameInput").value = ""; renderChips(); show("scr-login"); }
+function showSetup(){
+  stopTimer();
+  const runs = myApp().history.length;
+  document.getElementById("helloName").textContent = "Hi, " + currentUser + "! " + (runs ? `You’ve taken ${runs} practice test${runs>1?"s":""}. Best: ${myApp().best}%.` : "Ready for your first practice test?");
+  document.getElementById("coreCount").textContent = CORE.length;
+  show("scr-setup");
+}
+
+/* ================= QUIZ ================= */
+function startQuiz(){
+  const withChallenge = document.getElementById("optChallenge").checked;
+  const timed = document.getElementById("optTimed").checked;
+  const qs = (withChallenge ? BANK : CORE).map(q => ({ q, order: shuffle(q.opts.map((_,i)=>i)) }));
+  session = { qs, idx: 0, picks: qs.map(() => null), times: qs.map(() => 0),
+              shownAt: Date.now(), startedAt: Date.now(), timed, withChallenge,
+              endsAt: timed ? Date.now() + TIME_LIMIT_MIN*60000 : null };
+  if(timed){ tick(); timerId = setInterval(tick, 1000); } else document.getElementById("timer").textContent = "";
+  renderQ();
+  show("scr-quiz");
+}
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId = null; } }
+function tick(){
+  const left = Math.max(0, session.endsAt - Date.now());
+  const m = Math.floor(left/60000), s = Math.floor(left/1000)%60;
+  const t = document.getElementById("timer");
+  t.textContent = `· ⏱ ${m}:${String(s).padStart(2,"0")}`;
+  t.classList.toggle("low", left < 5*60000);
+  if(left <= 0) finish();
+}
+function renderQ(){
+  const {q, order} = session.qs[session.idx];
+  const n = session.qs.length;
+  document.getElementById("qPart").textContent = PARTS[q.part] + (q.tie ? " · Tiebreaker" : "");
+  document.getElementById("qNum").textContent = `Question ${session.idx+1} of ${n}`;
+  document.getElementById("qBar").style.width = Math.round(session.idx/n*100) + "%";
+  document.getElementById("qDiagName").textContent = DIAGRAMS[q.d].name;
+  document.getElementById("qDiagram").innerHTML = svgFor(q.d, q.hi);
+  document.getElementById("qPrompt").textContent = q.prompt;
+  document.getElementById("qExtra").innerHTML = q.extra || "";
+  const box = document.getElementById("qOpts");
+  box.innerHTML = "";
+  order.forEach((oi, pos) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "opt" + (session.picks[session.idx] === oi ? " picked" : "");
+    b.setAttribute("role","radio"); b.setAttribute("aria-checked", session.picks[session.idx] === oi ? "true" : "false");
+    b.innerHTML = `<span class="letter">${"ABCD"[pos]}</span><span>${esc(q.opts[oi])}</span>`;
+    b.onclick = () => { session.picks[session.idx] = oi; renderQ(); };
+    box.appendChild(b);
+  });
+  document.getElementById("backBtn").disabled = session.idx === 0;
+  document.getElementById("nextBtn").textContent = session.idx === n-1 ? "Finish ✓" : (session.picks[session.idx] === null ? "Skip →" : "Next →");
+}
+function go(dir){
+  session.times[session.idx] += Date.now() - session.shownAt;
+  session.shownAt = Date.now();
+  const next = session.idx + dir;
+  if(next < 0) return;
+  if(next >= session.qs.length){ finish(); return; }
+  session.idx = next; renderQ();
+}
+
+/* ================= FINISH & SAVE ================= */
+function finish(){
+  if(!session || session.done) return;
+  session.done = true;
+  stopTimer();
+  session.times[session.idx] += Date.now() - session.shownAt;
+  const answers = session.qs.map(({q}, i) => {
+    const pick = session.picks[i];
+    return { id: q.id, topic: q.part, diagram: q.d, prompt: q.prompt,
+             chosen: pick === null ? null : q.opts[pick], correctAnswer: q.opts[0],
+             correct: pick === 0, skipped: pick === null, ms: session.times[i] };
+  });
+  const core = answers.filter(a => a.topic !== "challenge");
+  const chal = answers.filter(a => a.topic === "challenge");
+  const score = core.filter(a => a.correct).length, total = core.length;
+  const pct = Math.round(score/total*100);
+  const topics = {};
+  answers.forEach(a => { const t = topics[a.topic] = topics[a.topic] || {c:0,t:0}; t.t++; if(a.correct) t.c++; });
+  const rec = {
+    app: APP_ID, subject: "Science Olympiad: Watt’s Up", gradeLevel: "Div A (4–6)",
+    date: new Date().toISOString(), player: currentUser, playerKey: TutorStore.keyOf(currentUser),
+    timed: session.timed, timeLimitSec: session.timed ? TIME_LIMIT_MIN*60 : null,
+    timeTakenSec: Math.round((Date.now() - session.startedAt)/1000),
+    score, total, pct, win: pct >= 80, perfect: score === total,
+    skippedCount: core.filter(a => a.skipped).length,
+    challengeScore: chal.length ? chal.filter(a => a.correct).length : null,
+    challengeTotal: chal.length || null,
+    topics, answers
+  };
+  TutorStore.saveResult(currentUser, APP_ID, rec);
+  renderResults(rec);
+  show("scr-results");
+}
+function renderResults(rec){
+  document.getElementById("scoreBig").textContent = `${rec.score} / ${rec.total}  (${rec.pct}%)`;
+  document.getElementById("resultMsg").textContent =
+    rec.perfect ? "Perfect score! Every circuit, every switch. ⚡" :
+    rec.win ? "Great work: 80% or better. Review the few below." :
+    rec.pct >= 60 ? "Good progress. Study the explanations below, then try again." :
+    "Keep going. Read each explanation below; they cover what the test will ask.";
+  document.getElementById("challengeLine").textContent = rec.challengeTotal
+    ? `Challenge (beyond the rules, not in your score): ${rec.challengeScore} / ${rec.challengeTotal}` : "";
+  const m = document.getElementById("mastery");
+  m.innerHTML = "";
+  Object.keys(PARTS).forEach(k => {
+    const t = rec.topics[k]; if(!t) return;
+    const p = Math.round(t.c/t.t*100);
+    m.insertAdjacentHTML("beforeend", `<span>${esc(PARTS[k])}</span><div class="mbar"><div style="width:${p}%"></div></div><b>${t.c}/${t.t}</b>`);
+  });
+  const missed = rec.answers.filter(a => !a.correct);
+  document.getElementById("missTitle").textContent = missed.length ? `Questions to review (${missed.length})` : "Nothing to review: you got them all!";
+  const list = document.getElementById("missList");
+  list.innerHTML = "";
+  missed.forEach(a => {
+    const q = BANK.find(b => b.id === a.id);
+    list.insertAdjacentHTML("beforeend",
+      `<div class="miss">${svgFor(q.d, q.hi)}<div class="stack" style="gap:6px">
+        <span class="eyebrow">${esc(PARTS[q.part])}</span>
+        <b>${esc(q.prompt)}</b>
+        <span>Your answer: <span class="yours">${a.skipped ? "skipped" : esc(a.chosen)}</span></span>
+        <span>Correct answer: <span class="right">${esc(a.correctAnswer)}</span></span>
+        <p class="explain">${esc(q.explain)}</p></div></div>`);
+  });
+  renderLeaders();
+}
+function renderLeaders(){
+  const best = {};
+  TutorStore.allResults(APP_ID).forEach(r => {
+    const k = TutorStore.keyOf(r.name);
+    if(!best[k] || r.pct > best[k].pct) best[k] = r;
+  });
+  const rows = Object.values(best).sort((a,b) => b.pct - a.pct || a.timeTakenSec - b.timeTakenSec).slice(0,5);
+  document.getElementById("leaders").innerHTML = rows.length
+    ? `<table class="data"><tr><th>#</th><th>Name</th><th>Best</th><th>Date</th></tr>` +
+      rows.map((r,i) => `<tr><td>${i+1}</td><td>${esc(r.name)}</td><td>${r.pct}%</td><td>${new Date(r.date).toLocaleDateString()}</td></tr>`).join("") + "</table>"
+    : "<p class='muted'>No scores yet.</p>";
+}
+
+/* ================= HISTORY (progress log) ================= */
+function showHistory(){
+  stopTimer();
+  const h = myApp().history.slice().reverse();
+  document.getElementById("histTitle").textContent = currentUser + "’s progress";
+  document.getElementById("histConfirm").innerHTML = "";
+  document.getElementById("histSummary").textContent = h.length
+    ? `${h.length} practice test${h.length>1?"s":""} · best ${myApp().best}% · latest ${h[0].pct}%`
+    : "No practice tests yet. Your scores will be saved here after each test.";
+  document.getElementById("histTable").innerHTML = h.length
+    ? `<table class="data"><tr><th></th><th>Date</th><th>Score</th><th>Weakest part</th><th>Time</th></tr>` +
+      h.map(r => {
+        const weak = Object.entries(r.topics || {}).filter(([k]) => k !== "challenge")
+          .sort((a,b) => a[1].c/a[1].t - b[1].c/b[1].t)[0];
+        return `<tr><td><input type="checkbox" class="histPick" value="${esc(r.date)}" aria-label="Select run" onchange="updDel()"></td>
+          <td>${new Date(r.date).toLocaleString()}</td><td><b>${r.score}/${r.total}</b> (${r.pct}%)${r.challengeTotal ? ` <span class="tag">+${r.challengeScore}/${r.challengeTotal} challenge</span>` : ""}</td>
+          <td>${weak ? esc(PARTS[weak[0]].replace(/^Part \d · /,"")) : "–"}</td><td>${Math.round(r.timeTakenSec/60)} min</td></tr>`;
+      }).join("") + "</table>"
+    : "";
+  updDel();
+  show("scr-history");
+}
+function selectedDates(){ return [...document.querySelectorAll(".histPick:checked")].map(c => c.value); }
+function updDel(){ document.getElementById("delBtn").disabled = selectedDates().length === 0; }
+function askDelete(){
+  const n = selectedDates().length;
+  if(!n) return;
+  document.getElementById("histConfirm").innerHTML =
+    `<div class="confirm"><span>Delete ${n} run${n>1?"s":""}? They are archived on this computer, not erased.</span>
+     <button class="btn-danger" onclick="doDelete()">Yes, delete</button><button class="btn-ghost" onclick="document.getElementById('histConfirm').innerHTML=''">Cancel</button></div>`;
+}
+function doDelete(){
+  TutorStore.deleteResults(currentUser, APP_ID, selectedDates());   // archives first
+  showHistory();
+}
+
+/* ================= BOOT ================= */
+renderChips();
+(function(){
+  const last = TutorStore.lastUser();
+  if(last){ document.getElementById("nameInput").value = TutorStore.displayName(last); }
+})();
+</script>
+</body>
+</html>

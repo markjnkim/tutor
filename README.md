@@ -12,6 +12,7 @@ open directly in a browser.
 | `panda-math.html` | Math, grades 2–8 | 25 multiple-choice questions |
 | `spelling-bee.html` | Spelling, grades 3–8 | 20 words read aloud, typed answers |
 | `geometry.html` | Geometry | 12-lesson illustrated curriculum |
+| `watts-up.html` | Science Olympiad: Watt’s Up (DC circuits) | 29 multiple-choice questions with circuit diagrams, plus 3 optional challenge questions |
 | `typing.html` | Typing | 12-stop typing journey, screen then ear |
 | `states-capitals.html` | US geography | Map quiz, states + capitals |
 | `korean.html` | Korean (한글) | 12-lesson curriculum journey |
