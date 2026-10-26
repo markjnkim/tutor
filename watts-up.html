@@ -112,6 +112,8 @@ table.data th{font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; 
     <div class="card stack">
       <p><b>Practice test:</b> <span id="coreCount"></span> multiple-choice questions in 5 parts: symbols, open/closed/short circuits, series and parallel, switch logic, and hands-on tasks. Each question shows its circuit diagram. Pick the best answer from A to D.</p>
       <p class="muted">You see your score and the explanations at the end, like a real test. All lamps are identical.</p>
+      <p><b id="newCount"></b> Each test picks questions you haven’t seen yet first, then ones you missed.</p>
+      <p class="muted" id="newBySection" style="font-size:.9rem"></p>
       <label class="check"><input type="checkbox" id="optChallenge"> <span><b>Add 3 challenge questions</b> (Ohm’s law and watts). These go beyond the rules and are scored separately.</span></label>
       <label class="check"><input type="checkbox" id="optTimed"> <span><b>Timed: 35 minutes</b>, like the real event.</span></label>
       <div class="row"><button class="btn" onclick="startQuiz()">Begin test</button><button class="btn-ghost" onclick="showHistory()">My progress</button><button class="btn-ghost" onclick="switchUser()">Not you?</button></div>
@@ -362,7 +364,51 @@ const BANK = [
    opts:["6 Ω and 0.25 A","3 Ω and 0.5 A","1.5 Ω and 1 A","6 Ω and 0.5 A"],
    explain:"Series resistances add: 3 Ω + 3 Ω = 6 Ω. I = 1.5 V ÷ 6 Ω = 0.25 A, half as much as one lamp, which is why series lamps are dimmer."}
 ];
+/* ================= BLUEPRINT & DRAW =================
+   A test draws this many questions from each section of the bank. Every
+   written-test rule area (p. 26) has its own section, so every test covers all four. */
+const BANK_VERSION = 2;
+const BLUEPRINT = { symbols:4, circuits:5, series:8, logic:6, hands:6 };
+const CHALLENGE_SLOTS = 3;
+const AREA_OF_PART = { circuits:1, series:2, symbols:3, logic:4, hands:"hands-on", challenge:"challenge" };
+const SECTION_ORDER = ["symbols","circuits","series","logic","hands","challenge"];
+const DIAGRAM_ORDER = Object.keys(DIAGRAMS);
+const CORE_SLOTS = Object.values(BLUEPRINT).reduce((a,b) => a+b, 0);
+BANK.forEach(q => { q.skill = q.skill || q.part; q.difficulty = q.difficulty || 2; q.area = AREA_OF_PART[q.part]; });
 const CORE = BANK.filter(q => q.part !== "challenge");
+
+// What a student has done with each bank id: unseen (no entry), last answer right, or last answer wrong.
+function itemStats(history){
+  const st = {};
+  (history || []).forEach(r => (r.answers || []).forEach(a => { st[a.id] = { lastCorrect: !!a.correct }; }));
+  return st;
+}
+function tierOf(id, st){ const s = st[id]; return !s ? 0 : (s.lastCorrect ? 2 : 1); }   // 0 unseen, 1 missed, 2 rest
+// Unseen first, then missed, then the rest; inside a tier, spread the skills; never the same id twice.
+function drawSection(items, n, st, rnd){
+  const pool = shuffle(items, rnd), out = [], used = {};
+  while(out.length < n && pool.length){
+    let bi = 0, bk = Infinity;
+    pool.forEach((q,i) => { const k = tierOf(q.id, st)*1000 + (used[q.skill] || 0); if(k < bk){ bk = k; bi = i; } });
+    const q = pool.splice(bi, 1)[0];
+    out.push(q); used[q.skill] = (used[q.skill] || 0) + 1;
+  }
+  // Keep questions about the same diagram next to each other.
+  return out.sort((a,b) => DIAGRAM_ORDER.indexOf(a.d) - DIAGRAM_ORDER.indexOf(b.d));
+}
+function drawTest(history, withChallenge, rnd){
+  const st = itemStats(history), out = [];
+  SECTION_ORDER.forEach(p => {
+    const n = p === "challenge" ? (withChallenge ? CHALLENGE_SLOTS : 0) : BLUEPRINT[p];
+    if(n) out.push(...drawSection(BANK.filter(q => q.part === p), n, st, rnd));
+  });
+  return out;
+}
+function newCounts(history){
+  const st = itemStats(history), c = {};
+  SECTION_ORDER.forEach(p => { const items = BANK.filter(q => q.part === p); c[p] = { fresh: items.filter(q => !st[q.id]).length, total: items.length }; });
+  return c;
+}
 
 /* ================= STATE ================= */
 let currentUser = null;
@@ -376,7 +422,7 @@ function show(id){
   document.getElementById(id).classList.add("active");
   window.scrollTo(0,0);
 }
-function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function shuffle(a, rnd){ rnd = rnd || Math.random; a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
 /* ================= LOGIN ================= */
 function renderChips(){
@@ -403,7 +449,12 @@ function showSetup(){
   stopTimer();
   const runs = myApp().history.length;
   document.getElementById("helloName").textContent = "Hi, " + currentUser + "! " + (runs ? `You’ve taken ${runs} practice test${runs>1?"s":""}. Best: ${myApp().best}%.` : "Ready for your first practice test?");
-  document.getElementById("coreCount").textContent = CORE.length;
+  document.getElementById("coreCount").textContent = CORE_SLOTS;
+  const nc = newCounts(myApp().history);
+  const coreFresh = Object.keys(BLUEPRINT).reduce((s,p) => s + nc[p].fresh, 0);
+  document.getElementById("newCount").textContent = `${coreFresh} of ${CORE.length} questions are new to you.`;
+  document.getElementById("newBySection").textContent = SECTION_ORDER.map(p =>
+    `${PARTS[p].replace(/^.*· /,"")}: ${nc[p].fresh} of ${nc[p].total} new`).join(" · ");
   show("scr-setup");
 }
 
@@ -411,7 +462,7 @@ function showSetup(){
 function startQuiz(){
   const withChallenge = document.getElementById("optChallenge").checked;
   const timed = document.getElementById("optTimed").checked;
-  const qs = (withChallenge ? BANK : CORE).map(q => ({ q, order: shuffle(q.opts.map((_,i)=>i)) }));
+  const qs = drawTest(myApp().history, withChallenge).map(q => ({ q, order: shuffle(q.opts.map((_,i)=>i)) }));
   session = { qs, idx: 0, picks: qs.map(() => null), times: qs.map(() => 0),
               shownAt: Date.now(), startedAt: Date.now(), timed, withChallenge,
               endsAt: timed ? Date.now() + TIME_LIMIT_MIN*60000 : null };
@@ -468,7 +519,7 @@ function finish(){
   session.times[session.idx] += Date.now() - session.shownAt;
   const answers = session.qs.map(({q}, i) => {
     const pick = session.picks[i];
-    return { id: q.id, topic: q.part, diagram: q.d, prompt: q.prompt,
+    return { id: q.id, topic: q.part, skill: q.skill, area: q.area, difficulty: q.difficulty, diagram: q.d, prompt: q.prompt,
              chosen: pick === null ? null : q.opts[pick], correctAnswer: q.opts[0],
              correct: pick === 0, skipped: pick === null, ms: session.times[i] };
   });
@@ -487,6 +538,7 @@ function finish(){
     skippedCount: core.filter(a => a.skipped).length,
     challengeScore: chal.length ? chal.filter(a => a.correct).length : null,
     challengeTotal: chal.length || null,
+    bankVersion: BANK_VERSION, drawn: session.qs.map(x => x.q.id),
     topics, answers
   };
   TutorStore.saveResult(currentUser, APP_ID, rec);

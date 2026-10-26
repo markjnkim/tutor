@@ -32,7 +32,8 @@ let saved;
   const { w, d, errs } = mount();
   const bank = JSON.parse(w.eval('JSON.stringify(BANK.map(q=>({id:q.id,part:q.part,d:q.d,opts:q.opts})))'));
   const core = bank.filter(q => q.part !== 'challenge');
-  assert(core.length === 29, 'core bank has 29 questions: ' + core.length);
+  assert(w.eval('CORE_SLOTS') === 29, 'blueprint draws 29 core questions per test');
+  assert(core.length >= 29, 'core bank has at least 29 questions: ' + core.length);
   assert(bank.every(q => q.opts.length === 4 && new Set(q.opts).size === 4), 'every question has 4 distinct options');
   assert(bank.every(q => w.eval(`!!DIAGRAMS["${q.d}"]`)), 'every question points at a real diagram');
   ['symbols','circuits','series','logic','hands'].forEach(p => assert(core.some(q => q.part === p), 'part present: ' + p));
@@ -44,6 +45,8 @@ let saved;
   assert(d.querySelectorAll('#qOpts .opt').length === 4, 'question shows 4 options');
   assert(d.querySelector('#qDiagram svg'), 'question shows its diagram');
   const order = JSON.parse(w.eval('JSON.stringify(session.qs.map(x=>x.q.id))'));
+  assert(order.length === 29 && new Set(order).size === 29, 'a test draws 29 distinct core questions');
+  assert(/of \d+ questions are new to you/.test(d.getElementById('newCount').textContent), 'setup shows how many questions are new: ' + d.getElementById('newCount').textContent);
   order.forEach((id, i) => {
     const q = bank.find(b => b.id === id);
     if(i === 0) { /* skip */ }
@@ -55,6 +58,7 @@ let saved;
   const rec = JSON.parse(w.eval('JSON.stringify(TutorStore.app("Chloe","watts-up").history[0])'));
   assert(rec && rec.score === 27 && rec.total === 29 && rec.pct === 93, 'saved 27/29 (93%): ' + (rec && rec.score + '/' + rec.total + ' ' + rec.pct));
   assert(rec.skippedCount === 1, 'one skipped recorded');
+  assert(rec.bankVersion === w.eval('BANK_VERSION') && JSON.stringify(rec.drawn) === JSON.stringify(order), 'record saves bankVersion and the drawn ids');
   assert(rec.answers.length === 29 && rec.answers.every(a => 'chosen' in a && 'correctAnswer' in a), 'per-question answers saved');
   assert(d.querySelectorAll('#missList .miss').length === 2, 'two missed questions listed for review');
   assert(d.querySelector('#missList .explain'), 'missed questions show explanations');
