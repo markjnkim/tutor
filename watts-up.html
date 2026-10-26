@@ -621,6 +621,306 @@ BANK.push(
    explain:"The lamp lights only when the card completes the tester’s loop, so A and B are joined inside."}
 );
 
+/* ================= GENERATORS =================
+   Generated items are computed from a model of the circuit or card, never typed in.
+   The bank is built from fixed seeds, so every generated id is stable across visits. */
+function rng(seed){ let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const listText = a => a.length === 1 ? a[0] : a.slice(0,-1).join(", ") + " and " + a[a.length-1];
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+// Netlists for the diagrams. The cell runs from node p (+) to node n (−).
+// [kind, name, node1, node2, (switch type)]  kind: lamp | wire | sw ; switch type: no | nc
+const NETS = {
+  A:[["sw","S1","p","a","no"],["lamp","L1","a","n"]],
+  B:[["lamp","L1","p","a"],["lamp","L2","a","n"]],
+  C:[["lamp","L1","p","n"],["lamp","L2","p","n"]],
+  D:[["lamp","L1","p","n"],["wire","W","p","n"]],
+  E:[["lamp","L1","p","a"],["lamp","L2","a","n"],["lamp","L3","a","n"]],
+  F:[["sw","S1","p","a","no"],["sw","S2","a","b","nc"],["lamp","L1","b","n"]],
+  J:[["lamp","L1","p","a"],["lamp","L2","a","b"],["lamp","L3","b","n"]],
+  K:[["lamp","L1","p","n"],["lamp","L2","p","n"],["lamp","L3","p","n"]],
+  M:[["sw","S1","p","a","no"],["sw","S2","a","b","no"],["lamp","L1","b","n"]],
+  N:[["sw","S1","p","a","no"],["sw","S2","p","a","no"],["lamp","L1","a","n"]],
+  P:[["sw","S1","p","a","nc"],["lamp","L1","a","n"]],
+  Q:[["sw","S1","p","a","no"],["wire","W","p","a"],["lamp","L1","a","n"]],
+  R:[["wire","W","p","n"]],
+  T:[["lamp","L1","p","n"],["sw","S1","p","a","no"],["lamp","L2","a","n"]],
+  U:[["sw","S1","p","a","no"],["lamp","L1","a","n"],["lamp","L2","a","n"]],
+  V:[["sw","S1","p","a","no"],["lamp","L1","a","n"],["sw","S2","a","b","no"],["lamp","L2","b","n"]],
+  Y:[["sw","S1","p","a","no"],["lamp","L1","a","n"],["sw","S2","a","b","nc"],["lamp","L2","b","n"]],
+  Z:[["lamp","L1","p","a"],["lamp","L2","a","n"],["lamp","L3","p","n"]]
+};
+/* Node-voltage solve. Lamps are 1 Ω, wires and closed switches 1 µΩ, the cell 1 V with a
+   tiny 1 mΩ inside so a short circuit behaves like one. Returns the current through each lamp. */
+function solve(net, removed, pressed){
+  removed = removed || []; pressed = pressed || [];
+  const parts = net.map(([k, name, a, b, t]) => {
+    let g = 1;
+    if(k === "wire") g = 1e6;
+    if(k === "sw") g = ((t === "no") === pressed.includes(name)) ? 1e6 : 0;
+    if(k === "lamp" && removed.includes(name)) g = 0;
+    return {k, name, a, b, g};
+  }).concat([{k:"cell", a:"s", b:"p", g:1e3}]);
+  const nodes = [...new Set(parts.flatMap(x => [x.a, x.b]))].filter(x => x !== "n" && x !== "s");
+  const ix = Object.fromEntries(nodes.map((x,i) => [x,i])), m = nodes.length;
+  const G = nodes.map(() => new Array(m+1).fill(0));
+  nodes.forEach((_,i) => G[i][i] += 1e-9);                       // keeps floating nodes solvable
+  const fixedV = {n:0, s:1};
+  parts.forEach(({a, b, g}) => {
+    [[a,b],[b,a]].forEach(([u,v]) => {
+      if(!(u in ix)) return;
+      G[ix[u]][ix[u]] += g;
+      if(v in ix) G[ix[u]][ix[v]] -= g; else G[ix[u]][m] += g * fixedV[v];
+    });
+  });
+  for(let c = 0; c < m; c++){                                     // Gaussian elimination
+    let piv = c; for(let r = c+1; r < m; r++) if(Math.abs(G[r][c]) > Math.abs(G[piv][c])) piv = r;
+    [G[c], G[piv]] = [G[piv], G[c]];
+    for(let r = 0; r < m; r++) if(r !== c){ const f = G[r][c] / G[c][c]; for(let k = c; k <= m; k++) G[r][k] -= f * G[c][k]; }
+  }
+  const V = x => x in ix ? G[ix[x]][m] / G[ix[x]][ix[x]] : fixedV[x];
+  const I = {};
+  parts.forEach(x => { if(x.k === "lamp") I[x.name] = Math.abs(V(x.a) - V(x.b)) * x.g; });
+  return I;
+}
+const LIT = 0.01;                                                 // amps; one lamp alone draws about 1
+const isLit = i => i > LIT;
+function brightWord(before, after){                             // compare one lamp's current
+  if(!isLit(after)) return "off";
+  if(Math.abs(after - before) <= 0.05 * before) return "same";
+  return after > before ? "brighter" : "dimmer";
+}
+const NOTES = {
+  B:"In series there is one path, so the same current goes through every lamp.",
+  C:"Each parallel branch is joined straight across the cell and gets its full push.",
+  E:"All the current goes through L1, then splits between L2 and L3.",
+  J:"In series there is one path, so the same current goes through every lamp.",
+  K:"Each parallel branch is joined straight across the cell and gets its full push.",
+  Z:"L3 has a branch to itself. L1 and L2 share the other branch in series.",
+  M:"S1 and S2 are in series, so both must be closed for current to flow.",
+  N:"S1 and S2 are in parallel, so closing either one completes the path.",
+  F:"S1 is normally open and S2 is normally closed: L1 lights only when S1 is pressed and S2 is not.",
+  T:"S1 is on L2’s branch only. L1’s branch is always complete.",
+  U:"S1 is on the main wire next to the cell, so it controls both branches.",
+  V:"S1 on the main wire controls both lamps. S2 is on L2’s branch only.",
+  Y:"S1 on the main wire controls both lamps. S2 is normally closed and on L2’s branch only."
+};
+const lampsOf = d => NETS[d].filter(x => x[0] === "lamp").map(x => x[1]);
+const switchesOf = d => NETS[d].filter(x => x[0] === "sw").map(x => x[1]);
+const GEN = [];
+
+// 1. Unscrew one lamp: which lamps stay lit?
+[["B","L2","series"],["C","L2","series"],["J","L1","series"],["J","L2","series"],["J","L3","series"],
+ ["K","L1","series"],["K","L2","series"],["K","L3","series"],["E","L2","logic"],["Z","L1","logic"],["Z","L2","logic"],["Z","L3","logic"]
+].forEach(([d, gone, part]) => {
+  const before = solve(NETS[d]), after = solve(NETS[d], [gone]);
+  const rest = lampsOf(d).filter(l => l !== gone);
+  const why = rest.map(l => isLit(after[l]) ? `${l} still has a complete path to the cell.` : `${l} has no complete path without ${gone}.`).join(" ");
+  let opts;
+  if(rest.length === 1){
+    const o = rest[0], w = brightWord(before[o], after[o]);
+    const txt = {off:`${o} goes out`, same:`${o} stays lit at the same brightness`, brighter:`${o} stays lit and gets brighter`, dimmer:`${o} stays lit and gets dimmer`};
+    opts = [txt[w], ...Object.keys(txt).filter(k => k !== w).map(k => txt[k])];
+    GEN.push({id:`gen-remove-${d}-${gone}`, gen:"remove", part, skill:"remove", difficulty:2, d,
+      prompt:`Someone unscrews ${gone}. What happens to ${o}?`, opts, explain: why + " " + NOTES[d], model:{d, gone}});
+  } else {
+    const [x, y] = rest, lit = rest.filter(l => isLit(after[l]));
+    const txt = s => s.length === 0 ? "None of them" : s.length === 1 ? `Only ${s[0]}` : `${x} and ${y}`;
+    const all = [[], [x], [y], [x,y]];
+    const right = txt(lit);
+    opts = [right, ...all.map(txt).filter(t => t !== right)];
+    GEN.push({id:`gen-remove-${d}-${gone}`, gen:"remove", part, skill:"remove", difficulty: d === "Z" ? 3 : 2, d,
+      prompt:`Start with all the lamps lit. Someone unscrews ${gone}. Which lamps stay lit?`, opts, explain: why + " " + NOTES[d], model:{d, gone}});
+  }
+});
+
+// 2. Compare the brightness of two lamps in the same circuit.
+[["B","L1","L2"],["C","L1","L2"],["E","L1","L2"],["E","L2","L3"],["J","L1","L3"],["K","L1","L2"],["Z","L1","L3"],["Z","L1","L2"]].forEach(([d, x, y]) => {
+  const I = solve(NETS[d]);
+  const w = brightWord(I[y], I[x]);                              // how x compares with y
+  const txt = {brighter:`${x} is brighter`, dimmer:`${y} is brighter`, same:"They are equally bright", off:"Neither lamp is lit"};
+  const lead = w === "same" ? `The same current flows through ${x} and ${y}.` : `More current flows through ${w === "brighter" ? x : y}, so it glows brighter.`;
+  GEN.push({id:`gen-compare-${d}-${x}${y}`, gen:"compare", part:"series", skill:"brightness", difficulty: (d === "E" || d === "Z") ? 3 : 2, d,
+    prompt:`All the lamps are lit. How does ${x} compare with ${y}?`, opts:[txt[w], ...Object.keys(txt).filter(k => k !== w).map(k => txt[k])],
+    explain: lead + " " + NOTES[d], model:{d, x, y}});
+});
+
+// 3. One lamp in this circuit compared with one lamp alone on the same cell.
+const ALONE = solve([["lamp","L1","p","n"]]).L1;
+[["J","L2"],["K","L2"],["E","L1"],["E","L3"],["Z","L1"],["Z","L3"]].forEach(([d, x]) => {
+  const w = brightWord(ALONE, solve(NETS[d])[x]);
+  const txt = {dimmer:"Dimmer", brighter:"Brighter", same:"About the same", off:"It is off"};
+  GEN.push({id:`gen-alone-${d}-${x}`, gen:"alone", part:"series", skill:"brightness", difficulty:2, d,
+    prompt:`Compared with one lamp alone on the same cell, how bright is ${x}?`, opts:[txt[w], ...Object.keys(txt).filter(k => k !== w).map(k => txt[k])],
+    explain:`${x} is ${w === "same" ? "as bright as" : w + " than"} one lamp alone. ` + NOTES[d], model:{d, x}});
+});
+
+// 4. Switch logic: which lamps are lit for a given set of pressed switches?
+const combosOf = sws => sws.length === 1 ? [[], [sws[0]]] : [[], [sws[0]], [sws[1]], sws];
+const pressText = (c, sws) => c.length === 0 ? "Nobody presses any switch." : c.length === 1 && sws.length === 1 ? `Someone presses and holds ${c[0]}.`
+  : c.length === 1 ? `Someone presses and holds ${c[0]} only.` : "Someone presses and holds both S1 and S2.";
+["T","U","V","Y"].forEach(d => {
+  const sws = switchesOf(d);
+  combosOf(sws).forEach(c => {
+    const I = solve(NETS[d], [], c), lit = ["L1","L2"].filter(l => isLit(I[l]));
+    const txt = s => s.length === 0 ? "Neither lamp" : s.length === 1 ? `Only ${s[0]}` : "Both L1 and L2";
+    const right = txt(lit);
+    GEN.push({id:`gen-switch-${d}-${c.join("") || "none"}`, gen:"switch", part:"logic", skill:"switch-state", difficulty: d === "Y" ? 3 : 2, d,
+      prompt: pressText(c, sws) + " Which lamps are lit?", opts:[right, ...[[],["L1"],["L2"],["L1","L2"]].map(txt).filter(t => t !== right)],
+      explain:`With ${c.length ? listText(c) + " pressed" : "nothing pressed"}, ${lit.length ? listText(lit) + (lit.length > 1 ? " have" : " has") + " a complete path" : "no lamp has a complete path"}. ` + NOTES[d],
+      model:{d, pressed:c}});
+  });
+});
+// 5. Switch logic: the one choice of presses that lights (or leaves off) a lamp.
+["M","N","F","V","Y"].forEach(d => {
+  const sws = switchesOf(d), combos = combosOf(sws);
+  const ctext = c => c.length === 0 ? "Pressing nothing" : c.length === 1 ? `Pressing ${c[0]} only` : "Pressing both S1 and S2";
+  lampsOf(d).forEach(L => {
+    [true, false].forEach(wantLit => {
+      const hits = combos.filter(c => isLit(solve(NETS[d], [], c)[L]) === wantLit);
+      if(hits.length !== 1) return;
+      const right = ctext(hits[0]);
+      GEN.push({id:`gen-press-${d}-${L}-${wantLit ? "on" : "off"}`, gen:"press", part:"logic", skill: d === "N" ? "or" : d === "M" ? "and" : "switch-state", difficulty:2, d,
+        prompt:`Which choice ${wantLit ? "lights" : "leaves"} ${L}${wantLit ? "" : " off"}?`, opts:[right, ...combos.map(ctext).filter(t => t !== right)],
+        explain:`${right} is the only choice that ${wantLit ? "makes a complete path through" : "leaves a gap in the path to"} ${L}. ` + NOTES[d], model:{d, L, wantLit}});
+    });
+  });
+});
+
+// 6. Hidden circuit cards: random wiring → probe table → question.
+const pairs = pts => pts.flatMap((a,i) => pts.slice(i+1).map(b => [a,b]));
+function partitionsOf(pts){                                      // every way to group the points
+  if(!pts.length) return [[]];
+  const [h, ...t] = pts, out = [];
+  partitionsOf(t).forEach(p => { out.push([[h], ...p]); p.forEach((g,i) => out.push(p.map((x,j) => j === i ? [h, ...x] : x))); });
+  return out;
+}
+const sameGroup = (part, a, b) => part.some(g => g.includes(a) && g.includes(b));
+const groupsText = (part, n) => {
+  const big = part.filter(g => g.length > 1).map(g => g.slice().sort()), lone = part.filter(g => g.length === 1).map(g => g[0]).sort();
+  if(!big.length) return "None of the points are connected";
+  if(big.length === 1 && big[0].length === n) return `All ${n} points are connected`;
+  const s = big.sort().map(g => listText(g) + (g.length === 2 ? " are connected" : " are all connected"));
+  if(lone.length) s.push(listText(lone) + (lone.length === 1 ? " is not connected to any other point" : " are not connected to anything"));
+  return s.join("; ");
+};
+const tableHTML = rows => '<table class="data" style="margin-bottom:12px"><tr><th>Probes on</th><th>Lamp</th></tr>'
+  + rows.map(([a,b,lit]) => `<tr><td>${a} and ${b}</td><td>${lit ? "lights" : "stays off"}</td></tr>`).join("") + "</table>";
+function deduce(pts, rows, a, b){                                // "lights" | "off" | null if the table doesn't decide it
+  const ok = partitionsOf(pts).filter(p => rows.every(([x,y,lit]) => sameGroup(p,x,y) === lit));
+  const v = new Set(ok.map(p => sameGroup(p,a,b)));
+  return v.size === 1 ? ([...v][0] ? "lights" : "off") : null;
+}
+const cardKeys = new Set(); let madeRead = 0, madePredict = 0;
+for(let seed = 1; (madeRead < 8 || madePredict < 8) && seed < 400; seed++){
+  const r = rng(seed * 7919), n = seed % 2 ? 4 : 5, pts = "ABCDE".slice(0,n).split("");
+  const all = partitionsOf(pts).filter(p => p.some(g => g.length > 1) && p.length > 1);   // not all-alone, not all-joined
+  const truth = all[Math.floor(r() * all.length)];
+  const d = n === 4 ? "G" : "G5";
+  if(madeRead < 8){
+    const rows = pairs(pts).map(([a,b]) => [a, b, sameGroup(truth,a,b)]);
+    const key = "read" + JSON.stringify(rows);
+    if(cardKeys.has(key)) continue; cardKeys.add(key); madeRead++;
+    const right = groupsText(truth, n);
+    const others = shuffle(partitionsOf(pts), r).map(p => groupsText(p, n)).filter((t,i,arr) => t !== right && arr.indexOf(t) === i);
+    // Prefer near-misses: wirings that agree with most of the table.
+    const score = t => -pairs(pts).filter(([a,b]) => sameGroup(partitionsOf(pts).find(p => groupsText(p,n) === t),a,b) !== sameGroup(truth,a,b)).length;
+    const distract = others.sort((x,y) => score(y) - score(x)).slice(0,3);
+    const lit = rows.filter(x => x[2]).map(([a,b]) => `${a}–${b}`);
+    GEN.push({id:`gen-card-${seed}`, gen:"card", part:"hands", skill:"card", difficulty: n === 4 ? 2 : 3, d, extra: tableHTML(rows),
+      prompt:"You test every pair of points on this card and record the table. Which points are connected inside the card?",
+      opts:[right, ...distract],
+      explain:`The lamp lit only for ${lit.length ? listText(lit) : "no pair"}. So: ${right}.`, card:{pts, truth, rows}});
+  } else {
+    let rows = null, targets = null;
+    for(let tries = 0; tries < 200 && !rows; tries++){
+      const ps = shuffle(pairs(pts), r), tg = ps.slice(0,2);
+      let tested = ps.slice(2).map(([a,b]) => [a, b, sameGroup(truth,a,b)]);
+      shuffle(tested, r).forEach(row => {                        // drop rows while both answers stay certain
+        const less = tested.filter(x => x !== row);
+        if(less.length >= 3 && tg.every(([a,b]) => deduce(pts, less, a, b))) tested = less;
+      });
+      const outcome = tg.map(([a,b]) => deduce(pts, tested, a, b));
+      if(outcome.every(Boolean) && tested.length < pairs(pts).length - 2){ rows = tested.sort(); targets = tg; }
+    }
+    if(!rows) continue;
+    const key = "predict" + JSON.stringify([rows, targets]);
+    if(cardKeys.has(key)) continue; cardKeys.add(key); madePredict++;
+    const [P, Q] = targets.map(([a,b]) => `${a} and ${b}`);
+    const res = targets.map(([a,b]) => sameGroup(truth,a,b));
+    const word = x => x ? "light" : "stay off";
+    const combos = [[true,true],[false,false],[true,false],[false,true]];
+    const txt = ([x,y]) => x === y ? `Both pairs ${word(x)}` : `${P} ${word(x)}; ${Q} ${word(y)}`;
+    const right = txt(res);
+    GEN.push({id:`gen-card-${seed}`, gen:"card", part:"hands", skill:"card", difficulty:3, d, extra: tableHTML(rows),
+      prompt:`This card contains only wires. Without testing them, what will the pairs ${P}, and ${Q}, do?`,
+      opts:[right, ...combos.map(txt).filter(t => t !== right)],
+      explain:`Points joined by lit tests are joined to each other, and a lamp that stays off separates two groups. The wiring is: ${groupsText(truth, n)}. So ${P} ${res[0] ? "light" : "stay off"}, and ${Q} ${res[1] ? "light" : "stay off"}.`,
+      card:{pts, truth, rows, targets}});
+  }
+}
+
+// 7. Conductor / insulator tray. Ambiguous items (pencil lead, graphite, salt water, painted metal) are left out on purpose.
+const TRAY = {
+  conductor:["an aluminum foil strip","a steel paper clip","a steel nail","a brass key","a steel spoon","a piece of bare copper wire","a steel safety pin","a metal coin","a steel washer","a steel bolt"],
+  insulator:["a rubber band","a plastic spoon","a wooden craft stick","a glass marble","a sheet of paper","a cotton cloth","a plastic straw","a rubber eraser","a plastic button","a cork","a piece of wool yarn","a foam cup"]
+};
+{
+  const seen = new Set(["a coin|a plastic spoon|a wooden craft stick|a glass marble"]);
+  for(let seed = 1, made = 0; made < 12 && seed < 500; seed++){
+    const r = rng(seed * 104729), want = seed % 2 ? "conductor" : "insulator", other = want === "conductor" ? "insulator" : "conductor";
+    const right = shuffle(TRAY[want], r)[0], wrong = shuffle(TRAY[other], r).slice(0,3);
+    const key = [right, ...wrong.slice().sort()].join("|");
+    if(seen.has(key)) continue; seen.add(key); made++;
+    GEN.push({id:`gen-tray-${seed}`, gen:"tray", part:"hands", skill:"tray", difficulty:1, d:"G",
+      prompt: want === "conductor" ? "You touch the probes to each item on the tray. Which item is a conductor (the lamp lights)?"
+                                   : "You touch the probes to each item on the tray. Which item is an insulator (the lamp stays off)?",
+      opts:[cap(right), ...wrong.map(cap)],
+      explain: want === "conductor" ? `${cap(right)} is metal, so it conducts and the lamp lights. ${cap(listText(wrong))} are insulators.`
+                                    : `${cap(right)} is not metal, so it is an insulator and the lamp stays off. ${cap(listText(wrong))} are metal conductors.`,
+      tray:{want, right, wrong}});
+  }
+}
+
+// 8. Challenge: Ohm’s law and watts with changing numbers.
+{
+  const f = x => String(+x.toFixed(3));
+  const pick = [[3,6],[4.5,9],[6,3],[9,3],[3,2],[6,2],[1.5,1],[4.5,3],[3,1],[6,6],[9,6],[1.5,3]];
+  pick.forEach(([V, R], i) => {
+    const type = ["current","power","series","parallel"][i % 4], vals = {v:`${f(V)} V`, r:`${f(R)} Ω`, r1:`${f(R)} Ω`, r2:`${f(R)} Ω`};
+    const uniq = (a, extra) => { const o = [...new Set(a)]; extra.forEach(e => { if(o.length < 4 && !o.includes(e)) o.push(e); }); return o.slice(0,4); };
+    const src = V === 1.5 ? "cell" : "battery";
+    let item;
+    if(type === "current"){ const I = V/R;
+      item = {d:"HV", prompt:`A ${f(V)} V ${src} lights lamp L1, which has a resistance of ${f(R)} Ω. Using V = I × R, how much current flows?`,
+        opts: uniq([`${f(I)} A`, `${f(V*R)} A`, `${f(R/V)} A`, `${f(I)} V`], [`${f(2*I)} A`, `${f(I/2)} A`]),
+        explain:`I = V ÷ R = ${f(V)} V ÷ ${f(R)} Ω = ${f(I)} A.`, calc:{type, V, R}}; }
+    if(type === "power"){ const I = V/R, P = V*I;
+      item = {d:"HV", prompt:`A ${f(V)} V ${src} lights lamp L1 (${f(R)} Ω). Find the current, then use P = V × I. How much power does L1 use?`,
+        opts: uniq([`${f(P)} W`, `${f(I)} W`, `${f(V*R)} W`, `${f(P)} A`], [`${f(2*P)} W`, `${f(P/2)} W`]),
+        explain:`I = ${f(V)} V ÷ ${f(R)} Ω = ${f(I)} A, and P = ${f(V)} V × ${f(I)} A = ${f(P)} W.`, calc:{type, V, R}}; }
+    if(type === "series"){ const Rt = 2*R, I = V/Rt;
+      item = {d:"BW", prompt:`Two ${f(R)} Ω lamps are in series on a ${f(V)} V ${src}. What are the total resistance and the current?`,
+        opts: uniq([`${f(Rt)} Ω and ${f(I)} A`, `${f(R)} Ω and ${f(V/R)} A`, `${f(R/2)} Ω and ${f(2*V/R)} A`, `${f(Rt)} Ω and ${f(V/R)} A`], [`${f(Rt)} Ω and ${f(2*I)} A`]),
+        explain:`Series resistances add: ${f(R)} Ω + ${f(R)} Ω = ${f(Rt)} Ω. I = ${f(V)} V ÷ ${f(Rt)} Ω = ${f(I)} A.`, calc:{type, V, R}}; }
+    if(type === "parallel"){ const Ib = V/R, It = 2*Ib;
+      item = {d:"CW", prompt:`Two ${f(R)} Ω lamps are in parallel on a ${f(V)} V ${src}. Each branch gets the full ${f(V)} V. How much current does the ${src} supply in total?`,
+        opts: uniq([`${f(It)} A`, `${f(Ib)} A`, `${f(V/(2*R))} A`, `${f(It)} V`], [`${f(4*Ib)} A`]),
+        explain:`Each branch: I = ${f(V)} V ÷ ${f(R)} Ω = ${f(Ib)} A. The two branches add: ${f(Ib)} A + ${f(Ib)} A = ${f(It)} A.`, calc:{type, V, R}}; }
+    GEN.push(Object.assign({id:`gen-ohm-${type}-${f(V)}-${f(R)}`, gen:"ohm", part:"challenge", skill:type, difficulty:3, vals}, item));
+  });
+}
+BANK.push(...GEN);
+// Near-duplicates share a family; a test never holds two items from one family.
+const FAMILIES = {
+  "remove-B":["b3","gen-remove-B-L2"], "remove-C":["c3","gen-remove-C-L2"], "remove-E-branch":["e4","gen-remove-E-L2"],
+  "bright-E":["e2","gen-compare-E-L1L2","gen-alone-E-L1"], "bright-Z":["p6","gen-compare-Z-L1L3","gen-alone-Z-L3"],
+  "alone-J":["p3","gen-alone-J-L2"], "P-rest":["q1","k20"], "P-press":["q2","s18"], "Q-W":["q3","q4"],
+  "id-lamp":["s5","s6"], "id-no":["s2","s7"], "id-nc":["s3","s8"], "R-name":["k4","k19"], "tester-check":["g1","h1"],
+  "and-M":["gen-press-M-L1-on"], "F-press":["f3","gen-press-F-L1-on"], "or-N":["q5","gen-press-N-L1-off"]
+};
+Object.entries(FAMILIES).forEach(([f, ids]) => ids.forEach(id => { const q = BANK.find(b => b.id === id); if(q) q.family = f; }));
+
 /* ================= BLUEPRINT & DRAW =================
    A test draws this many questions from each section of the bank. Every
    written-test rule area (p. 26) has its own section, so every test covers all four. */
@@ -641,23 +941,28 @@ function itemStats(history){
   return st;
 }
 function tierOf(id, st){ const s = st[id]; return !s ? 0 : (s.lastCorrect ? 2 : 1); }   // 0 unseen, 1 missed, 2 rest
-// Unseen first, then missed, then the rest; inside a tier, spread the skills; never the same id twice.
-function drawSection(items, n, st, rnd){
+// Unseen first, then missed, then the rest. Inside a tier, avoid near-duplicates (same family) and spread the skills. Never the same id twice.
+function drawSection(items, n, st, rnd, families){
+  families = families || new Set();
   const pool = shuffle(items, rnd), out = [], used = {};
   while(out.length < n && pool.length){
     let bi = 0, bk = Infinity;
-    pool.forEach((q,i) => { const k = tierOf(q.id, st)*1000 + (used[q.skill] || 0); if(k < bk){ bk = k; bi = i; } });
+    pool.forEach((q,i) => {
+      const k = tierOf(q.id, st)*1e6 + (q.family && families.has(q.family) ? 1000 : 0) + (used[q.skill] || 0);
+      if(k < bk){ bk = k; bi = i; }
+    });
     const q = pool.splice(bi, 1)[0];
     out.push(q); used[q.skill] = (used[q.skill] || 0) + 1;
+    if(q.family) families.add(q.family);
   }
   // Keep questions about the same diagram next to each other.
   return out.sort((a,b) => DIAGRAM_ORDER.indexOf(a.d) - DIAGRAM_ORDER.indexOf(b.d));
 }
 function drawTest(history, withChallenge, rnd){
-  const st = itemStats(history), out = [];
+  const st = itemStats(history), out = [], families = new Set();
   SECTION_ORDER.forEach(p => {
     const n = p === "challenge" ? (withChallenge ? CHALLENGE_SLOTS : 0) : BLUEPRINT[p];
-    if(n) out.push(...drawSection(BANK.filter(q => q.part === p), n, st, rnd));
+    if(n) out.push(...drawSection(BANK.filter(q => q.part === p), n, st, rnd, families));
   });
   return out;
 }
