@@ -193,6 +193,16 @@ const noSwitch = (cx) => term(cx-30,120)+term(cx+30,120)+`<path d="M${cx-40} 94 
 const ncSwitch = (cx) => term(cx-30,120)+term(cx+30,120)+`<path d="M${cx-40} 129 H${cx+40}" stroke-width="6"/><path d="M${cx} 129 V70 M${cx-16} 70 H${cx+16}"/>`;
 const label = (x,y,t,c) => `<text x="${x}" y="${y}" font-family="Nunito Sans, Verdana, sans-serif" font-size="30" font-weight="700" fill="${c||INK}" text-anchor="middle" stroke="none">${t}</text>`;
 
+const noSwitchY = (cx,y) => term(cx-30,y)+term(cx+30,y)+`<path d="M${cx-40} ${y-26} H${cx+40}" stroke-width="6"/><path d="M${cx} ${y-26} V${y-56} M${cx-16} ${y-56} H${cx+16}"/>`;
+const small = (x,y,t) => `<text x="${x}" y="${y}" font-family="Nunito Sans, Verdana, sans-serif" font-size="26" font-weight="700" fill="#4A5568" text-anchor="middle" stroke="none">${t}</text>`;
+// Continuity tester beside a hidden-wiring card; pts = [[letter, x, y], ...]. Top-row labels go above, bottom-row below.
+const cardDraw = pts => '<rect x="500" y="110" width="340" height="380" rx="18" fill="#E9E2D2" stroke="#8A8172" stroke-width="4"/>'
+    + '<path d="M100 160 V280 M100 305 V440 H300 L420 370 M100 160 H170 M242 160 H300 L420 230"/><path d="M65 280 H135"/><path d="M82 305 H118" stroke-width="12"/>'
+    + lamp(206,160) + `<circle cx="420" cy="230" r="10" fill="${INK}"/><circle cx="420" cy="370" r="10" fill="${INK}"/>`
+    + pts.map(([t,x,y]) => `<circle cx="${x}" cy="${y}" r="13" fill="#FFFEFB"/>` + label(x, y < 300 ? y-32 : y+56, t)).join("")
+    + `<text x="670" y="308" font-family="Nunito Sans, Verdana, sans-serif" font-size="24" font-style="italic" fill="#5A5246" text-anchor="middle" stroke="none">wiring hidden</text>`
+    + small(200,540,"Continuity tester") + small(670,540,"Circuit card");
+
 const DIAGRAMS = {
   S: {name:"Symbol strip", alt:"Five schematic symbols numbered 1 to 5", draw: hi => {
     let s = '';
@@ -237,14 +247,68 @@ const DIAGRAMS = {
     + `<text x="670" y="540" font-family="Nunito Sans, Verdana, sans-serif" font-size="26" font-weight="700" fill="#4A5568" text-anchor="middle" stroke="none">Circuit card</text>` },
   H: {name:"Diagram H", alt:"A 1.5 volt cell and one 3 ohm lamp L1 in one loop", draw: () =>
     '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H120"/>' + CELL + lamp(760,300)
-    + label(230,302,"1.5 V") + label(830,300,"L1") + label(836,346,"3 Ω","#9A5B0C") }
+    + label(230,302,"1.5 V") + label(830,300,"L1") + label(836,346,"3 Ω","#9A5B0C") },
+  J: {name:"Diagram J", alt:"One cell with lamps L1, L2 and L3 one after another in a single loop", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V120 H656 M584 120 H486 M414 120 H316 M244 120 H120"/>' + CELL
+    + lamp(280,120) + lamp(450,120) + lamp(620,120) + label(280,62,"L1") + label(450,62,"L2") + label(620,62,"L3") },
+  K: {name:"Diagram K", alt:"One cell with lamps L1, L2 and L3 each on its own branch", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H120 M360 120 V264 M360 336 V480 M560 120 V264 M560 336 V480"/>' + CELL
+    + lamp(360,300) + lamp(560,300) + lamp(760,300) + dot(360,120) + dot(360,480) + dot(560,120) + dot(560,480)
+    + label(430,310,"L1") + label(630,310,"L2") + label(830,310,"L3") },
+  M: {name:"Diagram M", alt:"One cell, two normally open switches S1 and S2 one after the other, and lamp L1 in one loop", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H620 M560 120 H360 M300 120 H120"/>' + CELL + lamp(760,300)
+    + noSwitch(330) + noSwitch(590) + label(330,40,"S1") + label(590,40,"S2") + label(830,310,"L1") },
+  N: {name:"Diagram N", alt:"One cell and lamp L1, with normally open switches S1 and S2 on two side-by-side paths", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H470 M410 120 H120 M260 120 V240 H410 M470 240 H620 V120"/>' + CELL + lamp(760,300)
+    + noSwitch(440) + noSwitchY(440,240) + dot(260,120) + dot(620,120) + label(440,40,"S1") + label(440,300,"S2") + label(830,310,"L1") },
+  P: {name:"Diagram P", alt:"One cell, a normally closed switch S1 and lamp L1 in one loop", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H470 M410 120 H120"/>' + CELL + lamp(760,300) + ncSwitch(440)
+    + label(440,40,"S1") + label(830,310,"L1") },
+  Q: {name:"Diagram Q", alt:"One cell, normally open switch S1 and lamp L1 in one loop, with a plain wire W joined around S1", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H470 M410 120 H120 M340 120 V210 H540 V120"/>' + CELL + lamp(760,300) + noSwitch(440)
+    + dot(340,120) + dot(540,120) + label(440,40,"S1") + label(440,262,"W") + label(830,310,"L1") },
+  R: {name:"Diagram R", alt:"One cell with a single plain wire joining its two ends, and nothing else", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V120 H120"/>' + CELL + label(440,178,"W") },
+  X: {name:"Wire drawings", alt:"Drawing 1: two wires cross with no dot. Drawing 2: two wires cross with a dot", draw: () =>
+    '<path d="M440 60 V540" stroke="#E4DDCF" stroke-width="2"/>'
+    + '<path d="M60 290 H400 M230 120 V460"/><path d="M480 290 H820 M650 120 V460"/>' + dot(650,290)
+    + label(230,530,"1","#2F5F9E") + label(650,530,"2","#2F5F9E") },
+  T: {name:"Diagram T", alt:"One cell with lamps L1 and L2 on separate branches; normally open switch S1 is on L2's branch only", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H630 M570 120 H120 M440 120 V264 M440 336 V480"/>' + CELL
+    + lamp(440,300) + lamp(760,300) + dot(440,120) + dot(440,480) + noSwitch(600)
+    + label(510,310,"L1") + label(830,310,"L2") + label(600,40,"S1") },
+  U: {name:"Diagram U", alt:"One cell, normally open switch S1 next to the cell, then lamps L1 and L2 on separate branches", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H310 M250 120 H120 M440 120 V264 M440 336 V480"/>' + CELL
+    + lamp(440,300) + lamp(760,300) + dot(440,120) + dot(440,480) + noSwitch(280)
+    + label(510,310,"L1") + label(830,310,"L2") + label(280,40,"S1") },
+  V: {name:"Diagram V", alt:"One cell, normally open switch S1 next to the cell, lamps L1 and L2 on separate branches, and normally open switch S2 on L2's branch", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H630 M570 120 H310 M250 120 H120 M440 120 V264 M440 336 V480"/>' + CELL
+    + lamp(440,300) + lamp(760,300) + dot(440,120) + dot(440,480) + noSwitch(280) + noSwitch(600)
+    + label(510,310,"L1") + label(830,310,"L2") + label(280,40,"S1") + label(600,40,"S2") },
+  Y: {name:"Diagram Y", alt:"One cell, normally open switch S1 next to the cell, lamps L1 and L2 on separate branches, and normally closed switch S2 on L2's branch", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H630 M570 120 H310 M250 120 H120 M440 120 V264 M440 336 V480"/>' + CELL
+    + lamp(440,300) + lamp(760,300) + dot(440,120) + dot(440,480) + noSwitch(280) + ncSwitch(600)
+    + label(510,310,"L1") + label(830,310,"L2") + label(280,40,"S1") + label(600,40,"S2") },
+  Z: {name:"Diagram Z", alt:"One cell; one branch has lamps L1 and L2 one after the other, the other branch has lamp L3", draw: () =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H120 M440 120 V184 M440 256 V344 M440 416 V480"/>' + CELL
+    + lamp(440,220) + lamp(440,380) + lamp(760,300) + dot(440,120) + dot(440,480)
+    + label(510,230,"L1") + label(510,390,"L2") + label(830,310,"L3") },
+  G5: {name:"Diagram G (5 points)", alt:"A continuity tester with two loose probes, beside a circuit card with hidden wiring and points A, B, C, D, E", draw: () =>
+    cardDraw([["A",560,200],["B",670,200],["C",780,200],["D",600,400],["E",740,400]]) },
+  HV: {name:"Diagram H", alt:"A cell and one lamp L1 in one loop, with its voltage and resistance marked", draw: (hi, q) =>
+    '<path d="M120 120 V280 M120 305 V480 H760 V336 M760 264 V120 H120"/>' + CELL + lamp(760,300)
+    + label(230,302,q.vals.v) + label(830,300,"L1") + label(836,346,q.vals.r,"#9A5B0C") },
+  BW: {name:"Diagram B with values", alt:"A cell with lamps L1 and L2 in series, with the voltage and resistances marked", draw: (hi, q) =>
+    DIAGRAMS.B.draw() + label(230,302,q.vals.v) + label(330,196,q.vals.r1,"#9A5B0C") + label(550,196,q.vals.r2,"#9A5B0C") },
+  CW: {name:"Diagram C with values", alt:"A cell with lamps L1 and L2 on separate branches, with the voltage and resistances marked", draw: (hi, q) =>
+    DIAGRAMS.C.draw() + label(230,302,q.vals.v) + label(510,356,q.vals.r1,"#9A5B0C") + label(836,356,q.vals.r2,"#9A5B0C") }
 };
 
-function svgFor(key, hi){
+function svgFor(key, hi, q){
   const d = DIAGRAMS[key];
   return `<svg viewBox="0 0 880 600" role="img" aria-label="${d.alt}" xmlns="http://www.w3.org/2000/svg">`
     + `<rect x="2" y="2" width="876" height="596" rx="20" fill="#FFFEFB" stroke="#D9D2C3" stroke-width="3"/>`
-    + `<g fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">${d.draw(hi)}</g></svg>`;
+    + `<g fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">${d.draw(hi, q)}</g></svg>`;
 }
 
 /* ================= QUESTION BANK =================
@@ -364,6 +428,69 @@ const BANK = [
    opts:["6 Ω and 0.25 A","3 Ω and 0.5 A","1.5 Ω and 1 A","6 Ω and 0.5 A"],
    explain:"Series resistances add: 3 Ω + 3 Ω = 6 Ω. I = 1.5 V ÷ 6 Ω = 0.25 A, half as much as one lamp, which is why series lamps are dimmer."}
 ];
+// Skill and difficulty tags for the original 32 items (their text and ids never change).
+const LEGACY_TAGS = {
+  s1:["identify",1], s2:["identify",1], s3:["identify",2], s4:["conductor",1],
+  a1:["open-closed",1], a2:["open-closed",1], d1:["short",2], d2:["short",1], d3:["short",2],
+  b1:["kind",1], b2:["brightness",2], b3:["remove",1], c1:["kind",1], c2:["brightness",2], c3:["remove",1], e1:["kind",2], e2:["brightness",3],
+  e3:["remove",2], e4:["remove",3], f1:["switch-kind",1], f2:["switch-state",2], f3:["switch-state",2], f4:["switch-state",3],
+  g1:["tester",1], g2:["tester",1], g3:["card",2], g4:["card",3], g5:["tray",1], g6:["tray",1],
+  x1:["ohm",2], x2:["watts",2], x3:["series-r",3]
+};
+BANK.forEach(q => { const t = LEGACY_TAGS[q.id]; if(t){ q.skill = t[0]; q.difficulty = t[1]; } });
+
+/* ---- Part 1 · Schematic symbols (rule area 3) ---- */
+BANK.push(
+  {id:"s5", part:"symbols", skill:"identify", difficulty:1, d:"S", prompt:"Which number shows a lamp (light bulb)?",
+   opts:["Symbol 2","Symbol 1","Symbol 4","Symbol 5"],
+   explain:"A lamp is drawn as a circle with an X inside it."},
+  {id:"s6", part:"symbols", skill:"identify", difficulty:1, d:"S", hi:2, prompt:"What does symbol 2 show?",
+   opts:["A lamp (light bulb)","A cell","A normally open switch","Two wires joined together"],
+   explain:"The circle with an X is the lamp symbol."},
+  {id:"s7", part:"symbols", skill:"identify", difficulty:2, d:"S", prompt:"Which number shows a normally open switch?",
+   opts:["Symbol 3","Symbol 4","Symbol 1","Symbol 2"],
+   explain:"In symbol 3 the bar sits above the contacts without touching them, so the path is open until the button is pressed."},
+  {id:"s8", part:"symbols", skill:"identify", difficulty:2, d:"S", prompt:"Which number shows a normally closed switch?",
+   opts:["Symbol 4","Symbol 3","Symbol 5","Symbol 2"],
+   explain:"In symbol 4 the bar rests on both contacts, so the path is closed until the button is pressed."},
+  {id:"s9", part:"symbols", skill:"cell", difficulty:2, d:"S", hi:1, prompt:"In symbol 1, which line is the positive (+) end of the cell?",
+   opts:["The long thin line","The short thick line","Both lines are positive","A cell has no positive end"],
+   explain:"The long line is the positive (+) end and the short thick line is the negative (−) end."},
+  {id:"s10", part:"symbols", skill:"junction", difficulty:1, d:"S", hi:5, prompt:"In symbol 5, what does the dot where the wires meet mean?",
+   opts:["The wires are joined, so current can pass from one to the other","The wires cross but do not touch","A lamp is hidden there","A switch is hidden there"],
+   explain:"A dot means the wires are connected at that point."},
+  {id:"s11", part:"symbols", skill:"junction", difficulty:2, d:"X", prompt:"In drawing 1, the two wires cross with no dot. Are they connected?",
+   opts:["No: without a dot, the wires just cross over each other","Yes: wires that cross are always joined","Yes, but only while a switch is pressed","No, because one of the wires is an insulator"],
+   explain:"In a schematic, wires are joined only where there is a dot. Crossing lines without a dot are not connected."},
+  {id:"s12", part:"symbols", skill:"junction", difficulty:1, d:"X", prompt:"Which drawing shows two wires that are joined together?",
+   opts:["Drawing 2, because it has a dot","Drawing 1, because the wires cross","Both drawings","Neither drawing"],
+   explain:"The dot in drawing 2 shows a connection. Drawing 1 has no dot, so those wires only cross."},
+  {id:"s13", part:"symbols", skill:"identify", difficulty:1, d:"P", prompt:"What kind of switch is S1?",
+   opts:["A normally closed switch","A normally open switch","A lamp","A cell"],
+   explain:"S1’s bar touches both contacts, so it is closed until someone presses it."},
+  {id:"s14", part:"symbols", skill:"function", difficulty:1, d:"A", prompt:"What is the job of the cell in Diagram A?",
+   opts:["It pushes current around the circuit; it is the energy source","It turns the circuit on and off","It changes electricity into light","It joins two wires together"],
+   explain:"The cell supplies the push (voltage) that moves current around a closed circuit."},
+  {id:"s15", part:"symbols", skill:"function", difficulty:1, d:"A", prompt:"What is the job of S1 in Diagram A?",
+   opts:["It closes and opens the path, turning L1 on and off","It stores energy for the lamp","It makes the light","It joins two wires that cross"],
+   explain:"A switch closes or opens a gap in the circuit, so it controls whether current can flow."},
+  {id:"s16", part:"symbols", skill:"junction", difficulty:2, d:"C", prompt:"What do the two dots in Diagram C show?",
+   opts:["Places where wires join, so the current can split into branches","Two very small lamps","Two switches","Places where wires cross without touching"],
+   explain:"Junction dots show where wires are joined. At a junction the current can split or come back together."},
+  {id:"s17", part:"symbols", skill:"function", difficulty:1, d:"S", hi:2, prompt:"What is the job of a lamp in a circuit?",
+   opts:["It changes electrical energy into light (and some heat)","It pushes current around the circuit","It opens and closes the circuit","It blocks current, like an insulator"],
+   explain:"Current flowing through the thin wire inside a lamp makes it glow."},
+  {id:"s18", part:"symbols", skill:"function", difficulty:2, d:"S", hi:4, prompt:"What happens when you press a normally closed switch?",
+   opts:["It opens, so the current stops","It closes, so the current starts","Nothing changes","It turns into a short circuit"],
+   explain:"A normally closed switch is closed when nobody touches it. Pressing it lifts the bar off the contacts and opens the path."},
+  {id:"s19", part:"symbols", skill:"function", difficulty:2, d:"S", hi:3, prompt:"A doorbell button is a normally open switch. When can current flow through it?",
+   opts:["Only while it is being pressed","Only while it is not being pressed","All the time","Never"],
+   explain:"A normally open switch has a gap until you press it, so current flows only while it is held down."},
+  {id:"s20", part:"symbols", skill:"wire", difficulty:1, d:"B", prompt:"What do the plain lines that join the parts in Diagram B stand for?",
+   opts:["Wires, which are conductors","Insulators that block the current","Switches that are always open","Extra cells"],
+   explain:"Lines in a schematic are wires. Wires are made of metal, a conductor, so current flows along them."}
+);
+
 /* ================= BLUEPRINT & DRAW =================
    A test draws this many questions from each section of the bank. Every
    written-test rule area (p. 26) has its own section, so every test covers all four. */
@@ -486,7 +613,7 @@ function renderQ(){
   document.getElementById("qNum").textContent = `Question ${session.idx+1} of ${n}`;
   document.getElementById("qBar").style.width = Math.round(session.idx/n*100) + "%";
   document.getElementById("qDiagName").textContent = DIAGRAMS[q.d].name;
-  document.getElementById("qDiagram").innerHTML = svgFor(q.d, q.hi);
+  document.getElementById("qDiagram").innerHTML = svgFor(q.d, q.hi, q);
   document.getElementById("qPrompt").textContent = q.prompt;
   document.getElementById("qExtra").innerHTML = q.extra || "";
   const box = document.getElementById("qOpts");
@@ -568,7 +695,7 @@ function renderResults(rec){
   missed.forEach(a => {
     const q = BANK.find(b => b.id === a.id);
     list.insertAdjacentHTML("beforeend",
-      `<div class="miss">${svgFor(q.d, q.hi)}<div class="stack" style="gap:6px">
+      `<div class="miss">${svgFor(q.d, q.hi, q)}<div class="stack" style="gap:6px">
         <span class="eyebrow">${esc(PARTS[q.part])}</span>
         <b>${esc(q.prompt)}</b>
         <span>Your answer: <span class="yours">${a.skipped ? "skipped" : esc(a.chosen)}</span></span>

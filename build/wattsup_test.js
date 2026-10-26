@@ -30,7 +30,15 @@ function pick(w, d, want){
 let saved;
 {
   const { w, d, errs } = mount();
-  const bank = JSON.parse(w.eval('JSON.stringify(BANK.map(q=>({id:q.id,part:q.part,d:q.d,opts:q.opts})))'));
+  const bank = JSON.parse(w.eval('JSON.stringify(BANK.map(q=>({id:q.id,part:q.part,skill:q.skill,difficulty:q.difficulty,d:q.d,opts:q.opts,explain:q.explain,prompt:q.prompt})))'));
+  const LEGACY = 's1 s2 s3 s4 a1 a2 d1 d2 d3 b1 b2 b3 c1 c2 c3 e1 e2 e3 e4 f1 f2 f3 f4 g1 g2 g3 g4 g5 g6 x1 x2 x3'.split(' ');
+  assert(LEGACY.every(id => bank.some(q => q.id === id)), 'the original 32 ids are still in the bank');
+  assert(new Set(bank.map(q => q.id)).size === bank.length, 'bank ids are unique (' + bank.length + ' items)');
+  assert(bank.every(q => q.skill && [1,2,3].includes(q.difficulty) && q.explain && q.prompt), 'every item has a skill, difficulty 1–3, prompt and explanation');
+  const bp = JSON.parse(w.eval('JSON.stringify(Object.assign({}, BLUEPRINT, {challenge: CHALLENGE_SLOTS}))'));
+  console.log('   bank sizes: ' + Object.keys(bp).map(p => p + ' ' + bank.filter(q => q.part === p).length + '/' + bp[p] + ' slots').join(', '));
+  const svgErrs = bank.filter(q => { try { return !/<svg[\s\S]*<\/svg>$/.test(w.eval(`svgFor(BANK.find(b=>b.id===${JSON.stringify(q.id)}).d, BANK.find(b=>b.id===${JSON.stringify(q.id)}).hi, BANK.find(b=>b.id===${JSON.stringify(q.id)}))`)); } catch(e){ return true; } });
+  assert(svgErrs.length === 0, 'every item renders its diagram: ' + svgErrs.map(q => q.id).join(','));
   const core = bank.filter(q => q.part !== 'challenge');
   assert(w.eval('CORE_SLOTS') === 29, 'blueprint draws 29 core questions per test');
   assert(core.length >= 29, 'core bank has at least 29 questions: ' + core.length);
