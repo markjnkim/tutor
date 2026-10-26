@@ -555,6 +555,72 @@ BANK.push(
    explain:"S1 is normally closed: its bar touches the contacts until pressed, so the path is complete."}
 );
 
+/* ---- Part 3 · Series, parallel and series-parallel (rule area 2) ---- */
+BANK.push(
+  {id:"p1", part:"series", skill:"kind", difficulty:1, d:"J", prompt:"How are the three lamps in Diagram J connected?",
+   opts:["In series: one path goes through all three","In parallel: each lamp has its own branch","Series-parallel","It is a short circuit"],
+   explain:"There are no junction dots, so the current has only one path, through L1, L2 and L3 in turn."},
+  {id:"p2", part:"series", skill:"kind", difficulty:1, d:"K", prompt:"How are the three lamps in Diagram K connected?",
+   opts:["In parallel: each lamp has its own branch","In series: one path goes through all three","Series-parallel","It is an open circuit"],
+   explain:"The junction dots split the current into three branches, one for each lamp."},
+  {id:"p3", part:"series", skill:"brightness", difficulty:2, d:"J", prompt:"Diagram B has two lamps in series on one cell. Diagram J has three. How bright is each lamp in J compared with each lamp in B?",
+   opts:["Dimmer","Brighter","The same","Off"],
+   explain:"More lamps in series share the same cell, so less current flows and every lamp is dimmer."},
+  {id:"p4", part:"series", skill:"parallel-cell", difficulty:3, d:"K", prompt:"Compared with a cell lighting just one lamp, what happens to the cell in Diagram K?",
+   opts:["It runs down faster, because it lights three lamps at full brightness","It runs down slower, because the lamps share it","It lasts the same time","It never runs down"],
+   explain:"Each branch takes as much current as one lamp alone, so the cell supplies three times the current and runs down faster."},
+  {id:"p5", part:"series", skill:"kind", difficulty:2, d:"Z", prompt:"How are the lamps in Diagram Z connected?",
+   opts:["L1 and L2 are in series on one branch, and that branch is in parallel with L3","All three are in series","All three are in parallel","L1 is in series with the parallel pair L2 and L3"],
+   explain:"The dots make two branches. One branch holds L1 then L2 (series); the other holds L3. That is series-parallel."},
+  {id:"p6", part:"series", skill:"brightness", difficulty:3, d:"Z", prompt:"Which lamp in Diagram Z glows brightest?",
+   opts:["L3","L1","L2","They are all the same"],
+   explain:"L3 has a branch to itself, so it gets the cell’s full push. L1 and L2 share their branch in series, so each is dimmer."},
+  {id:"p7", part:"series", skill:"everyday", difficulty:2, d:"B", prompt:"In an old string of holiday lights, one bad bulb makes the whole string go dark. How are those bulbs wired?",
+   opts:["In series","In parallel","As a short circuit","With normally closed switches"],
+   explain:"In series there is only one path, so one broken bulb opens the circuit for all of them."},
+  {id:"p8", part:"series", skill:"everyday", difficulty:2, d:"C", prompt:"In a house, the other lights stay on when one bulb burns out. How are they wired?",
+   opts:["In parallel","In series","As a short circuit","As an open circuit"],
+   explain:"Each light has its own branch, so one broken bulb does not open the path for the others."},
+  {id:"p9", part:"series", skill:"kind", difficulty:2, d:"E", prompt:"In Diagram E, which lamps are in parallel with each other?",
+   opts:["L2 and L3","L1 and L2","L1 and L3","None of the lamps"],
+   explain:"The current splits at the dot after L1: one branch has L2 and the other has L3."},
+  {id:"p10", part:"series", skill:"current", difficulty:2, d:"B", prompt:"In a series circuit, how does the current through L1 compare with the current through L2?",
+   opts:["It is the same, because there is only one path","L1 gets more, because it is first","L2 gets more, because it is last","L1 uses it all up, so L2 gets none"],
+   explain:"With one path, all the current that goes through L1 must also go through L2."},
+  {id:"p11", part:"series", skill:"current", difficulty:3, d:"C", prompt:"In Diagram C, why is each lamp as bright as one lamp alone on the cell?",
+   opts:["Each branch connects straight across the cell, so each lamp gets the cell’s full push","The lamps take turns using the current","L1 sends its leftover current to L2","The junction dots make extra current"],
+   explain:"Each parallel branch is joined directly to both ends of the cell, so each lamp gets the full voltage."}
+);
+
+/* ---- Part 4 · Circuit logic (rule area 4) ---- */
+BANK.push(
+  {id:"q1", part:"logic", skill:"nc", difficulty:1, d:"P", prompt:"Nobody is pressing S1. Is L1 on or off?",
+   opts:["On, because a normally closed switch lets current flow until it is pressed","Off, because nobody is pressing S1","Off, because it is a short circuit","Dim, because the switch is in the way"],
+   explain:"S1’s bar rests on its contacts, so the path is complete and L1 lights."},
+  {id:"q2", part:"logic", skill:"nc", difficulty:2, d:"P", prompt:"Someone presses and holds S1. What happens to L1?",
+   opts:["L1 goes out until S1 is let go","L1 gets brighter","Nothing changes","L1 goes out and stays out after S1 is let go"],
+   explain:"Pressing a normally closed switch lifts the bar and opens the path. Letting go closes it again."},
+  {id:"q3", part:"logic", skill:"bypass", difficulty:2, d:"Q", prompt:"Nobody is pressing S1. Is L1 lit?",
+   opts:["Yes: wire W goes around S1, so the path is complete","No: S1 is open, so the circuit is open","No: wire W makes a short circuit across the cell","Only while S1 is pressed"],
+   explain:"W bridges the gap at S1, so current can reach L1. L1 is still in the path, so the cell is not shorted."},
+  {id:"q4", part:"logic", skill:"bypass", difficulty:3, d:"Q", prompt:"What does pressing S1 do to L1?",
+   opts:["Nothing: L1 is already lit through wire W","It turns L1 on","It turns L1 off","It makes L1 much brighter"],
+   explain:"Wire W already closes the path around S1, so closing S1 adds a second path but does not change L1."},
+  {id:"q5", part:"logic", skill:"or", difficulty:2, d:"N", prompt:"Why does pressing either S1 or S2 light L1?",
+   opts:["Each switch is on its own side path, so either one completes the circuit","The two switches are in series","Pressing one switch also closes the other","L1 is in parallel with the cell"],
+   explain:"S1 and S2 are in parallel. Closing either one makes a complete path through L1."}
+);
+
+/* ---- Part 5 · Hands-on: tester, hidden cards, conductor tray ---- */
+BANK.push(
+  {id:"h1", part:"hands", skill:"tester", difficulty:2, d:"G", prompt:"You touch the probes together, but the tester lamp does not light. What should you check first?",
+   opts:["That every wire is firmly connected and the lamp is tight in its holder","Whether the circuit card is connected","Whether the tray items are metal","Nothing: a dark lamp means the tester works"],
+   explain:"Touching the probes together should light the lamp. If it doesn’t, the tester itself has a gap to fix before you test anything."},
+  {id:"h2", part:"hands", skill:"tester", difficulty:1, d:"G", prompt:"While testing a card, the lamp lights when the probes touch A and B. What does that tell you?",
+   opts:["There is a conducting path between A and B inside the card","A and B are not connected","A is a conductor and B is an insulator","The card has a switch between A and B"],
+   explain:"The lamp lights only when the card completes the tester’s loop, so A and B are joined inside."}
+);
+
 /* ================= BLUEPRINT & DRAW =================
    A test draws this many questions from each section of the bank. Every
    written-test rule area (p. 26) has its own section, so every test covers all four. */
